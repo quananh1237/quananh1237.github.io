@@ -2,48 +2,71 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Sân Bóng Có Điều Khiển</title>
+  <title>Game Bóng Đá Mini</title>
   <style>
     body { margin: 0; overflow: hidden; }
     canvas { display: block; }
 
-    .controls {
+    .joystick-container {
       position: absolute;
-      bottom: 20px;
-      left: 20px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      z-index: 1;
+      bottom: 80px;
+      left: 40px;
+      width: 100px;
+      height: 100px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 50%;
+      touch-action: none;
     }
-    .controls button {
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 5px;
+
+    .joystick {
+      width: 60px;
+      height: 60px;
+      background: #fff;
+      border-radius: 50%;
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      touch-action: none;
+    }
+
+    .buttons {
+      position: absolute;
+      bottom: 40px;
+      right: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .buttons button {
+      width: 80px;
+      height: 40px;
       border: none;
+      border-radius: 8px;
       background-color: #444;
       color: white;
+      font-size: 16px;
       cursor: pointer;
     }
-    .controls button:active {
+
+    .buttons button:active {
       background-color: #222;
     }
   </style>
 </head>
 <body>
-<div class="controls">
-  <button id="left">⬅️</button>
-  <button id="right">➡️</button>
-  <button id="up">⬆️</button>
-  <button id="down">⬇️</button>
-  <button id="pass">Pass</button>
+<div class="joystick-container" id="joystick-container">
+  <div class="joystick" id="joystick"></div>
+</div>
+
+<div class="buttons">
   <button id="shoot">Shoot</button>
+  <button id="pass">Pass</button>
   <button id="speed">Speed</button>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 <script>
-  // Scene setup
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
   const renderer = new THREE.WebGLRenderer({antialias: true});
@@ -58,13 +81,6 @@
   field.rotation.x = -Math.PI / 2;
   scene.add(field);
 
-  const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
-  const centerLineGeometry = new THREE.BufferGeometry().setFromPoints([
-    new THREE.Vector3(0, 0.01, -30),
-    new THREE.Vector3(0, 0.01, 30)
-  ]);
-  scene.add(new THREE.Line(centerLineGeometry, lineMaterial));
-
   const goalMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
   const goalGeometry = new THREE.BoxGeometry(1, 5, 10);
   const goalLeft = new THREE.Mesh(goalGeometry, goalMaterial);
@@ -74,63 +90,88 @@
   goalRight.position.set(50, 2.5, 0);
   scene.add(goalRight);
 
-  const ball = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), new THREE.MeshPhongMaterial({color: 0xffffff}));
-  ball.position.set(0, 1, 0);
-  scene.add(ball);
-
   const player = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 4, 32), new THREE.MeshPhongMaterial({color: 0xff0000}));
-  player.position.set(-10, 2, 0);
+  player.position.set(0, 2, 0);
   scene.add(player);
 
-  const standMaterial = new THREE.MeshPhongMaterial({color: 0xaaaaaa});
-  const standLeft = new THREE.Mesh(new THREE.BoxGeometry(10, 10, 60), standMaterial);
-  standLeft.position.set(-55, 5, 0);
-  scene.add(standLeft);
-  const standRight = new THREE.Mesh(new THREE.BoxGeometry(10, 10, 60), standMaterial);
-  standRight.position.set(55, 5, 0);
-  scene.add(standRight);
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), new THREE.MeshPhongMaterial({color: 0xffffff}));
+  ball.position.set(5, 1, 0);
+  scene.add(ball);
+
+  // Vòng xanh dưới chân
+  const ringGeometry = new THREE.RingGeometry(1.5, 2, 32);
+  const ringMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00, side: THREE.DoubleSide});
+  const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+  ring.rotation.x = -Math.PI / 2;
+  scene.add(ring);
+  ring.visible = false;
 
   camera.position.set(0, 50, 80);
   camera.lookAt(0, 0, 0);
 
-  // Điều khiển
-  let move = { left: false, right: false, up: false, down: false };
-  let speed = 0.5;
+  // Joystick logic
+  let joystick = document.getElementById("joystick");
+  let container = document.getElementById("joystick-container");
+  let isDragging = false, speed = 0.5;
+  let dirX = 0, dirZ = 0;
 
-  document.getElementById("left").addEventListener("mousedown", () => move.left = true);
-  document.getElementById("right").addEventListener("mousedown", () => move.right = true);
-  document.getElementById("up").addEventListener("mousedown", () => move.up = true);
-  document.getElementById("down").addEventListener("mousedown", () => move.down = true);
-  document.getElementById("left").addEventListener("mouseup", () => move.left = false);
-  document.getElementById("right").addEventListener("mouseup", () => move.right = false);
-  document.getElementById("up").addEventListener("mouseup", () => move.up = false);
-  document.getElementById("down").addEventListener("mouseup", () => move.down = false);
+  container.addEventListener("touchstart", (e) => {
+    isDragging = true;
+  });
+  container.addEventListener("touchmove", (e) => {
+    e.preventDefault();
+    if (isDragging) {
+      const rect = container.getBoundingClientRect();
+      const touch = e.touches[0];
+      const x = touch.clientX - rect.left - 50;
+      const y = touch.clientY - rect.top - 50;
+      const max = 30;
+      const dx = Math.max(-max, Math.min(max, x));
+      const dy = Math.max(-max, Math.min(max, y));
+      joystick.style.left = `${20 + dx}px`;
+      joystick.style.top = `${20 + dy}px`;
+
+      dirX = dx / max;
+      dirZ = dy / max;
+    }
+  });
+
+  container.addEventListener("touchend", () => {
+    isDragging = false;
+    joystick.style.left = "20px";
+    joystick.style.top = "20px";
+    dirX = 0;
+    dirZ = 0;
+  });
+
+  document.getElementById("shoot").addEventListener("click", () => {
+    const dir = new THREE.Vector3().subVectors(ball.position, player.position).normalize();
+    ball.position.add(dir.multiplyScalar(5));
+  });
+
+  document.getElementById("pass").addEventListener("click", () => {
+    const dir = new THREE.Vector3().subVectors(ball.position, player.position).normalize();
+    ball.position.add(dir.multiplyScalar(2));
+  });
 
   document.getElementById("speed").addEventListener("click", () => {
     speed = speed === 0.5 ? 1.5 : 0.5;
   });
 
-  document.getElementById("shoot").addEventListener("click", () => {
-    // Đẩy bóng về phía trước cầu môn
-    const direction = new THREE.Vector3().subVectors(ball.position, player.position).normalize();
-    ball.position.add(direction.multiplyScalar(5));
-  });
-
-  document.getElementById("pass").addEventListener("click", () => {
-    const direction = new THREE.Vector3().subVectors(ball.position, player.position).normalize();
-    ball.position.add(direction.multiplyScalar(2));
-  });
-
   function animate() {
     requestAnimationFrame(animate);
 
-    if (move.left) player.position.x -= speed;
-    if (move.right) player.position.x += speed;
-    if (move.up) player.position.z -= speed;
-    if (move.down) player.position.z += speed;
+    // Di chuyển cầu thủ theo hướng joystick
+    player.position.x += dirX * speed;
+    player.position.z += dirZ * speed;
 
-    // Nếu gần bóng, bóng đi theo người
-    if (player.position.distanceTo(ball.position) < 3) {
+    // Kiểm tra gần bóng
+    const dist = player.position.distanceTo(ball.position);
+    ring.position.set(player.position.x, 0.1, player.position.z);
+    ring.visible = dist < 3;
+
+    // Nếu trong vùng gần bóng, bóng đi theo
+    if (dist < 3) {
       ball.position.x = player.position.x;
       ball.position.z = player.position.z + 2;
     }
