@@ -166,23 +166,24 @@
     player.position.x += dirX * speed;
     player.position.z += dirZ * speed;
 
-    // Kiểm tra khoảng cách với bóng
+    // Tính khoảng cách tới bóng
     const dist = player.position.distanceTo(ball.position);
     ring.position.set(player.position.x, 0.1, player.position.z);
     ring.visible = dist < 3;
 
-    // Nếu trong vùng gần bóng và bóng không đang bay, bóng đi theo
-    if (dist < 3 && ballVelocity.length() < 0.01) {
-      ball.position.x = player.position.x;
-      ball.position.z = player.position.z + 2;
-    }
-
     // Cập nhật bóng nếu đang bay
     if (ballVelocity.length() > 0.01) {
       ball.position.add(ballVelocity);
-      ballVelocity.multiplyScalar(0.96); // giảm dần tốc độ
-    } else {
-      ballVelocity.set(0, 0, 0); // reset
+      ballVelocity.multiplyScalar(0.96); // giảm dần
+      if (ballVelocity.length() < 0.05) {
+        ballVelocity.set(0, 0, 0); // ép dừng
+      }
+    }
+
+    // Nếu gần bóng và bóng đứng yên thì "nhặt"
+    if (dist < 3 && ballVelocity.length() === 0) {
+      ball.position.x = player.position.x;
+      ball.position.z = player.position.z + 2;
     }
 
     renderer.render(scene, camera);
