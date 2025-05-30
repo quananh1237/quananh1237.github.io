@@ -1,24 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Quân Anh 7B</title>
+  <meta charset="UTF-8" />
+  <title>Trang web đầu tiên</title>
   <style>
     html, body {
       height: 100%;
-      margin: 0;
-      padding: 0;
-      background-color: #a8d0e6; /* Nền xanh nước biển nhạt */
+      margin: 0; padding: 0;
+      background-color: #a8d0e6;
       font-family: Arial, sans-serif;
       text-align: center;
+      position: relative;
     }
 
     .content {
-      padding-top: 40px; /* Đẩy nội dung xuống cách đỉnh 40px */
+      padding-top: 40px;
+      z-index: 1;
+      position: relative;
+    }
+
+    .corner-image {
+      position: fixed; /* Để cố định khi cuộn */
+      top: 10px;        /* cách trên 10px */
+      right: 10px;      /* cách phải 10px */
+      width: 150px;     /* kích thước ảnh */
+      height: auto;
+      z-index: 10;      /* nằm trên cùng */
+      border-radius: 8px; /* bo góc cho đẹp */
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
   </style>
 </head>
 <body>
+  <img class="corner-image" src="https://i.pinimg.com/236x/f1/1b/15/f11b15de86850801a392a14aef7e2dc8.jpg" alt="Ảnh góc" />
   <div class="content">
     <h2>Xin chào 🤡</h2>
     <p>Đây là trang web của Con bò biết nói 🗿</p>
