@@ -2,154 +2,96 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>Game Đá Bóng Đơn Giản</title>
+  <title>Sân bóng 3D đơn giản</title>
   <style>
-    body, html {
-      margin: 0; padding: 0; height: 100%;
-      font-family: Arial, sans-serif;
-      background: url('https://i.pinimg.com/736x/0b/31/e4/0b31e4c453a4dc3aee95ee7a4eb16ea6.jpg') no-repeat center center fixed;
-      background-size: cover;
-      overflow: hidden;
-      position: relative;
-    }
-
-    /* Nút di chuyển bên trái */
-    .left-controls {
-      position: fixed;
-      bottom: 50px;
-      left: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .left-controls button {
-      width: 50px;
-      height: 50px;
-      font-size: 18px;
-      border-radius: 8px;
-      border: none;
-      background: rgba(255,255,255,0.7);
-      cursor: pointer;
-      user-select: none;
-      box-shadow: 0 0 5px rgba(0,0,0,0.3);
-      transition: background 0.3s;
-    }
-
-    .left-controls button:hover {
-      background: rgba(255,255,255,1);
-    }
-
-    /* Nút hành động bên phải */
-    .right-controls {
-      position: fixed;
-      bottom: 50px;
-      right: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .right-controls button {
-      width: 70px;
-      height: 50px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: none;
-      background: rgba(255,255,255,0.7);
-      cursor: pointer;
-      user-select: none;
-      box-shadow: 0 0 5px rgba(0,0,0,0.3);
-      transition: background 0.3s;
-    }
-
-    .right-controls button:hover {
-      background: rgba(255,255,255,1);
-    }
-
-    /* Vị trí của quả bóng (ví dụ) */
-    #ball {
-      position: absolute;
-      bottom: 150px;
-      left: 50%;
-      width: 50px;
-      height: 50px;
-      margin-left: -25px;
-      background: url('https://upload.wikimedia.org/wikipedia/commons/e/e2/Soccer_Ball.svg') no-repeat center center;
-      background-size: contain;
-      transition: left 0.2s, bottom 0.2s;
-    }
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
   </style>
 </head>
 <body>
-
-  <!-- Quả bóng -->
-  <div id="ball"></div>
-
-  <!-- Nút di chuyển -->
-  <div class="left-controls">
-    <button id="moveUp">↑</button>
-    <button id="moveLeft">←</button>
-    <button id="moveDown">↓</button>
-    <button id="moveRight">→</button>
-  </div>
-
-  <!-- Nút hành động -->
-  <div class="right-controls">
-    <button id="shoot">Shoot</button>
-    <button id="pass">Pass</button>
-    <button id="speed">Speed</button>
-  </div>
-
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/controls/OrbitControls.js"></script>
   <script>
-    const ball = document.getElementById('ball');
+    // Scene, camera, renderer
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x87ceeb); // trời xanh nhạt
 
-    // Bắt đầu vị trí
-    let posX = window.innerWidth / 2 - 25; // vị trí trái (center)
-    let posY = window.innerHeight - 150;   // vị trí dưới
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 1, 1000);
+    camera.position.set(0, 150, 200);
 
-    function updateBallPosition() {
-      ball.style.left = posX + 'px';
-      ball.style.bottom = (window.innerHeight - posY) + 'px';
+    const renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Controls để xoay zoom sân
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.target.set(0, 0, 0);
+    controls.update();
+
+    // Ánh sáng
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(100, 200, 100);
+    scene.add(directionalLight);
+
+    // Mặt sân bóng (hình chữ nhật)
+    const fieldWidth = 120;
+    const fieldHeight = 80;
+
+    const fieldGeometry = new THREE.PlaneGeometry(fieldWidth, fieldHeight);
+    const fieldMaterial = new THREE.MeshPhongMaterial({color: 0x007a0d});
+    const field = new THREE.Mesh(fieldGeometry, fieldMaterial);
+    field.rotation.x = -Math.PI / 2; // xoay ngang
+    scene.add(field);
+
+    // Vạch sân (dùng các đường line)
+    const lineMaterial = new THREE.LineBasicMaterial({color: 0xffffff, linewidth: 2});
+    const linePoints = [];
+
+    // Đường biên ngoài
+    linePoints.push(new THREE.Vector3(-fieldWidth/2, 0.1, -fieldHeight/2));
+    linePoints.push(new THREE.Vector3(fieldWidth/2, 0.1, -fieldHeight/2));
+    linePoints.push(new THREE.Vector3(fieldWidth/2, 0.1, fieldHeight/2));
+    linePoints.push(new THREE.Vector3(-fieldWidth/2, 0.1, fieldHeight/2));
+    linePoints.push(new THREE.Vector3(-fieldWidth/2, 0.1, -fieldHeight/2));
+
+    // Đường giữa sân
+    linePoints.push(new THREE.Vector3(0, 0.1, -fieldHeight/2));
+    linePoints.push(new THREE.Vector3(0, 0.1, fieldHeight/2));
+
+    // Tạo line
+    const lineGeometry = new THREE.BufferGeometry().setFromPoints(linePoints);
+    const lines = new THREE.Line(lineGeometry, lineMaterial);
+    scene.add(lines);
+
+    // Vòng tròn giữa sân
+    const circleRadius = 10;
+    const circleSegments = 64;
+    const circleGeometry = new THREE.CircleGeometry(circleRadius, circleSegments);
+    // Xóa mặt trong, chỉ giữ viền
+    circleGeometry.vertices.shift();
+    const circleMaterial = new THREE.LineBasicMaterial({color: 0xffffff});
+    const circle = new THREE.LineLoop(circleGeometry, circleMaterial);
+    circle.rotation.x = -Math.PI / 2;
+    circle.position.y = 0.1;
+    scene.add(circle);
+
+    // Hàm render
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
     }
+    animate();
 
-    updateBallPosition();
-
-    // Khoảng di chuyển mỗi lần (px)
-    const step = 20;
-
-    document.getElementById('moveUp').addEventListener('click', () => {
-      if(posY < window.innerHeight - 50) posY += step;
-      updateBallPosition();
-    });
-
-    document.getElementById('moveDown').addEventListener('click', () => {
-      if(posY > 50) posY -= step;
-      updateBallPosition();
-    });
-
-    document.getElementById('moveLeft').addEventListener('click', () => {
-      if(posX > 0) posX -= step;
-      updateBallPosition();
-    });
-
-    document.getElementById('moveRight').addEventListener('click', () => {
-      if(posX < window.innerWidth - 50) posX += step;
-      updateBallPosition();
-    });
-
-    document.getElementById('shoot').addEventListener('click', () => {
-      alert('Shoot! (Chưa có logic)');
-    });
-
-    document.getElementById('pass').addEventListener('click', () => {
-      alert('Pass! (Chưa có logic)');
-    });
-
-    document.getElementById('speed').addEventListener('click', () => {
-      alert('Speed boost! (Chưa có logic)');
+    // Resize window
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth/window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
     });
   </script>
-
 </body>
 </html>
