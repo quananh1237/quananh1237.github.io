@@ -1,74 +1,50 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Game Sút Bóng</title>
+  <meta charset="UTF-8" />
+  <title>Trang Game của Tôi</title>
   <style>
     body {
-      margin: 0;
-      background: #a8d0e6;
       font-family: Arial, sans-serif;
-      overflow: hidden;
+      background: #a8d0e6;
+      margin: 0; padding: 20px;
+      display: flex; flex-wrap: wrap; justify-content: center;
     }
-
-    /* Menu */
-    #menu {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background-color: black;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    #menu img {
-      max-width: 80%;
-      border: 5px solid white;
-      margin-bottom: 20px;
-    }
-
-    #startButton {
-      padding: 12px 24px;
-      font-size: 20px;
-      background-color: yellow;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    /* Game */
-    #gameArea {
-      display: none;
-      text-align: center;
-    }
-
-    #score {
-      color: white;
-      font-size: 24px;
+    .game-card {
+      width: 200px;
       margin: 10px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.2);
+      cursor: pointer;
+      text-align: center;
+      transition: transform 0.3s;
     }
-
-    #gameCanvas {
-      background: green;
-      display: block;
-      margin: auto;
-      border: 4px solid white;
+    .game-card:hover {
+      transform: scale(1.05);
+    }
+    .game-card img {
+      width: 100%;
+      border-radius: 8px 8px 0 0;
+    }
+    .game-card p {
+      margin: 10px 0;
+      font-weight: bold;
+      color: #333;
     }
   </style>
 </head>
 <body>
-
-  <!-- Menu mở đầu -->
-  <div id="menu">
-    <img src="https://i.pinimg.com/736x/0c/55/b4/0c55b4d81eecdd46b6a4ff95d0eeb23c.jpg" alt="Menu Game">
-    <button id="startButton">Bắt đầu chơi</button>
+  <div class="game-card" onclick="location.href='flappybird.html'">
+    <img src="https://i.pinimg.com/originals/cc/98/01/cc98018d3a04bda1c3aa4f6a5e27a040.png" alt="Flappy Bird" />
+    <p>Flappy Bird</p>
   </div>
 
-  <!-- Game -->
-  <div id="gameArea">
-    <div id="score">Ghi bàn: 0</div>
-    <canvas id="gameCanvas" width="400" height="600"></canvas>
-    <audio id="kick-sound" src="https://freesound.org/data/previews/341/341695_3248244-lq.mp3"></audio>
-  </
+  <div class="game-card" onclick="location.href='kickball.html'">
+    <img src="https://hoanghamobile.com/tin-tuc/wp-content/uploads/2024/05/da-bong-online-16.jpg" alt="Game Đá Bóng" />
+    <p>Game Đá Bóng</p>
+  </div>
+
+  <!-- Thêm card game khác ở đây -->
+</body>
+</html>
