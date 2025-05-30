@@ -1,104 +1,97 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <title>Sân Bóng 3D Đơn Giản</title>
+  <meta charset="UTF-8">
+  <title>Sân Bóng 3D</title>
   <style>
-    body, html {
-      margin: 0; padding: 0; overflow: hidden;
-      height: 100%; width: 100%;
-      background: #87ceeb; /* trời xanh */
-      display: flex; justify-content: center; align-items: center;
-    }
-    #canvas-container {
-      width: 800px;
-      height: 450px;
-      border: 2px solid #444;
-      box-shadow: 0 0 15px rgba(0,0,0,0.3);
-    }
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
   </style>
 </head>
 <body>
-  <div id="canvas-container"></div>
+  <!-- Thêm âm thanh cổ vũ -->
+  <audio id="cheer" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_476ca9f1f1.mp3?filename=crowd-cheer-14604.mp3" autoplay loop></audio>
 
-  <!-- Thư viện Three.js -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+  <!-- Script Three.js từ CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.155/build/three.min.js"></script>
+
   <script>
-    // Tạo scene, camera, renderer
+    // Cảnh, Camera, Renderer
     const scene = new THREE.Scene();
-
-    const camera = new THREE.PerspectiveCamera(45, 800/450, 0.1, 1000);
-    camera.position.set(0, 50, 80);
-    camera.lookAt(0, 0, 0);
-
-    const renderer = new THREE.WebGLRenderer({antialias: true});
-    renderer.setSize(800, 450);
-    document.getElementById('canvas-container').appendChild(renderer.domElement);
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
     // Ánh sáng
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(10, 20, 10);
+    const light = new THREE.AmbientLight(0xffffff, 1);
     scene.add(light);
 
-    // Mặt sân bóng (hình chữ nhật màu xanh)
-    const fieldGeometry = new THREE.BoxGeometry(70, 1, 40);
-    const fieldMaterial = new THREE.MeshPhongMaterial({ color: 0x0b6623 }); // xanh cỏ
+    // Sân bóng
+    const fieldGeometry = new THREE.PlaneGeometry(100, 60);
+    const fieldMaterial = new THREE.MeshPhongMaterial({ color: 0x228B22 });
     const field = new THREE.Mesh(fieldGeometry, fieldMaterial);
-    field.position.y = -0.5; // cho sân hơi thấp dưới trục
+    field.rotation.x = -Math.PI / 2;
     scene.add(field);
 
-    // Vạch kẻ sân (dùng plane trong suốt có vạch trắng)
-    const lineMaterial = new THREE.LineBasicMaterial({color: 0xffffff});
-    
-    function createLine(x1, z1, x2, z2) {
-      const points = [];
-      points.push(new THREE.Vector3(x1, 0.01, z1));
-      points.push(new THREE.Vector3(x2, 0.01, z2));
-      const geometry = new THREE.BufferGeometry().setFromPoints(points);
-      return new THREE.Line(geometry, lineMaterial);
-    }
-
-    // Vạch giữa sân
-    const midLine = createLine(-35, 0, 35, 0);
+    // Vạch giữa sân (màu trắng)
+    const lineGeometry = new THREE.PlaneGeometry(0.5, 60);
+    const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const midLine = new THREE.Mesh(lineGeometry, lineMaterial);
+    midLine.rotation.x = -Math.PI / 2;
     scene.add(midLine);
 
-    // Vòng tròn giữa sân (dùng CircleGeometry)
-    const circleGeometry = new THREE.CircleGeometry(7, 32);
-    const circleMaterial = new THREE.MeshBasicMaterial({color: 0xffffff, side: THREE.DoubleSide});
-    const circle = new THREE.Mesh(circleGeometry, circleMaterial);
-    circle.rotation.x = Math.PI / 2;
-    circle.position.y = 0.02;
-    scene.add(circle);
+    // Gôn (2 đầu sân)
+    function createGoal(x) {
+      const postMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      const post1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 5, 0.5), postMaterial);
+      const post2 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 5, 0.5), postMaterial);
+      const crossbar = new THREE.Mesh(new THREE.BoxGeometry(7, 0.5, 0.5), postMaterial);
+      post1.position.set(x, 2.5, -3.5);
+      post2.position.set(x, 2.5, 3.5);
+      crossbar.position.set(x, 5, 0);
+      scene.add(post1, post2, crossbar);
+    }
 
-    // Biên sân (vạch dài 2 bên)
-    const leftLine = createLine(-35, -20, 35, -20);
-    const rightLine = createLine(-35, 20, 35, 20);
-    scene.add(leftLine);
-    scene.add(rightLine);
+    createGoal(-50); // Gôn bên trái
+    createGoal(50);  // Gôn bên phải
 
-    // Vạch 16m50
-    const line1 = createLine(-35, -10, -25, -10);
-    const line2 = createLine(-35, 10, -25, 10);
-    const line3 = createLine(35, -10, 25, -10);
-    const line4 = createLine(35, 10, 25, 10);
-    scene.add(line1);
-    scene.add(line2);
-    scene.add(line3);
-    scene.add(line4);
-
-    // Quả bóng (hình cầu nhỏ màu trắng đen)
-    const ballGeometry = new THREE.SphereGeometry(1.5, 32, 32);
-    const ballMaterial = new THREE.MeshPhongMaterial({color: 0xffffff});
-    const ball = new THREE.Mesh(ballGeometry, ballMaterial);
-    ball.position.set(0, 1.5, 0);
+    // Quả bóng
+    const ball = new THREE.Mesh(
+      new THREE.SphereGeometry(1, 32, 32),
+      new THREE.MeshStandardMaterial({ color: 0xffffff })
+    );
+    ball.position.set(0, 1, 0);
     scene.add(ball);
 
-    // Animation: quả bóng quay nhẹ
+    // Player (đại diện đơn giản)
+    const player = new THREE.Mesh(
+      new THREE.BoxGeometry(1, 2, 1),
+      new THREE.MeshStandardMaterial({ color: 0x0000ff })
+    );
+    player.position.set(0, 1, -10);
+    scene.add(player);
+
+    // Khán đài (xung quanh sân)
+    const standMaterial = new THREE.MeshBasicMaterial({ color: 0x808080 });
+    const stand1 = new THREE.Mesh(new THREE.BoxGeometry(100, 10, 2), standMaterial);
+    stand1.position.set(0, 5, -31);
+    const stand2 = stand1.clone(); stand2.position.z = 31;
+    const stand3 = new THREE.Mesh(new THREE.BoxGeometry(2, 10, 60), standMaterial);
+    stand3.position.set(-51, 5, 0);
+    const stand4 = stand3.clone(); stand4.position.x = 51;
+    scene.add(stand1, stand2, stand3, stand4);
+
+    // Camera ban đầu
+    camera.position.set(0, 40, 80);
+    camera.lookAt(0, 0, 0);
+
+    // Render loop
     function animate() {
       requestAnimationFrame(animate);
-      ball.rotation.y += 0.01;
       renderer.render(scene, camera);
     }
+
     animate();
   </script>
 </body>
