@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Search game</title>
+  <title>Search Game</title>
   <style>
     body {
       background-color: #a8d0e6;
@@ -10,10 +10,86 @@
       text-align: center;
       padding-top: 100px;
     }
+
+    input[type="text"] {
+      font-size: 20px;
+      padding: 10px;
+      width: 250px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    #suggestions {
+      margin-top: 10px;
+      background-color: white;
+      width: 250px;
+      margin-left: auto;
+      margin-right: auto;
+      border-radius: 6px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+      text-align: left;
+      display: none;
+    }
+
+    .suggestion-item {
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .suggestion-item:hover {
+      background-color: #f0f0f0;
+    }
   </style>
 </head>
 <body>
-  <h1>Search game</h1>
-  <p>Đây là giao diện tìm kiếm game của bạn!</p>
+
+  <input type="text" id="search" placeholder="Tìm game..." oninput="showSuggestions()" />
+  <div id="suggestions"></div>
+
+  <script>
+    const games = [
+      "Flappy Bird",
+      "Minecraft",
+      "Subway Surfers",
+      "Among Us",
+      "Candy Crush",
+      "Slither.io",
+      "2048",
+      "Happy Wheels",
+      "Crossy Road"
+    ];
+
+    function showSuggestions() {
+      const input = document.getElementById("search").value.toLowerCase();
+      const suggestions = document.getElementById("suggestions");
+
+      if (input === "") {
+        suggestions.style.display = "none";
+        return;
+      }
+
+      const matched = games.filter(game => game.toLowerCase().includes(input));
+
+      if (matched.length === 0) {
+        suggestions.style.display = "none";
+        return;
+      }
+
+      suggestions.innerHTML = "";
+      matched.forEach(game => {
+        const item = document.createElement("div");
+        item.classList.add("suggestion-item");
+        item.innerText = game;
+        item.onclick = () => {
+          document.getElementById("search").value = game;
+          suggestions.style.display = "none";
+        };
+        suggestions.appendChild(item);
+      });
+
+      suggestions.style.display = "block";
+    }
+  </script>
+
 </body>
 </html>
