@@ -28,7 +28,7 @@
       z-index: 10;
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      cursor: pointer; /* Con trỏ tay khi hover */
+      cursor: pointer;
     }
 
     .corner-image-right {
@@ -41,22 +41,16 @@
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
-
-    #search-text {
-      margin-top: 30px;
-      font-size: 24px;
-      color: #333;
-      display: none; /* ẩn ban đầu */
-    }
   </style>
 </head>
 <body>
-  <img 
-    class="corner-image-left" 
-    src="https://png.pngtree.com/element_our/20190528/ourlarge/pngtree-magnifying-glass-icon-image_1128382.jpg" 
-    alt="Kính lúp"
-    onclick="showSearch()"
-  />
+  <a href="search.html">
+    <img 
+      class="corner-image-left" 
+      src="https://png.pngtree.com/element_our/20190528/ourlarge/pngtree-magnifying-glass-icon-image_1128382.jpg" 
+      alt="Kính lúp"
+    />
+  </a>
   <img 
     class="corner-image-right" 
     src="https://i.pinimg.com/236x/f1/1b/15/f11b15de86850801a392a14aef7e2dc8.jpg" 
@@ -65,19 +59,6 @@
   <div class="content">
     <h2>Xin chào 🤡</h2>
     <p>Đây là trang web của Con bò biết nói 🗿</p>
-    <div id="search-text">Search game</div>
   </div>
-
-  <script>
-    function showSearch() {
-      const searchText = document.getElementById('search-text');
-      // Hiện chữ khi bấm, nếu đã hiện thì ẩn đi (toggle)
-      if (searchText.style.display === 'none' || searchText.style.display === '') {
-        searchText.style.display = 'block';
-      } else {
-        searchText.style.display = 'none';
-      }
-    }
-  </script>
 </body>
 </html>
