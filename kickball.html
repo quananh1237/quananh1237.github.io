@@ -1,12 +1,155 @@
-<body>
-  <!-- Nút Out -->
-  <button id="outButton">🏠 Trang chủ</button>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Game Đá Bóng Đơn Giản</title>
+  <style>
+    body, html {
+      margin: 0; padding: 0; height: 100%;
+      font-family: Arial, sans-serif;
+      background: url('https://i.pinimg.com/736x/0b/31/e4/0b31e4c453a4dc3aee95ee7a4eb16ea6.jpg') no-repeat center center fixed;
+      background-size: cover;
+      overflow: hidden;
+      position: relative;
+    }
 
-  <!-- Nội dung game của bạn ở đây -->
+    /* Nút di chuyển bên trái */
+    .left-controls {
+      position: fixed;
+      bottom: 50px;
+      left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .left-controls button {
+      width: 50px;
+      height: 50px;
+      font-size: 18px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(255,255,255,0.7);
+      cursor: pointer;
+      user-select: none;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
+      transition: background 0.3s;
+    }
+
+    .left-controls button:hover {
+      background: rgba(255,255,255,1);
+    }
+
+    /* Nút hành động bên phải */
+    .right-controls {
+      position: fixed;
+      bottom: 50px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .right-controls button {
+      width: 70px;
+      height: 50px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(255,255,255,0.7);
+      cursor: pointer;
+      user-select: none;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
+      transition: background 0.3s;
+    }
+
+    .right-controls button:hover {
+      background: rgba(255,255,255,1);
+    }
+
+    /* Vị trí của quả bóng (ví dụ) */
+    #ball {
+      position: absolute;
+      bottom: 150px;
+      left: 50%;
+      width: 50px;
+      height: 50px;
+      margin-left: -25px;
+      background: url('https://upload.wikimedia.org/wikipedia/commons/e/e2/Soccer_Ball.svg') no-repeat center center;
+      background-size: contain;
+      transition: left 0.2s, bottom 0.2s;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Quả bóng -->
+  <div id="ball"></div>
+
+  <!-- Nút di chuyển -->
+  <div class="left-controls">
+    <button id="moveUp">↑</button>
+    <button id="moveLeft">←</button>
+    <button id="moveDown">↓</button>
+    <button id="moveRight">→</button>
+  </div>
+
+  <!-- Nút hành động -->
+  <div class="right-controls">
+    <button id="shoot">Shoot</button>
+    <button id="pass">Pass</button>
+    <button id="speed">Speed</button>
+  </div>
 
   <script>
-    document.getElementById("outButton").addEventListener("click", () => {
-      window.location.href = "index.html";
+    const ball = document.getElementById('ball');
+
+    // Bắt đầu vị trí
+    let posX = window.innerWidth / 2 - 25; // vị trí trái (center)
+    let posY = window.innerHeight - 150;   // vị trí dưới
+
+    function updateBallPosition() {
+      ball.style.left = posX + 'px';
+      ball.style.bottom = (window.innerHeight - posY) + 'px';
+    }
+
+    updateBallPosition();
+
+    // Khoảng di chuyển mỗi lần (px)
+    const step = 20;
+
+    document.getElementById('moveUp').addEventListener('click', () => {
+      if(posY < window.innerHeight - 50) posY += step;
+      updateBallPosition();
+    });
+
+    document.getElementById('moveDown').addEventListener('click', () => {
+      if(posY > 50) posY -= step;
+      updateBallPosition();
+    });
+
+    document.getElementById('moveLeft').addEventListener('click', () => {
+      if(posX > 0) posX -= step;
+      updateBallPosition();
+    });
+
+    document.getElementById('moveRight').addEventListener('click', () => {
+      if(posX < window.innerWidth - 50) posX += step;
+      updateBallPosition();
+    });
+
+    document.getElementById('shoot').addEventListener('click', () => {
+      alert('Shoot! (Chưa có logic)');
+    });
+
+    document.getElementById('pass').addEventListener('click', () => {
+      alert('Pass! (Chưa có logic)');
+    });
+
+    document.getElementById('speed').addEventListener('click', () => {
+      alert('Speed boost! (Chưa có logic)');
     });
   </script>
+
 </body>
+</html>
