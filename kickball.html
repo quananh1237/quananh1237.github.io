@@ -98,7 +98,6 @@
   ball.position.set(5, 1, 0);
   scene.add(ball);
 
-  // Vòng xanh dưới chân
   const ringGeometry = new THREE.RingGeometry(1.5, 2, 32);
   const ringMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00, side: THREE.DoubleSide});
   const ring = new THREE.Mesh(ringGeometry, ringMaterial);
@@ -144,14 +143,16 @@
     dirZ = 0;
   });
 
+  let ballVelocity = new THREE.Vector3(0, 0, 0);
+
   document.getElementById("shoot").addEventListener("click", () => {
     const dir = new THREE.Vector3().subVectors(ball.position, player.position).normalize();
-    ball.position.add(dir.multiplyScalar(5));
+    ballVelocity.copy(dir.multiplyScalar(1.5));
   });
 
   document.getElementById("pass").addEventListener("click", () => {
     const dir = new THREE.Vector3().subVectors(ball.position, player.position).normalize();
-    ball.position.add(dir.multiplyScalar(2));
+    ballVelocity.copy(dir.multiplyScalar(0.7));
   });
 
   document.getElementById("speed").addEventListener("click", () => {
@@ -161,19 +162,27 @@
   function animate() {
     requestAnimationFrame(animate);
 
-    // Di chuyển cầu thủ theo hướng joystick
+    // Di chuyển cầu thủ
     player.position.x += dirX * speed;
     player.position.z += dirZ * speed;
 
-    // Kiểm tra gần bóng
+    // Kiểm tra khoảng cách với bóng
     const dist = player.position.distanceTo(ball.position);
     ring.position.set(player.position.x, 0.1, player.position.z);
     ring.visible = dist < 3;
 
-    // Nếu trong vùng gần bóng, bóng đi theo
-    if (dist < 3) {
+    // Nếu trong vùng gần bóng và bóng không đang bay, bóng đi theo
+    if (dist < 3 && ballVelocity.length() < 0.01) {
       ball.position.x = player.position.x;
       ball.position.z = player.position.z + 2;
+    }
+
+    // Cập nhật bóng nếu đang bay
+    if (ballVelocity.length() > 0.01) {
+      ball.position.add(ballVelocity);
+      ballVelocity.multiplyScalar(0.96); // giảm dần tốc độ
+    } else {
+      ballVelocity.set(0, 0, 0); // reset
     }
 
     renderer.render(scene, camera);
