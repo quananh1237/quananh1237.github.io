@@ -81,39 +81,65 @@
   field.rotation.x = -Math.PI / 2;
   scene.add(field);
 
-  // Viền sân bóng
-  const borderMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
-  const borderThickness = 0.5;
+  // Viền trắng chia sân và vòng giữa
+  const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+  const fieldLines = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(0, 0.1, -30), new THREE.Vector3(0, 0.1, 30)
+  ]);
+  const midLine = new THREE.Line(fieldLines, lineMaterial);
+  scene.add(midLine);
 
-  const borders = [
-    new THREE.BoxGeometry(100, 1, borderThickness), // Trên
-    new THREE.BoxGeometry(100, 1, borderThickness), // Dưới
-    new THREE.BoxGeometry(borderThickness, 1, 60),  // Trái
-    new THREE.BoxGeometry(borderThickness, 1, 60)   // Phải
-  ];
+  const circleGeometry = new THREE.RingGeometry(7.9, 8, 64);
+  const circleMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+  const centerCircle = new THREE.Mesh(circleGeometry, circleMaterial);
+  centerCircle.rotation.x = -Math.PI / 2;
+  scene.add(centerCircle);
 
-  const borderPositions = [
-    [0, 0.1, -30],  // Trên
-    [0, 0.1, 30],   // Dưới
-    [-50, 0.1, 0],  // Trái
-    [50, 0.1, 0]    // Phải
-  ];
+  const centerDot = new THREE.Mesh(new THREE.CircleGeometry(0.3, 16), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+  centerDot.rotation.x = -Math.PI / 2;
+  centerDot.position.y = 0.1;
+  scene.add(centerDot);
 
-  for (let i = 0; i < borders.length; i++) {
-    const mesh = new THREE.Mesh(borders[i], borderMaterial);
-    mesh.position.set(...borderPositions[i]);
-    scene.add(mesh);
+  // Vùng cấm địa
+  const boxGeometry = new THREE.PlaneGeometry(16, 30);
+  const boxMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+  const leftBox = new THREE.Mesh(boxGeometry, boxMaterial);
+  leftBox.rotation.x = -Math.PI / 2;
+  leftBox.position.set(-42, 0.05, 0);
+  scene.add(leftBox);
+  const rightBox = leftBox.clone();
+  rightBox.position.x = 42;
+  scene.add(rightBox);
+
+  // Gôn có lưới (dạng khung)
+  function createGoal(x) {
+    const postMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const post1 = new THREE.Mesh(new THREE.BoxGeometry(1, 5, 1), postMat);
+    const post2 = post1.clone();
+    const crossbar = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 10), postMat);
+    post1.position.set(x, 2.5, -5);
+    post2.position.set(x, 2.5, 5);
+    crossbar.position.set(x, 5, 0);
+    scene.add(post1, post2, crossbar);
   }
+  createGoal(-49.5);
+  createGoal(49.5);
 
-  const goalMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
-  const goalGeometry = new THREE.BoxGeometry(1, 5, 10);
-  const goalLeft = new THREE.Mesh(goalGeometry, goalMaterial);
-  goalLeft.position.set(-50, 2.5, 0);
-  scene.add(goalLeft);
-  const goalRight = new THREE.Mesh(goalGeometry, goalMaterial);
-  goalRight.position.set(50, 2.5, 0);
-  scene.add(goalRight);
+  // Rào chắn
+  const wallMaterial = new THREE.MeshBasicMaterial({color: 0x888888, opacity: 0.3, transparent: true});
+  const walls = [
+    new THREE.Mesh(new THREE.BoxGeometry(0.5, 5, 60), wallMaterial),
+    new THREE.Mesh(new THREE.BoxGeometry(0.5, 5, 60), wallMaterial),
+    new THREE.Mesh(new THREE.BoxGeometry(100, 5, 0.5), wallMaterial),
+    new THREE.Mesh(new THREE.BoxGeometry(100, 5, 0.5), wallMaterial)
+  ];
+  walls[0].position.set(-50.25, 2.5, 0);
+  walls[1].position.set(50.25, 2.5, 0);
+  walls[2].position.set(0, 2.5, -30.25);
+  walls[3].position.set(0, 2.5, 30.25);
+  walls.forEach(w => scene.add(w));
 
+  // Cầu thủ
   const player = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 4, 32), new THREE.MeshPhongMaterial({color: 0xff0000}));
   player.position.set(0, 2, 0);
   scene.add(player);
@@ -138,9 +164,7 @@
   let isDragging = false, speed = 0.5;
   let dirX = 0, dirZ = 0;
 
-  container.addEventListener("touchstart", (e) => {
-    isDragging = true;
-  });
+  container.addEventListener("touchstart", (e) => { isDragging = true; });
   container.addEventListener("touchmove", (e) => {
     e.preventDefault();
     if (isDragging) {
@@ -158,7 +182,6 @@
       dirZ = dy / max;
     }
   });
-
   container.addEventListener("touchend", () => {
     isDragging = false;
     joystick.style.left = "20px";
@@ -170,13 +193,13 @@
   let ballVelocity = new THREE.Vector3(0, 0, 0);
 
   document.getElementById("shoot").addEventListener("click", () => {
-    const dir = new THREE.Vector3().subVectors(ball.position, player.position).normalize();
-    ballVelocity.copy(dir.multiplyScalar(1.5));
+    const angle = player.rotation.y;
+    ballVelocity.set(Math.sin(angle), 0, Math.cos(angle)).multiplyScalar(1.5);
   });
 
   document.getElementById("pass").addEventListener("click", () => {
-    const dir = new THREE.Vector3().subVectors(ball.position, player.position).normalize();
-    ballVelocity.copy(dir.multiplyScalar(0.7));
+    const angle = player.rotation.y;
+    ballVelocity.set(Math.sin(angle), 0, Math.cos(angle)).multiplyScalar(0.7);
   });
 
   document.getElementById("speed").addEventListener("click", () => {
@@ -187,30 +210,36 @@
     requestAnimationFrame(animate);
 
     // Di chuyển cầu thủ
-    player.position.x += dirX * speed;
-    player.position.z += dirZ * speed;
+    if (dirX !== 0 || dirZ !== 0) {
+      player.position.x += dirX * speed;
+      player.position.z += dirZ * speed;
+      const angle = Math.atan2(dirX, dirZ);
+      player.rotation.y = angle;
+    }
 
-    // Tính khoảng cách tới bóng
+    // Giới hạn cầu thủ trong sân
+    player.position.x = Math.max(-49, Math.min(49, player.position.x));
+    player.position.z = Math.max(-29, Math.min(29, player.position.z));
+
+    // Cập nhật bóng
+    if (ballVelocity.length() > 0.01) {
+      ball.position.add(ballVelocity);
+      ballVelocity.multiplyScalar(0.96);
+    }
+
+    if (ballVelocity.length() < 0.05) ballVelocity.set(0, 0, 0);
+
+    // Bóng không tụt xuống
+    if (ball.position.y < 1) ball.position.y = 1;
+
+    // Cầu thủ gần bóng thì lấy bóng
     const dist = player.position.distanceTo(ball.position);
     ring.position.set(player.position.x, 0.1, player.position.z);
     ring.visible = dist < 3;
 
-    // Cập nhật bóng nếu đang bay
-    if (ballVelocity.length() > 0.01) {
-      ball.position.add(ballVelocity);
-      ballVelocity.multiplyScalar(0.96);
-      if (ballVelocity.length() < 0.05) {
-        ballVelocity.set(0, 0, 0);
-      }
-    }
-
-    // Ép bóng không tụt xuống dưới sân
-    if (ball.position.y < 1) ball.position.y = 1;
-
-    // Nếu gần bóng và bóng đứng yên thì "nhặt"
     if (dist < 3 && ballVelocity.length() === 0) {
-      ball.position.x = player.position.x;
-      ball.position.z = player.position.z + 2;
+      ball.position.x = player.position.x + Math.sin(player.rotation.y) * 2;
+      ball.position.z = player.position.z + Math.cos(player.rotation.y) * 2;
     }
 
     renderer.render(scene, camera);
