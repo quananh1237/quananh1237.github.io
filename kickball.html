@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Game Sút Bóng</title>
+  <style>
+    body {
+      margin: 0;
+      background: #a8d0e6;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    /* Menu */
+    #menu {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: black;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #menu img {
+      max-width: 80%;
+      border: 5px solid white;
+      margin-bottom: 20px;
+    }
+
+    #startButton {
+      padding: 12px 24px;
+      font-size: 20px;
+      background-color: yellow;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    /* Game */
+    #gameArea {
+      display: none;
+      text-align: center;
+    }
+
+    #score {
+      color: white;
+      font-size: 24px;
+      margin: 10px;
+    }
+
+    #gameCanvas {
+      background: green;
+      display: block;
+      margin: auto;
+      border: 4px solid white;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Menu mở đầu -->
+  <div id="menu">
+    <img src="https://i.pinimg.com/736x/0c/55/b4/0c55b4d81eecdd46b6a4ff95d0eeb23c.jpg" alt="Menu Game">
+    <button id="startButton">Bắt đầu chơi</button>
+  </div>
+
+  <!-- Game -->
+  <div id="gameArea">
+    <div id="score">Ghi bàn: 0</div>
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+    <audio id="kick-sound" src="https://freesound.org/data/previews/341/341695_3248244-lq.mp3"></audio>
+  </div>
+
+  <script>
+    // Xử lý hiển thị menu
+    const menu = document.getElementById("menu");
+    const gameArea = document.getElementById("gameArea");
+    const startBtn = document.getElementById("startButton");
+
+    startBtn.addEventListener("click", () => {
+      menu.style.display = "none";
+      gameArea.style.display = "block";
+    });
+
+    // Game logic
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const kickSound = document.getElementById("kick-sound");
+
+    let ball = { x: 200, y: 500, radius: 15, dy: 0, shot: false };
+    const goal = { x: 150, y: 50, width: 100, height: 20 };
+    let score = 0;
+
+    function drawBall() {
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+      ctx.fillStyle = "white";
+      ctx.fill();
+      ctx.closePath();
+    }
+
+    function drawGoal() {
+      ctx.fillStyle = "yellow";
+      ctx.fillRect(goal.x, goal.y, goal.width, goal.height);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawGoal();
+      drawBall();
+
+      if (ball.shot) {
+        ball.y += ball.dy;
+        if (ball.y <= goal.y + goal.height &&
+            ball.x > goal.x && ball.x < goal.x + goal.width) {
+          score++;
+          document.getElementById("score").innerText = "Ghi bàn: " + score;
+          resetBall();
+        } else if (ball.y < 0) {
+          resetBall();
+        }
+      }
+
+      requestAnimationFrame(draw);
+    }
+
+    function resetBall() {
+      ball.y = 500;
+      ball.dy = 0;
+      ball.shot = false;
+    }
+
+    canvas.addEventListener("click", () => {
+      if (!ball.shot) {
+        ball.dy = -5;
+        ball.shot = true;
+        kickSound.currentTime = 0;
+        kickSound.play();
+      }
+    });
+
+    draw();
+  </script>
+
+</body>
+</html>
