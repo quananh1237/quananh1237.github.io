@@ -81,6 +81,30 @@
   field.rotation.x = -Math.PI / 2;
   scene.add(field);
 
+  // Viền sân bóng
+  const borderMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
+  const borderThickness = 0.5;
+
+  const borders = [
+    new THREE.BoxGeometry(100, 1, borderThickness), // Trên
+    new THREE.BoxGeometry(100, 1, borderThickness), // Dưới
+    new THREE.BoxGeometry(borderThickness, 1, 60),  // Trái
+    new THREE.BoxGeometry(borderThickness, 1, 60)   // Phải
+  ];
+
+  const borderPositions = [
+    [0, 0.1, -30],  // Trên
+    [0, 0.1, 30],   // Dưới
+    [-50, 0.1, 0],  // Trái
+    [50, 0.1, 0]    // Phải
+  ];
+
+  for (let i = 0; i < borders.length; i++) {
+    const mesh = new THREE.Mesh(borders[i], borderMaterial);
+    mesh.position.set(...borderPositions[i]);
+    scene.add(mesh);
+  }
+
   const goalMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
   const goalGeometry = new THREE.BoxGeometry(1, 5, 10);
   const goalLeft = new THREE.Mesh(goalGeometry, goalMaterial);
@@ -174,11 +198,14 @@
     // Cập nhật bóng nếu đang bay
     if (ballVelocity.length() > 0.01) {
       ball.position.add(ballVelocity);
-      ballVelocity.multiplyScalar(0.96); // giảm dần
+      ballVelocity.multiplyScalar(0.96);
       if (ballVelocity.length() < 0.05) {
-        ballVelocity.set(0, 0, 0); // ép dừng
+        ballVelocity.set(0, 0, 0);
       }
     }
+
+    // Ép bóng không tụt xuống dưới sân
+    if (ball.position.y < 1) ball.position.y = 1;
 
     // Nếu gần bóng và bóng đứng yên thì "nhặt"
     if (dist < 3 && ballVelocity.length() === 0) {
