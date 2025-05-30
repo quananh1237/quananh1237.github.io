@@ -1,117 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Game Bóng Đá Mini</title>
-  <style>
-    body { margin: 0; overflow: hidden; }
-    canvas { display: block; }
-
-    .joystick-container {
-      position: absolute;
-      bottom: 80px;
-      left: 40px;
-      width: 100px;
-      height: 100px;
-      background: rgba(0,0,0,0.3);
-      border-radius: 50%;
-      touch-action: none;
-    }
-
-    .joystick {
-      width: 60px;
-      height: 60px;
-      background: #fff;
-      border-radius: 50%;
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      touch-action: none;
-    }
-
-    .buttons {
-      position: absolute;
-      bottom: 40px;
-      right: 30px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .buttons button {
-      width: 80px;
-      height: 40px;
-      border: none;
-      border-radius: 8px;
-      background-color: #444;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .buttons button:active {
-      background-color: #222;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Game Bóng Đá Mini - Fix Màn Hình Ngang + Camera + Bóng</title>
+<style>
+  html, body {
+    margin: 0; padding: 0; height: 100%; overflow: hidden;
+    display: flex; flex-direction: column;
+    background: #222;
+    user-select: none;
+  }
+  #game-container {
+    flex: 1 1 auto;
+    height: 80vh;
+    background: #228B22;
+    position: relative;
+  }
+  canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+  }
+  #ui {
+    height: 20vh;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    box-sizing: border-box;
+  }
+  .joystick-container {
+    width: 100px; height: 100px;
+    background: rgba(255 255 255 / 0.2);
+    border-radius: 50%;
+    position: relative;
+    touch-action: none;
+  }
+  .joystick {
+    width: 60px; height: 60px;
+    background: #fff;
+    border-radius: 50%;
+    position: absolute;
+    top: 20px; left: 20px;
+    touch-action: none;
+  }
+  .buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .buttons button {
+    width: 80px; height: 40px;
+    border: none;
+    border-radius: 8px;
+    background-color: #444;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .buttons button:active {
+    background-color: #222;
+  }
+</style>
 </head>
 <body>
-<div class="joystick-container" id="joystick-container">
-  <div class="joystick" id="joystick"></div>
-</div>
 
-<div class="buttons">
-  <button id="shoot">Shoot</button>
-  <button id="pass">Pass</button>
-  <button id="speed">Speed</button>
+<div id="game-container"></div>
+
+<div id="ui">
+  <div class="joystick-container" id="joystick-container">
+    <div class="joystick" id="joystick"></div>
+  </div>
+
+  <div class="buttons">
+    <button id="shoot">Shoot</button>
+    <button id="pass">Pass</button>
+    <button id="speed">Speed</button>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 <script>
+  const container = document.getElementById('game-container');
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-  const renderer = new THREE.WebGLRenderer({antialias: true});
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
+  const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  container.appendChild(renderer.domElement);
 
+  // Ánh sáng
   const light = new THREE.DirectionalLight(0xffffff, 1);
   light.position.set(50, 50, 50).normalize();
   scene.add(light);
 
-  const field = new THREE.Mesh(new THREE.PlaneGeometry(100, 60), new THREE.MeshPhongMaterial({color: 0x228B22}));
+  // Sân bóng
+  const field = new THREE.Mesh(
+    new THREE.PlaneGeometry(100, 60),
+    new THREE.MeshPhongMaterial({ color: 0x228B22 })
+  );
   field.rotation.x = -Math.PI / 2;
   scene.add(field);
 
-  // Viền trắng chia sân và vòng giữa
+  // Viền chia sân và vòng tròn giữa
   const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
-  const fieldLines = new THREE.BufferGeometry().setFromPoints([
+  const midLineGeo = new THREE.BufferGeometry().setFromPoints([
     new THREE.Vector3(0, 0.1, -30), new THREE.Vector3(0, 0.1, 30)
   ]);
-  const midLine = new THREE.Line(fieldLines, lineMaterial);
+  const midLine = new THREE.Line(midLineGeo, lineMaterial);
   scene.add(midLine);
 
-  const circleGeometry = new THREE.RingGeometry(7.9, 8, 64);
-  const circleMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
-  const centerCircle = new THREE.Mesh(circleGeometry, circleMaterial);
+  const centerCircle = new THREE.Mesh(
+    new THREE.RingGeometry(7.9, 8, 64),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
+  );
   centerCircle.rotation.x = -Math.PI / 2;
   scene.add(centerCircle);
 
-  const centerDot = new THREE.Mesh(new THREE.CircleGeometry(0.3, 16), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+  const centerDot = new THREE.Mesh(
+    new THREE.CircleGeometry(0.3, 16),
+    new THREE.MeshBasicMaterial({ color: 0xffffff })
+  );
   centerDot.rotation.x = -Math.PI / 2;
   centerDot.position.y = 0.1;
   scene.add(centerDot);
 
-  // Vùng cấm địa
+  // Vùng cấm địa (box)
   const boxGeometry = new THREE.PlaneGeometry(16, 30);
-  const boxMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+  const boxMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, opacity: 0.3, transparent: true });
   const leftBox = new THREE.Mesh(boxGeometry, boxMaterial);
   leftBox.rotation.x = -Math.PI / 2;
   leftBox.position.set(-42, 0.05, 0);
   scene.add(leftBox);
+
   const rightBox = leftBox.clone();
   rightBox.position.x = 42;
   scene.add(rightBox);
 
-  // Gôn có lưới (dạng khung)
+  // Gôn có lưới (khung)
   function createGoal(x) {
     const postMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
     const post1 = new THREE.Mesh(new THREE.BoxGeometry(1, 5, 1), postMat);
@@ -125,13 +152,13 @@
   createGoal(-49.5);
   createGoal(49.5);
 
-  // Rào chắn
+  // Rào chắn sân
   const wallMaterial = new THREE.MeshBasicMaterial({color: 0x888888, opacity: 0.3, transparent: true});
   const walls = [
-    new THREE.Mesh(new THREE.BoxGeometry(0.5, 5, 60), wallMaterial),
-    new THREE.Mesh(new THREE.BoxGeometry(0.5, 5, 60), wallMaterial),
-    new THREE.Mesh(new THREE.BoxGeometry(100, 5, 0.5), wallMaterial),
-    new THREE.Mesh(new THREE.BoxGeometry(100, 5, 0.5), wallMaterial)
+    new THREE.Mesh(new THREE.BoxGeometry(0.5, 5, 60), wallMaterial), // trái
+    new THREE.Mesh(new THREE.BoxGeometry(0.5, 5, 60), wallMaterial), // phải
+    new THREE.Mesh(new THREE.BoxGeometry(100, 5, 0.5), wallMaterial), // sau
+    new THREE.Mesh(new THREE.BoxGeometry(100, 5, 0.5), wallMaterial)  // trước
   ];
   walls[0].position.set(-50.25, 2.5, 0);
   walls[1].position.set(50.25, 2.5, 0);
@@ -144,10 +171,12 @@
   player.position.set(0, 2, 0);
   scene.add(player);
 
+  // Bóng
   const ball = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), new THREE.MeshPhongMaterial({color: 0xffffff}));
   ball.position.set(5, 1, 0);
   scene.add(ball);
 
+  // Vòng xanh dưới chân cầu thủ (hiện khi gần bóng)
   const ringGeometry = new THREE.RingGeometry(1.5, 2, 32);
   const ringMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00, side: THREE.DoubleSide});
   const ring = new THREE.Mesh(ringGeometry, ringMaterial);
@@ -155,34 +184,33 @@
   scene.add(ring);
   ring.visible = false;
 
+  // Camera mặc định
   camera.position.set(0, 50, 80);
   camera.lookAt(0, 0, 0);
 
-  // Joystick logic
+  // Joystick & điều khiển cầu thủ
   let joystick = document.getElementById("joystick");
-  let container = document.getElementById("joystick-container");
+  let containerJoystick = document.getElementById("joystick-container");
   let isDragging = false, speed = 0.5;
   let dirX = 0, dirZ = 0;
 
-  container.addEventListener("touchstart", (e) => { isDragging = true; });
-  container.addEventListener("touchmove", (e) => {
+  containerJoystick.addEventListener("touchstart", (e) => { isDragging = true; });
+  containerJoystick.addEventListener("touchmove", (e) => {
     e.preventDefault();
-    if (isDragging) {
-      const rect = container.getBoundingClientRect();
-      const touch = e.touches[0];
-      const x = touch.clientX - rect.left - 50;
-      const y = touch.clientY - rect.top - 50;
-      const max = 30;
-      const dx = Math.max(-max, Math.min(max, x));
-      const dy = Math.max(-max, Math.min(max, y));
-      joystick.style.left = `${20 + dx}px`;
-      joystick.style.top = `${20 + dy}px`;
-
-      dirX = dx / max;
-      dirZ = dy / max;
-    }
+    if (!isDragging) return;
+    const rect = containerJoystick.getBoundingClientRect();
+    const touch = e.touches[0];
+    let x = touch.clientX - rect.left - 50;
+    let y = touch.clientY - rect.top - 50;
+    const max = 30;
+    x = Math.max(-max, Math.min(max, x));
+    y = Math.max(-max, Math.min(max, y));
+    joystick.style.left = `${20 + x}px`;
+    joystick.style.top = `${20 + y}px`;
+    dirX = x / max;
+    dirZ = y / max;
   });
-  container.addEventListener("touchend", () => {
+  containerJoystick.addEventListener("touchend", () => {
     isDragging = false;
     joystick.style.left = "20px";
     joystick.style.top = "20px";
@@ -190,8 +218,10 @@
     dirZ = 0;
   });
 
+  // Bóng vận tốc
   let ballVelocity = new THREE.Vector3(0, 0, 0);
 
+  // Nút Shoot, Pass, Speed
   document.getElementById("shoot").addEventListener("click", () => {
     const angle = player.rotation.y;
     ballVelocity.set(Math.sin(angle), 0, Math.cos(angle)).multiplyScalar(1.5);
@@ -209,7 +239,7 @@
   function animate() {
     requestAnimationFrame(animate);
 
-    // Di chuyển cầu thủ
+    // Di chuyển cầu thủ theo joystick
     if (dirX !== 0 || dirZ !== 0) {
       player.position.x += dirX * speed;
       player.position.z += dirZ * speed;
@@ -217,35 +247,51 @@
       player.rotation.y = angle;
     }
 
-    // Giới hạn cầu thủ trong sân
+    // Giới hạn cầu thủ trong sân (cách rào chắn 0.75)
     player.position.x = Math.max(-49, Math.min(49, player.position.x));
     player.position.z = Math.max(-29, Math.min(29, player.position.z));
 
-    // Cập nhật bóng
+    // Cập nhật vị trí bóng theo vận tốc
     if (ballVelocity.length() > 0.01) {
       ball.position.add(ballVelocity);
+
+      // Giới hạn bóng trong sân (cách rào chắn 1)
+      ball.position.x = Math.max(-49, Math.min(49, ball.position.x));
+      ball.position.z = Math.max(-29, Math.min(29, ball.position.z));
+
+      // Giảm vận tốc do ma sát
       ballVelocity.multiplyScalar(0.96);
     }
 
     if (ballVelocity.length() < 0.05) ballVelocity.set(0, 0, 0);
 
-    // Bóng không tụt xuống
+    // Bóng không tụt xuống dưới sân
     if (ball.position.y < 1) ball.position.y = 1;
 
-    // Cầu thủ gần bóng thì lấy bóng
+    // Vòng xanh hiện khi cầu thủ gần bóng (<=4 đơn vị)
     const dist = player.position.distanceTo(ball.position);
+    ring.visible = dist <= 4;
     ring.position.set(player.position.x, 0.1, player.position.z);
-    ring.visible = dist < 3;
 
-    if (dist < 3 && ballVelocity.length() === 0) {
-      ball.position.x = player.position.x + Math.sin(player.rotation.y) * 2;
-      ball.position.z = player.position.z + Math.cos(player.rotation.y) * 2;
-    }
+    // Camera theo cầu thủ
+    const camOffset = new THREE.Vector3(0, 25, 40);
+    const camTarget = player.position.clone();
+    camera.position.copy(camTarget).add(camOffset);
+    camera.lookAt(camTarget);
 
     renderer.render(scene, camera);
   }
 
+  window.addEventListener('resize', () => {
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  });
+
   animate();
 </script>
+
 </body>
 </html>
