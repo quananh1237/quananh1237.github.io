@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Sân Bóng 3D</title>
   <style>
     body { margin: 0; overflow: hidden; }
@@ -9,90 +9,82 @@
   </style>
 </head>
 <body>
-  <!-- Thêm âm thanh cổ vũ -->
-  <audio id="cheer" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_476ca9f1f1.mp3?filename=crowd-cheer-14604.mp3" autoplay loop></audio>
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 
-  <!-- Script Three.js từ CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.155/build/three.min.js"></script>
+<script>
+  // Scene setup
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({antialias: true});
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
 
-  <script>
-    // Cảnh, Camera, Renderer
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+  // Light
+  const light = new THREE.DirectionalLight(0xffffff, 1);
+  light.position.set(50, 50, 50).normalize();
+  scene.add(light);
 
-    // Ánh sáng
-    const light = new THREE.AmbientLight(0xffffff, 1);
-    scene.add(light);
+  // Sân cỏ
+  const grassTexture = new THREE.MeshPhongMaterial({color: 0x228B22});
+  const field = new THREE.Mesh(new THREE.PlaneGeometry(100, 60), grassTexture);
+  field.rotation.x = -Math.PI / 2;
+  scene.add(field);
 
-    // Sân bóng
-    const fieldGeometry = new THREE.PlaneGeometry(100, 60);
-    const fieldMaterial = new THREE.MeshPhongMaterial({ color: 0x228B22 });
-    const field = new THREE.Mesh(fieldGeometry, fieldMaterial);
-    field.rotation.x = -Math.PI / 2;
-    scene.add(field);
+  // Vạch giữa sân
+  const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+  const centerLineGeometry = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(0, 0.01, -30),
+    new THREE.Vector3(0, 0.01, 30)
+  ]);
+  const centerLine = new THREE.Line(centerLineGeometry, lineMaterial);
+  scene.add(centerLine);
 
-    // Vạch giữa sân (màu trắng)
-    const lineGeometry = new THREE.PlaneGeometry(0.5, 60);
-    const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const midLine = new THREE.Mesh(lineGeometry, lineMaterial);
-    midLine.rotation.x = -Math.PI / 2;
-    scene.add(midLine);
+  // Gôn trái
+  const goalMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
+  const goalGeometry = new THREE.BoxGeometry(1, 5, 10);
+  const goalLeft = new THREE.Mesh(goalGeometry, goalMaterial);
+  goalLeft.position.set(-50, 2.5, 0);
+  scene.add(goalLeft);
 
-    // Gôn (2 đầu sân)
-    function createGoal(x) {
-      const postMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-      const post1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 5, 0.5), postMaterial);
-      const post2 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 5, 0.5), postMaterial);
-      const crossbar = new THREE.Mesh(new THREE.BoxGeometry(7, 0.5, 0.5), postMaterial);
-      post1.position.set(x, 2.5, -3.5);
-      post2.position.set(x, 2.5, 3.5);
-      crossbar.position.set(x, 5, 0);
-      scene.add(post1, post2, crossbar);
-    }
+  // Gôn phải
+  const goalRight = new THREE.Mesh(goalGeometry, goalMaterial);
+  goalRight.position.set(50, 2.5, 0);
+  scene.add(goalRight);
 
-    createGoal(-50); // Gôn bên trái
-    createGoal(50);  // Gôn bên phải
+  // Bóng
+  const ballGeometry = new THREE.SphereGeometry(1, 32, 32);
+  const ballMaterial = new THREE.MeshPhongMaterial({color: 0xffffff});
+  const ball = new THREE.Mesh(ballGeometry, ballMaterial);
+  ball.position.set(0, 1, 0);
+  scene.add(ball);
 
-    // Quả bóng
-    const ball = new THREE.Mesh(
-      new THREE.SphereGeometry(1, 32, 32),
-      new THREE.MeshStandardMaterial({ color: 0xffffff })
-    );
-    ball.position.set(0, 1, 0);
-    scene.add(ball);
+  // Người chơi (hình trụ mô phỏng)
+  const playerMaterial = new THREE.MeshPhongMaterial({color: 0xff0000});
+  const player = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 4, 32), playerMaterial);
+  player.position.set(-10, 2, 0);
+  scene.add(player);
 
-    // Player (đại diện đơn giản)
-    const player = new THREE.Mesh(
-      new THREE.BoxGeometry(1, 2, 1),
-      new THREE.MeshStandardMaterial({ color: 0x0000ff })
-    );
-    player.position.set(0, 1, -10);
-    scene.add(player);
+  // Khán đài (đơn giản hoá)
+  const standMaterial = new THREE.MeshPhongMaterial({color: 0xaaaaaa});
+  const standLeft = new THREE.Mesh(new THREE.BoxGeometry(10, 10, 60), standMaterial);
+  standLeft.position.set(-55, 5, 0);
+  scene.add(standLeft);
 
-    // Khán đài (xung quanh sân)
-    const standMaterial = new THREE.MeshBasicMaterial({ color: 0x808080 });
-    const stand1 = new THREE.Mesh(new THREE.BoxGeometry(100, 10, 2), standMaterial);
-    stand1.position.set(0, 5, -31);
-    const stand2 = stand1.clone(); stand2.position.z = 31;
-    const stand3 = new THREE.Mesh(new THREE.BoxGeometry(2, 10, 60), standMaterial);
-    stand3.position.set(-51, 5, 0);
-    const stand4 = stand3.clone(); stand4.position.x = 51;
-    scene.add(stand1, stand2, stand3, stand4);
+  const standRight = new THREE.Mesh(new THREE.BoxGeometry(10, 10, 60), standMaterial);
+  standRight.position.set(55, 5, 0);
+  scene.add(standRight);
 
-    // Camera ban đầu
-    camera.position.set(0, 40, 80);
-    camera.lookAt(0, 0, 0);
+  // Camera
+  camera.position.set(0, 50, 80);
+  camera.lookAt(0, 0, 0);
 
-    // Render loop
-    function animate() {
-      requestAnimationFrame(animate);
-      renderer.render(scene, camera);
-    }
+  // Render loop
+  function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
+  }
 
-    animate();
-  </script>
+  animate();
+</script>
 </body>
 </html>
