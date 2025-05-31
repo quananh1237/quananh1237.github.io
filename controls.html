@@ -1,106 +1,154 @@
-<div id="controls">
-  <div class="joystick-container" id="joystick-container">
-    <div class="joystick" id="joystick"></div>
-  </div>
-
-  <div class="buttons">
-    <button id="shoot">Shoot</button>
-    <button id="pass">Pass</button>
-    <button id="speed">Speed</button>
-  </div>
-</div>
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Controls</title>
 <style>
-  .joystick-container {
-    position: absolute;
-    bottom: 120px;
-    left: 40px;
-    width: 100px;
-    height: 100px;
-    background: rgba(0,0,0,0.3);
-    border-radius: 50%;
-    touch-action: none;
-    z-index: 10;
+  body, html {
+    margin: 0; padding: 0; width: 100%; height: 100%; background: transparent;
+    overflow: hidden; user-select: none; touch-action: none;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    padding: 15px 30px 20px 30px;
+    box-sizing: border-box;
+    font-family: sans-serif;
   }
 
-  .joystick {
+  /* Khung joystick bên trái */
+  #joystickContainer {
+    width: 120px;
+    height: 120px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    position: relative;
+    touch-action: none;
+  }
+
+  /* Nút joystick nhỏ bên trong */
+  #joystickThumb {
     width: 60px;
     height: 60px;
-    background: #fff;
+    background: rgba(255, 255, 255, 0.7);
     border-radius: 50%;
     position: absolute;
-    top: 20px;
-    left: 20px;
-    touch-action: none;
+    top: 30px; left: 30px;
+    transition: top 0.1s, left 0.1s;
   }
 
-  .buttons {
-    position: absolute;
-    bottom: 40px;
-    right: 30px;
+  /* Các nút action bên phải */
+  #buttonsContainer {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    z-index: 10;
+    gap: 20px;
   }
 
-  .buttons button {
-    width: 90px;
-    height: 45px;
+  button.actionBtn {
+    width: 100px;
+    height: 80px;
+    font-size: 24px;
+    font-weight: bold;
+    border-radius: 15px;
     border: none;
-    border-radius: 8px;
-    background-color: #444;
+    background: #ff5722;
     color: white;
-    font-size: 16px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     cursor: pointer;
+    user-select: none;
+    transition: background 0.3s;
   }
-
-  .buttons button:active {
-    background-color: #222;
+  button.actionBtn:active {
+    background: #e64a19;
   }
 </style>
+</head>
+<body>
+
+  <div id="joystickContainer">
+    <div id="joystickThumb"></div>
+  </div>
+
+  <div id="buttonsContainer">
+    <button class="actionBtn" id="btnShoot">Shoot</button>
+    <button class="actionBtn" id="btnPass">Pass</button>
+    <button class="actionBtn" id="btnSpeed">Speed</button>
+  </div>
 
 <script>
-function initControls() {
-  let joystick = document.getElementById("joystick");
-  let containerJoystick = document.getElementById("joystick-container");
-  let isDragging = false;
-  let dirX = 0, dirZ = 0;
+  // Simple joystick logic (demo) to send postMessage to parent
+  const joystick = document.getElementById('joystickContainer');
+  const thumb = document.getElementById('joystickThumb');
+  const maxRadius = 40;
 
-  containerJoystick.addEventListener("touchstart", () => { isDragging = true; });
-  containerJoystick.addEventListener("touchmove", (e) => {
-    e.preventDefault();
-    if (!isDragging) return;
-    const rect = containerJoystick.getBoundingClientRect();
-    const touch = e.touches[0];
-    let x = touch.clientX - rect.left - 50;
-    let y = touch.clientY - rect.top - 50;
-    const max = 30;
-    x = Math.max(-max, Math.min(max, x));
-    y = Math.max(-max, Math.min(max, y));
-    joystick.style.left = `${20 + x}px`;
-    joystick.style.top = `${20 + y}px`;
-    dirX = x / max;
-    dirZ = y / max;
-  });
-  containerJoystick.addEventListener("touchend", () => {
-    isDragging = false;
-    joystick.style.left = "20px";
-    joystick.style.top = "20px";
-    dirX = 0;
-    dirZ = 0;
+  let dragging = false;
+  let startX, startY;
+
+  function sendDirection(x, y) {
+    // Bình thường hóa vector [-1..1]
+    const len = Math.sqrt(x*x + y*y);
+    let normX = 0, normY = 0;
+    if(len > 0) {
+      normX = x / len;
+      normY = y / len;
+    }
+    window.parent.postMessage({type: 'joystick', dirX: normX, dirZ: -normY}, '*');
+  }
+
+  joystick.addEventListener('pointerdown', e => {
+    dragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
   });
 
-  window.getJoystickDirection = () => ({ dirX, dirZ });
+  window.addEventListener('pointermove', e => {
+    if(!dragging) return;
+    let dx = e.clientX - startX;
+    let dy = e.clientY - startY;
+    let dist = Math.sqrt(dx*dx + dy*dy);
+    if(dist > maxRadius) {
+      dx = (dx / dist) * maxRadius;
+      dy = (dy / dist) * maxRadius;
+    }
+    thumb.style.left = 30 + dx + 'px';
+    thumb.style.top = 30 + dy + 'px';
+    sendDirection(dx / maxRadius, dy / maxRadius);
+  });
 
-  document.getElementById("shoot").addEventListener("click", () => {
-    if (typeof onShoot === 'function') onShoot();
+  window.addEventListener('pointerup', e => {
+    if(!dragging) return;
+    dragging = false;
+    thumb.style.left = '30px';
+    thumb.style.top = '30px';
+    sendDirection(0,0);
   });
-  document.getElementById("pass").addEventListener("click", () => {
-    if (typeof onPass === 'function') onPass();
+
+  // Nút bấm gửi postMessage cho parent
+  document.getElementById('btnShoot').addEventListener('click', () => {
+    window.parent.postMessage({type: 'shoot'}, '*');
   });
-  document.getElementById("speed").addEventListener("click", () => {
-    if (typeof onSpeed === 'function') onSpeed();
+  document.getElementById('btnPass').addEventListener('click', () => {
+    window.parent.postMessage({type: 'pass'}, '*');
   });
-}
+  document.getElementById('btnSpeed').addEventListener('click', () => {
+    window.parent.postMessage({type: 'speed'}, '*');
+  });
+
+  // Hàm trả về hướng joystick để parent gọi
+  window.getJoystickDirection = () => {
+    // Phương án đơn giản: lưu trạng thái hướng khi kéo (có thể lưu biến toàn cục)
+    return currentDirection || { dirX: 0, dirZ: 0 };
+  }
+
+  let currentDirection = { dirX: 0, dirZ: 0 };
+  function sendDirection(x, y) {
+    const len = Math.sqrt(x*x + y*y);
+    let normX = 0, normY = 0;
+    if(len > 0) {
+      normX = x / len;
+      normY = y / len;
+    }
+    currentDirection = { dirX: normX, dirZ: -normY };
+    window.parent.postMessage({type: 'joystick', dirX: normX, dirZ: -normY}, '*');
+  }
 </script>
+
+</body>
+</html>
