@@ -287,12 +287,17 @@
   function animate() {
     requestAnimationFrame(animate);
 
-    // Cầu thủ di chuyển
-    if (dirX !== 0 || dirZ !== 0) {
-      player.position.x += dirX * speed;
-      player.position.z += dirZ * speed;
-      player.rotation.y = Math.atan2(dirX, dirZ);
-    }
+    // Di chuyển cầu thủ theo hướng từ joystick (dùng từ controls.html)
+if (window.getJoystickDirection) {
+  const { dirX, dirZ } = getJoystickDirection();
+  if (dirX !== 0 || dirZ !== 0) {
+    player.position.x += dirX * speed;
+    player.position.z += dirZ * speed;
+    const angle = Math.atan2(dirX, dirZ);
+    player.rotation.y = angle;
+  }
+}
+
 
     // Giới hạn trong sân
     player.position.x = Math.max(-48, Math.min(48, player.position.x));
