@@ -74,7 +74,63 @@
     }
   </style>
 </head>
-<body>
+<div id="controls-container"></div>
+<script>
+  // Load controls.html vào kickball.html
+  fetch('controls.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('controls-container').innerHTML = html;
+      initControls(); // gọi hàm khởi tạo joystick/nút sau khi đã load
+    });
+
+  function initControls() {
+    let joystick = document.getElementById("joystick");
+    let containerJoystick = document.getElementById("joystick-container");
+    let isDragging = false;
+    let dirX = 0, dirZ = 0;
+
+    containerJoystick.addEventListener("touchstart", () => { isDragging = true; });
+    containerJoystick.addEventListener("touchmove", (e) => {
+      e.preventDefault();
+      if (!isDragging) return;
+      const rect = containerJoystick.getBoundingClientRect();
+      const touch = e.touches[0];
+      let x = touch.clientX - rect.left - 50;
+      let y = touch.clientY - rect.top - 50;
+      const max = 30;
+      x = Math.max(-max, Math.min(max, x));
+      y = Math.max(-max, Math.min(max, y));
+      joystick.style.left = `${20 + x}px`;
+      joystick.style.top = `${20 + y}px`;
+      dirX = x / max;
+      dirZ = y / max;
+    });
+    containerJoystick.addEventListener("touchend", () => {
+      isDragging = false;
+      joystick.style.left = "20px";
+      joystick.style.top = "20px";
+      dirX = 0;
+      dirZ = 0;
+    });
+
+    // Gắn vào game
+    window.getJoystickDirection = () => ({ dirX, dirZ });
+
+    // Gắn nút
+    document.getElementById("shoot").addEventListener("click", () => {
+      if (typeof onShoot === 'function') onShoot();
+    });
+    document.getElementById("pass").addEventListener("click", () => {
+      if (typeof onPass === 'function') onPass();
+    });
+    document.getElementById("speed").addEventListener("click", () => {
+      if (typeof onSpeed === 'function') onSpeed();
+    });
+  }
+</script>
+
+  <body>
 <div id="gameContainer">
   <div class="joystick-container" id="joystick-container">
     <div class="joystick" id="joystick"></div>
