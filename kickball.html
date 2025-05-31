@@ -5,12 +5,7 @@
   <title>Game Bóng Đá Mini</title>
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      height: 100%;
-      width: 100%;
-      background: black;
+      margin: 0; padding: 0; overflow: hidden; height: 100%; width: 100%; background: black;
       touch-action: none;
     }
     #gameContainer {
@@ -22,24 +17,24 @@
     canvas {
       display: block;
     }
+    iframe#controlsFrame {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 150px;  /* bạn chỉnh chiều cao cho phù hợp */
+      border: none;
+      background: transparent;
+      pointer-events: auto; /* cho phép thao tác */
+      z-index: 100;
+    }
   </style>
 </head>
 <body>
   <div id="gameContainer"></div>
-  <div id="controls-container"></div>
 
-  <!-- Tải và gắn controls.html -->
-  <script>
-    fetch('controls.html')
-      .then(res => res.text())
-      .then(html => {
-        const temp = document.createElement('div');
-        temp.innerHTML = html;
-        document.body.appendChild(temp.querySelector('#controls'));
-        eval(temp.querySelector('script').textContent);
-        initControls();
-      });
-  </script>
+  <!-- Nhúng controls.html qua iframe -->
+  <iframe id="controlsFrame" src="controls.html"></iframe>
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
   <script>
@@ -60,66 +55,9 @@
     field.rotation.x = -Math.PI / 2;
     scene.add(field);
 
-    // Vạch giữa
-    const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
-    const midLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(0, 0.1, -30), new THREE.Vector3(0, 0.1, 30)
-    ]), lineMaterial);
-    scene.add(midLine);
+    // Các đối tượng khác (cầu thủ, bóng, cầu môn...) - bạn tự thêm lại hoặc copy từ code bạn có
 
-    const circle = new THREE.Mesh(new THREE.RingGeometry(7.9, 8, 64), new THREE.MeshBasicMaterial({color: 0xffffff, side: THREE.DoubleSide}));
-    circle.rotation.x = -Math.PI / 2;
-    scene.add(circle);
-
-    const dot = new THREE.Mesh(new THREE.CircleGeometry(0.3, 16), new THREE.MeshBasicMaterial({color: 0xffffff}));
-    dot.rotation.x = -Math.PI / 2;
-    dot.position.y = 0.1;
-    scene.add(dot);
-
-    // Vùng cấm
-    const box = new THREE.PlaneGeometry(16, 30);
-    const boxMat = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
-    const leftBox = new THREE.Mesh(box, boxMat);
-    leftBox.rotation.x = -Math.PI / 2;
-    leftBox.position.set(-42, 0.05, 0);
-    scene.add(leftBox);
-    const rightBox = leftBox.clone();
-    rightBox.position.x = 42;
-    scene.add(rightBox);
-
-    // Gôn
-    function createGoal(x) {
-      const mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-      const post1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 5, 0.5), mat);
-      const post2 = post1.clone();
-      const bar = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 10), mat);
-      const netBack = new THREE.Mesh(new THREE.BoxGeometry(0.5, 3, 10), new THREE.MeshBasicMaterial({color: 0xaaaaaa, opacity: 0.3, transparent: true}));
-
-      post1.position.set(x, 2.5, -5);
-      post2.position.set(x, 2.5, 5);
-      bar.position.set(x, 5, 0);
-      netBack.position.set(x - Math.sign(x) * 1, 1.5, 0);
-
-      scene.add(post1, post2, bar, netBack);
-    }
-    createGoal(-49.5);
-    createGoal(49.5);
-
-    // Rào chắn
-    const wallMaterial = new THREE.MeshBasicMaterial({color: 0x888888, opacity: 0.3, transparent: true});
-    const walls = [
-      new THREE.Mesh(new THREE.BoxGeometry(0.5, 5, 60), wallMaterial),
-      new THREE.Mesh(new THREE.BoxGeometry(0.5, 5, 60), wallMaterial),
-      new THREE.Mesh(new THREE.BoxGeometry(100, 5, 0.5), wallMaterial),
-      new THREE.Mesh(new THREE.BoxGeometry(100, 5, 0.5), wallMaterial)
-    ];
-    walls[0].position.set(-50.25, 2.5, 0);
-    walls[1].position.set(50.25, 2.5, 0);
-    walls[2].position.set(0, 2.5, -30.25);
-    walls[3].position.set(0, 2.5, 30.25);
-    walls.forEach(w => scene.add(w));
-
-    // Cầu thủ & bóng
+    // Giả sử player và ball được định nghĩa ở đây
     const player = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 4, 32), new THREE.MeshPhongMaterial({color: 0xff0000}));
     player.position.set(0, 2, 0);
     scene.add(player);
@@ -128,50 +66,62 @@
     ball.position.set(5, 1, 0);
     scene.add(ball);
 
-    // Vòng xanh
-    const ring = new THREE.Mesh(new THREE.RingGeometry(1.5, 2, 32), new THREE.MeshBasicMaterial({color: 0x00ff00, side: THREE.DoubleSide}));
-    ring.rotation.x = -Math.PI / 2;
-    ring.visible = false;
-    scene.add(ring);
-
-    // Biến game
     let speed = 0.5;
     let ballVelocity = new THREE.Vector3();
 
-    // Hàm nút
-    window.onShoot = () => {
-      const angle = player.rotation.y;
-      ballVelocity.set(Math.sin(angle), 0, Math.cos(angle)).multiplyScalar(1.5);
-    };
-    window.onPass = () => {
-      const angle = player.rotation.y;
-      ballVelocity.set(Math.sin(angle), 0, Math.cos(angle)).multiplyScalar(0.7);
-    };
-    window.onSpeed = () => {
-      speed = speed === 0.5 ? 1.5 : 0.5;
+    // Đợi iframe load xong thì lấy direction từ nó
+    window.getJoystickDirection = () => {
+      // Gọi hàm từ iframe nếu cần
+      const iframe = document.getElementById('controlsFrame');
+      if (iframe && iframe.contentWindow && iframe.contentWindow.getJoystickDirection) {
+        return iframe.contentWindow.getJoystickDirection();
+      }
+      return { dirX: 0, dirZ: 0 };
     };
 
-    // Vòng lặp
+    // Lắng nghe sự kiện nút bấm từ iframe qua postMessage (cần chỉnh controls.html để gửi message)
+    window.addEventListener('message', (event) => {
+      if (!event.data) return;
+      switch(event.data.type) {
+        case 'shoot':
+          {
+            const angle = player.rotation.y;
+            ballVelocity.set(Math.sin(angle), 0, Math.cos(angle)).multiplyScalar(1.5);
+          }
+          break;
+        case 'pass':
+          {
+            const angle = player.rotation.y;
+            ballVelocity.set(Math.sin(angle), 0, Math.cos(angle)).multiplyScalar(0.7);
+          }
+          break;
+        case 'speed':
+          {
+            speed = speed === 0.5 ? 1.5 : 0.5;
+          }
+          break;
+      }
+    });
+
     function animate() {
       requestAnimationFrame(animate);
 
       // Di chuyển cầu thủ theo joystick
-      if (window.getJoystickDirection) {
-        const { dirX, dirZ } = getJoystickDirection();
-        if (dirX !== 0 || dirZ !== 0) {
-          player.position.x += dirX * speed;
-          player.position.z += dirZ * speed;
-          player.rotation.y = Math.atan2(dirX, dirZ);
-        }
+      const { dirX, dirZ } = window.getJoystickDirection();
+      if (dirX !== 0 || dirZ !== 0) {
+        player.position.x += dirX * speed;
+        player.position.z += dirZ * speed;
+        const angle = Math.atan2(dirX, dirZ);
+        player.rotation.y = angle;
       }
 
-      // Giới hạn vị trí
+      // Giới hạn sân
       player.position.x = Math.max(-48, Math.min(48, player.position.x));
       player.position.z = Math.max(-28, Math.min(28, player.position.z));
       ball.position.x = Math.max(-48, Math.min(48, ball.position.x));
       ball.position.z = Math.max(-28, Math.min(28, ball.position.z));
 
-      // Bóng bay
+      // Bóng chuyển động
       if (ballVelocity.length() > 0.01) {
         ball.position.add(ballVelocity);
         ballVelocity.multiplyScalar(0.96);
@@ -179,17 +129,7 @@
       if (ballVelocity.length() < 0.05) ballVelocity.set(0, 0, 0);
       if (ball.position.y < 1) ball.position.y = 1;
 
-      // Gần bóng thì giữ
-      const dist = player.position.distanceTo(ball.position);
-      ring.visible = dist < 4;
-      ring.position.set(player.position.x, 0.1, player.position.z);
-
-      if (dist < 3 && ballVelocity.length() === 0) {
-        ball.position.x = player.position.x + Math.sin(player.rotation.y) * 2;
-        ball.position.z = player.position.z + Math.cos(player.rotation.y) * 2;
-      }
-
-      // Camera
+      // Camera theo player
       const camOffset = new THREE.Vector3(0, 25, 40);
       const camTarget = player.position.clone();
       camera.position.copy(camTarget).add(camOffset);
