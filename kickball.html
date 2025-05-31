@@ -11,21 +11,24 @@
     #gameContainer {
       position: relative;
       width: 100vw;
-      height: 100vh;
+      height: calc(100vh - 160px); /* trừ chiều cao iframe controls */
       overflow: hidden;
+      background: black;
     }
     canvas {
       display: block;
+      width: 100%;
+      height: 100%;
     }
     iframe#controlsFrame {
       position: fixed;
       bottom: 0;
       left: 0;
       width: 100%;
-      height: 230px; /* Tăng chiều cao iframe cho đủ nút và joystick */
+      height: 160px;  /* chiều cao iframe controls */
       border: none;
       background: transparent;
-      pointer-events: auto;
+      pointer-events: auto; /* cho phép thao tác */
       z-index: 100;
     }
   </style>
@@ -50,75 +53,49 @@
     light.position.set(50, 50, 50).normalize();
     scene.add(light);
 
-    // Sân bóng
-    const field = new THREE.Mesh(
-      new THREE.PlaneGeometry(100, 60),
-      new THREE.MeshPhongMaterial({color: 0x228B22})
-    );
+    // Sân
+    const field = new THREE.Mesh(new THREE.PlaneGeometry(100, 60), new THREE.MeshPhongMaterial({color: 0x228B22}));
     field.rotation.x = -Math.PI / 2;
     scene.add(field);
 
-    // Viền sân đơn giản
-    const lineMaterial = new THREE.LineBasicMaterial({color: 0xffffff});
-    const fieldEdges = new THREE.EdgesGeometry(new THREE.PlaneGeometry(100, 60));
-    const fieldLines = new THREE.LineSegments(fieldEdges, lineMaterial);
-    fieldLines.rotation.x = -Math.PI / 2;
-    fieldLines.position.y = 0.01;
-    scene.add(fieldLines);
-
-    // Cầu môn đơn giản
+    // Cầu môn 2 bên
     const goalMaterial = new THREE.MeshPhongMaterial({color: 0xffffff});
-    const goalFrameGeometry = new THREE.BoxGeometry(12, 6, 1);
-    const goalBackGeometry = new THREE.PlaneGeometry(12, 6);
-    // Khung cầu môn trước (2 khung bên, trên)
-    const goalLeftPost = new THREE.Mesh(new THREE.BoxGeometry(0.5, 6, 0.5), goalMaterial);
-    goalLeftPost.position.set(-6, 3, -30);
-    scene.add(goalLeftPost);
+    const goalWidth = 14;
+    const goalHeight = 8;
+    const goalDepth = 3;
 
-    const goalRightPost = new THREE.Mesh(new THREE.BoxGeometry(0.5, 6, 0.5), goalMaterial);
-    goalRightPost.position.set(6, 3, -30);
-    scene.add(goalRightPost);
+    // Goal trái
+    const goalLeft = new THREE.Mesh(new THREE.BoxGeometry(goalDepth, goalHeight, goalWidth), goalMaterial);
+    goalLeft.position.set(-50 + goalDepth/2, goalHeight/2, 0);
+    scene.add(goalLeft);
 
-    const goalCrossbar = new THREE.Mesh(new THREE.BoxGeometry(12, 0.5, 0.5), goalMaterial);
-    goalCrossbar.position.set(0, 6, -30);
-    scene.add(goalCrossbar);
+    // Goal phải
+    const goalRight = new THREE.Mesh(new THREE.BoxGeometry(goalDepth, goalHeight, goalWidth), goalMaterial);
+    goalRight.position.set(50 - goalDepth/2, goalHeight/2, 0);
+    scene.add(goalRight);
 
-    // Lưới cầu môn (phía sau)
-    const goalNet = new THREE.Mesh(goalBackGeometry, new THREE.MeshPhongMaterial({color: 0xcccccc, side: THREE.DoubleSide, opacity: 0.5, transparent: true}));
-    goalNet.position.set(0, 3, -30.5);
-    scene.add(goalNet);
-
-    // Cầu thủ (player)
-    const player = new THREE.Mesh(
-      new THREE.CylinderGeometry(1, 1, 4, 32),
-      new THREE.MeshPhongMaterial({color: 0xff0000})
-    );
+    // Cầu thủ và bóng
+    const player = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 4, 32), new THREE.MeshPhongMaterial({color: 0xff0000}));
     player.position.set(0, 2, 0);
     scene.add(player);
 
-    // Bóng
-    const ball = new THREE.Mesh(
-      new THREE.SphereGeometry(1, 32, 32),
-      new THREE.MeshPhongMaterial({color: 0xffffff})
-    );
+    const ball = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), new THREE.MeshPhongMaterial({color: 0xffffff}));
     ball.position.set(5, 1, 0);
     scene.add(ball);
 
     let speed = 0.5;
     let ballVelocity = new THREE.Vector3();
 
-    // Lấy dữ liệu joystick từ iframe controls
-    window.getJoystickDirection = () => {
-      const iframe = document.getElementById('controlsFrame');
-      if (iframe && iframe.contentWindow && iframe.contentWindow.getJoystickDirection) {
-        return iframe.contentWindow.getJoystickDirection();
-      }
-      return { dirX: 0, dirZ: 0 };
-    };
-
-    // Nhận sự kiện nút từ iframe qua postMessage
+    // Lấy hướng joystick từ iframe qua postMessage
+    let joystickDir = { dirX: 0, dirZ: 0 };
     window.addEventListener('message', (event) => {
-      if (!event.data) return;
+      if(!event.data) return;
+
+      if(event.data.type === 'joystick') {
+        joystickDir.dirX = event.data.dirX;
+        joystickDir.dirZ = event.data.dirZ;
+      }
+
       switch(event.data.type) {
         case 'shoot':
           {
@@ -144,7 +121,7 @@
       requestAnimationFrame(animate);
 
       // Di chuyển cầu thủ theo joystick
-      const { dirX, dirZ } = window.getJoystickDirection();
+      const { dirX, dirZ } = joystickDir;
       if (dirX !== 0 || dirZ !== 0) {
         player.position.x += dirX * speed;
         player.position.z += dirZ * speed;
