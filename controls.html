@@ -1,41 +1,119 @@
 <!-- controls.html -->
-<div id="ui" style="
-  height: 20vh;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 20px;
-  box-sizing: border-box;
-  position: absolute;
-  bottom: 10vh; /* cho các nút cao lên một chút */
-  width: 100%;
-  z-index: 10;
-">
-  <div class="joystick-container" id="joystick-container" style="
-    width: 100px; height: 100px;
-    background: rgba(255,255,255,0.2);
+<style>
+  #controls {
+    position: fixed;
+    bottom: 5vh;
+    left: 0;
+    width: 100%;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .joystick-container {
+    position: absolute;
+    left: 5vw;
+    bottom: 0;
+    width: 120px;
+    height: 120px;
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 50%;
-    position: relative;
+    pointer-events: auto;
     touch-action: none;
-  ">
-    <div class="joystick" id="joystick" style="
-      width: 60px; height: 60px;
-      background: #fff;
-      border-radius: 50%;
-      position: absolute;
-      top: 20px; left: 20px;
-      touch-action: none;
-    "></div>
+  }
+
+  .joystick {
+    width: 60px;
+    height: 60px;
+    background: #fff;
+    border-radius: 50%;
+    position: absolute;
+    left: 30px;
+    top: 30px;
+    touch-action: none;
+  }
+
+  .buttons {
+    position: absolute;
+    right: 5vw;
+    bottom: 0;
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    pointer-events: auto;
+  }
+
+  .buttons button {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    font-size: 14px;
+    border: none;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    font-weight: bold;
+    touch-action: manipulation;
+  }
+
+  .buttons button:active {
+    background: #111;
+  }
+</style>
+
+<div id="controls">
+  <div class="joystick-container" id="joystick-container">
+    <div class="joystick" id="joystick"></div>
   </div>
 
-  <div class="buttons" style="
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  ">
-    <button id="shoot">Shoot</button>
+  <div class="buttons">
     <button id="pass">Pass</button>
+    <button id="shoot">Shoot</button>
     <button id="speed">Speed</button>
   </div>
 </div>
+
+<script>
+  let joystick = document.getElementById("joystick");
+  let containerJoystick = document.getElementById("joystick-container");
+  let dirX = 0, dirZ = 0, isDragging = false;
+
+  containerJoystick.addEventListener("touchstart", () => {
+    isDragging = true;
+  });
+
+  containerJoystick.addEventListener("touchmove", (e) => {
+    e.preventDefault();
+    if (!isDragging) return;
+    const rect = containerJoystick.getBoundingClientRect();
+    const touch = e.touches[0];
+    let x = touch.clientX - rect.left - 60;
+    let y = touch.clientY - rect.top - 60;
+    const max = 40;
+    x = Math.max(-max, Math.min(max, x));
+    y = Math.max(-max, Math.min(max, y));
+    joystick.style.left = `${30 + x}px`;
+    joystick.style.top = `${30 + y}px`;
+    dirX = x / max;
+    dirZ = y / max;
+  });
+
+  containerJoystick.addEventListener("touchend", () => {
+    isDragging = false;
+    joystick.style.left = "30px";
+    joystick.style.top = "30px";
+    dirX = 0;
+    dirZ = 0;
+  });
+
+  window.getJoystickDirection = () => ({ dirX, dirZ });
+
+  // Chuyển sự kiện nút sang kickball.html dùng được
+  document.getElementById("shoot").addEventListener("click", () => {
+    if (typeof window.onShoot === "function") window.onShoot();
+  });
+  document.getElementById("pass").addEventListener("click", () => {
+    if (typeof window.onPass === "function") window.onPass();
+  });
+  document.getElementById("speed").addEventListener("click", () => {
+    if (typeof window.onSpeed === "function") window.onSpeed();
+  });
+</script>
