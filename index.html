@@ -5,133 +5,65 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
   <title>Super Liquid Soccer Clone</title>
   <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: #111;
-    }
-
-    canvas {
-      display: block;
-    }
-
-    #scoreboard {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(0, 0, 0, 0.6);
-      color: #fff;
-      font-size: 18px;
-      font-family: sans-serif;
-      padding: 10px;
-      border-radius: 8px;
-      user-select: none;
-    }
-
-    /* Joystick */
+    body { margin: 0; overflow: hidden; background: #111; }
+    canvas { display: block; }
     #joystick-zone {
-      position: absolute;
-      left: 20px;
-      bottom: 20px;
-      width: 120px;
-      height: 120px;
-      display: none; /* hiện trên mobile */
+      position: absolute; left: 20px; bottom: 20px;
+      width: 120px; height: 120px; display: none;
       touch-action: none;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
     }
-
     #joystick-base {
-      width: 100%;
-      height: 100%;
-      background: rgba(255, 255, 255, 0.1);
-      border: 2px solid white;
-      border-radius: 50%;
+      width: 100%; height: 100%;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid white; border-radius: 50%;
       position: relative;
-      touch-action: none;
     }
-
     #joystick-stick {
-      width: 50px;
-      height: 50px;
-      background: white;
-      border-radius: 50%;
-      position: absolute;
-      top: 35px;
-      left: 35px;
-      touch-action: none;
+      width: 50px; height: 50px;
+      background: white; border-radius: 50%;
+      position: absolute; top: 35px; left: 35px;
     }
-
-    /* Nút điều khiển bên phải */
     #buttons {
-      position: absolute;
-      right: 20px;
-      bottom: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      user-select: none;
-      touch-action: manipulation;
+      position: absolute; right: 20px; bottom: 20px;
+      display: flex; flex-direction: column; gap: 15px;
     }
-
     .btn-action {
-      width: 70px;
-      height: 70px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.15);
-      border: 2px solid white;
-      color: white;
-      font-weight: bold;
-      font-size: 18px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      width: 70px; height: 70px; border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: 2px solid white; color: white;
+      font-weight: bold; font-size: 18px;
+      display: flex; justify-content: center; align-items: center;
       cursor: pointer;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-      transition: background 0.2s;
-      touch-action: manipulation;
     }
-
     .btn-action:active {
-      background: rgba(255, 255, 255, 0.5);
+      background: rgba(255,255,255,0.5);
     }
   </style>
 </head>
 <body>
-  <div id="scoreboard">Team A 0 - 0 Team B</div>
-
-  <!-- Joystick điều khiển -->
   <div id="joystick-zone">
     <div id="joystick-base">
       <div id="joystick-stick"></div>
     </div>
   </div>
-
-  <!-- Nút Shoot, Pass, Sprint -->
   <div id="buttons">
     <div id="btn-shoot" class="btn-action">Shoot</div>
     <div id="btn-pass" class="btn-action">Pass</div>
     <div id="btn-sprint" class="btn-action">Sprint</div>
   </div>
 
-  <!-- Three.js -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
-
   <script>
-    // JOYSTICK
-    let joystickVector = { x: 0, y: 0 };
     const isTouch = 'ontouchstart' in window;
+    let joystickVector = { x: 0, y: 0 };
 
     if (isTouch) {
       document.getElementById('joystick-zone').style.display = 'block';
-
       const base = document.getElementById('joystick-base');
       const stick = document.getElementById('joystick-stick');
-
       let dragging = false;
 
-      base.addEventListener('touchstart', (e) => {
+      base.addEventListener('touchstart', e => {
         e.preventDefault();
         dragging = true;
       });
@@ -144,15 +76,12 @@
         const x = touch.clientX - rect.left - rect.width / 2;
         const y = touch.clientY - rect.top - rect.height / 2;
         const maxDist = rect.width / 2;
-
         const dist = Math.min(Math.sqrt(x * x + y * y), maxDist);
         const angle = Math.atan2(y, x);
         const dx = Math.cos(angle) * dist;
         const dy = Math.sin(angle) * dist;
-
         stick.style.left = `${dx + rect.width / 2 - 25}px`;
         stick.style.top = `${dy + rect.height / 2 - 25}px`;
-
         joystickVector = { x: dx / maxDist, y: dy / maxDist };
       });
 
@@ -165,157 +94,105 @@
       });
     }
 
-    // GAME LOGIC
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(innerWidth, innerHeight);
+    renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // Sân
-    const field = new THREE.Mesh(
-      new THREE.PlaneGeometry(80, 50),
-      new THREE.MeshBasicMaterial({ color: 0x228B22 })
-    );
+    const field = new THREE.Mesh(new THREE.PlaneGeometry(80, 50), new THREE.MeshBasicMaterial({ color: 0x228B22 }));
     field.rotation.x = -Math.PI / 2;
     scene.add(field);
 
-    // Bóng
-    const ball = new THREE.Mesh(
-      new THREE.SphereGeometry(0.5, 16, 16),
-      new THREE.MeshBasicMaterial({ color: 0xffffff })
-    );
+    const ball = new THREE.Mesh(new THREE.SphereGeometry(0.5, 16, 16), new THREE.MeshBasicMaterial({ color: 0xffffff }));
     ball.position.set(0, 0.5, 0);
     scene.add(ball);
 
-    // Cầu thủ
-    const player = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.7, 0.7, 2, 16),
-      new THREE.MeshBasicMaterial({ color: 0xff0000 })
-    );
+    const player = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 2, 16), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
     player.position.set(-10, 1, 0);
     scene.add(player);
 
-    // Camera
+    const circle = new THREE.Mesh(new THREE.RingGeometry(0.6, 0.8, 32), new THREE.MeshBasicMaterial({ color: 0x00ff00, side: THREE.DoubleSide }));
+    circle.rotation.x = -Math.PI / 2;
+    circle.visible = false;
+    scene.add(circle);
+
     camera.position.set(0, 30, 30);
     camera.lookAt(0, 0, 0);
 
-    // Input phím
-    const keys = {};
+    let keys = {};
     document.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
     document.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 
-    // Các nút bấm
     let sprinting = false;
-    document.getElementById('btn-shoot').addEventListener('touchstart', e => {
-      e.preventDefault();
-      shoot();
-    });
-    document.getElementById('btn-shoot').addEventListener('mousedown', e => {
-      e.preventDefault();
-      shoot();
-    });
+    document.getElementById('btn-shoot').addEventListener('touchstart', e => { e.preventDefault(); shoot(); });
+    document.getElementById('btn-pass').addEventListener('touchstart', e => { e.preventDefault(); pass(); });
+    document.getElementById('btn-sprint').addEventListener('touchstart', e => { e.preventDefault(); sprinting = true; });
+    document.getElementById('btn-sprint').addEventListener('touchend', e => { e.preventDefault(); sprinting = false; });
 
-    document.getElementById('btn-pass').addEventListener('touchstart', e => {
-      e.preventDefault();
-      pass();
-    });
-    document.getElementById('btn-pass').addEventListener('mousedown', e => {
-      e.preventDefault();
-      pass();
-    });
+    document.getElementById('btn-shoot').addEventListener('mousedown', shoot);
+    document.getElementById('btn-pass').addEventListener('mousedown', pass);
+    document.getElementById('btn-sprint').addEventListener('mousedown', () => sprinting = true);
+    document.getElementById('btn-sprint').addEventListener('mouseup', () => sprinting = false);
 
-    document.getElementById('btn-sprint').addEventListener('touchstart', e => {
-      e.preventDefault();
-      sprinting = true;
-      document.getElementById('btn-sprint').style.background = 'rgba(255,255,255,0.5)';
-    });
-    document.getElementById('btn-sprint').addEventListener('touchend', e => {
-      e.preventDefault();
-      sprinting = false;
-      document.getElementById('btn-sprint').style.background = 'rgba(255,255,255,0.15)';
-    });
-    document.getElementById('btn-sprint').addEventListener('mousedown', e => {
-      e.preventDefault();
-      sprinting = true;
-      document.getElementById('btn-sprint').style.background = 'rgba(255,255,255,0.5)';
-    });
-    document.getElementById('btn-sprint').addEventListener('mouseup', e => {
-      e.preventDefault();
-      sprinting = false;
-      document.getElementById('btn-sprint').style.background = 'rgba(255,255,255,0.15)';
-    });
-    document.getElementById('btn-sprint').addEventListener('mouseleave', e => {
-      sprinting = false;
-      document.getElementById('btn-sprint').style.background = 'rgba(255,255,255,0.15)';
-    });
-
-    // Hàm di chuyển cầu thủ
     function movePlayer() {
       let speed = sprinting ? 0.5 : 0.25;
-      let vx = 0, vz = 0;
-
+      let vx = joystickVector.x;
+      let vz = joystickVector.y;
       if (keys['w']) vz -= 1;
       if (keys['s']) vz += 1;
       if (keys['a']) vx -= 1;
       if (keys['d']) vx += 1;
-
-      vx += joystickVector.x;
-      vz += joystickVector.y;
-
       const len = Math.sqrt(vx * vx + vz * vz);
       if (len > 0) {
-        vx /= len;
-        vz /= len;
+        vx /= len; vz /= len;
         player.position.x += vx * speed;
         player.position.z += vz * speed;
-
         const angle = Math.atan2(vz, vx);
         player.rotation.y = -angle;
       }
     }
 
-    // Các hành động
-    function shoot() {
+    function checkBallControl() {
       const dx = ball.position.x - player.position.x;
       const dz = ball.position.z - player.position.z;
       const dist = Math.sqrt(dx * dx + dz * dz);
       if (dist < 2) {
-        const force = 1.5;
-        ball.position.x += dx * force;
-        ball.position.z += dz * force;
+        circle.position.set(player.position.x, 0.01, player.position.z);
+        circle.visible = true;
+        ball.position.x = player.position.x + Math.cos(-player.rotation.y) * 1.2;
+        ball.position.z = player.position.z + Math.sin(-player.rotation.y) * 1.2;
+      } else {
+        circle.visible = false;
       }
+    }
+
+    function shoot() {
+      const dx = Math.cos(-player.rotation.y);
+      const dz = Math.sin(-player.rotation.y);
+      ball.position.x += dx * 3;
+      ball.position.z += dz * 3;
     }
 
     function pass() {
-      const dx = ball.position.x - player.position.x;
-      const dz = ball.position.z - player.position.z;
-      const dist = Math.sqrt(dx * dx + dz * dz);
-      if (dist < 2) {
-        const force = 1;
-        ball.position.x += dx * force;
-        ball.position.z += dz * force;
-      }
+      const dx = Math.cos(-player.rotation.y);
+      const dz = Math.sin(-player.rotation.y);
+      ball.position.x += dx * 2;
+      ball.position.z += dz * 2;
     }
 
-    // Chạy game loop
     function animate() {
       requestAnimationFrame(animate);
       movePlayer();
-
-      // Key điều khiển cũng vẫn hoạt động
-      if (keys['j']) shoot();
-      if (keys['l']) pass();
-
+      checkBallControl();
       renderer.render(scene, camera);
     }
     animate();
 
-    // Responsive
     window.addEventListener('resize', () => {
-      camera.aspect = innerWidth / innerHeight;
+      camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
-      renderer.setSize(innerWidth, innerHeight);
+      renderer.setSize(window.innerWidth, window.innerHeight);
     });
   </script>
 </body>
