@@ -9,7 +9,7 @@ if (isTouch) {
 
   let dragging = false;
 
-  base.addEventListener('touchstart', e => {
+  base.addEventListener('touchstart', () => {
     dragging = true;
   });
 
@@ -21,7 +21,6 @@ if (isTouch) {
     const y = touch.clientY - rect.top - rect.height / 2;
     const maxDist = rect.width / 2;
 
-    // Giới hạn trong vòng tròn
     const dist = Math.min(Math.sqrt(x * x + y * y), maxDist);
     const angle = Math.atan2(y, x);
     const dx = Math.cos(angle) * dist;
@@ -33,7 +32,7 @@ if (isTouch) {
     joystickVector = { x: dx / maxDist, y: dy / maxDist };
   });
 
-  base.addEventListener('touchend', e => {
+  base.addEventListener('touchend', () => {
     dragging = false;
     joystickVector = { x: 0, y: 0 };
     stick.style.left = '35px';
