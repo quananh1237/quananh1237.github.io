@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
-  <title>Super Liquid Soccer Clone</title>
+  <title>Football Game</title>
   <style>
     body { margin: 0; overflow: hidden; background: #111; }
     canvas { display: block; }
@@ -68,6 +68,7 @@
     let joystickVector = { x: 0, y: 0 };
     let shootPower = 0;
     let shootCharging = false;
+    let isHoldingBall = false;
 
     if (isTouch) {
       document.getElementById('joystick-zone').style.display = 'block';
@@ -106,39 +107,57 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
+    // Field and lines
     const field = new THREE.Mesh(new THREE.PlaneGeometry(80, 50), new THREE.MeshBasicMaterial({ color: 0x228B22 }));
     field.rotation.x = -Math.PI / 2;
     scene.add(field);
 
     const linesMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
-    const linePoints = [
-      [-40, -25], [40, -25], [40, 25], [-40, 25], [-40, -25],
-      [0, -25], [0, 25]
-    ];
-    for (let i = 0; i < linePoints.length - 1; i++) {
+    const drawLine = (x1, z1, x2, z2) => {
       const geometry = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(linePoints[i][0], 0.01, linePoints[i][1]),
-        new THREE.Vector3(linePoints[i+1][0], 0.01, linePoints[i+1][1])
+        new THREE.Vector3(x1, 0.01, z1),
+        new THREE.Vector3(x2, 0.01, z2)
       ]);
       const line = new THREE.Line(geometry, linesMaterial);
       scene.add(line);
-    }
+    };
+    drawLine(-40, -25, 40, -25); drawLine(40, -25, 40, 25);
+    drawLine(40, 25, -40, 25); drawLine(-40, 25, -40, -25);
+    drawLine(0, -25, 0, 25);
 
+    // Goal area lines
+    drawLine(-40, -10, -35, -10); drawLine(-35, -10, -35, 10); drawLine(-35, 10, -40, 10);
+    drawLine(40, -10, 35, -10); drawLine(35, -10, 35, 10); drawLine(35, 10, 40, 10);
+
+    // Walls (leave gap near corner)
+    const wallMaterial = new THREE.MeshBasicMaterial({ color: 0x444444 });
+    const wallGeo = new THREE.BoxGeometry(1, 2, 50);
+    const wall1 = new THREE.Mesh(wallGeo, wallMaterial); wall1.position.set(-40.5, 1, 0); scene.add(wall1);
+    const wall2 = new THREE.Mesh(wallGeo, wallMaterial); wall2.position.set(40.5, 1, 0); scene.add(wall2);
+    const wall3 = new THREE.Mesh(new THREE.BoxGeometry(70, 2, 1), wallMaterial); wall3.position.set(0, 1, -25.5); scene.add(wall3);
+    const wall4 = new THREE.Mesh(new THREE.BoxGeometry(70, 2, 1), wallMaterial); wall4.position.set(0, 1, 25.5); scene.add(wall4);
+
+    // Ball
     const ball = new THREE.Mesh(new THREE.SphereGeometry(0.5, 16, 16), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-    ball.position.set(0, 0.5, 0);
-    scene.add(ball);
+    ball.position.set(0, 0.5, 0); scene.add(ball);
 
+    // Player
     const player = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 2, 16), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
-    player.position.set(-10, 1, 0);
-    scene.add(player);
+    player.position.set(-10, 1, 0); scene.add(player);
 
     const circle = new THREE.Mesh(new THREE.RingGeometry(0.6, 0.8, 32), new THREE.MeshBasicMaterial({ color: 0x00ccff, side: THREE.DoubleSide }));
     circle.rotation.x = -Math.PI / 2;
     circle.visible = false;
     scene.add(circle);
 
-    camera.position.set(0, 30, 30);
-    camera.lookAt(0, 0, 0);
+    // Goals
+    const goalMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const goalGeo = new THREE.BoxGeometry(1, 3, 10);
+    const goal1 = new THREE.Mesh(goalGeo, goalMat); goal1.position.set(-40.7, 1.5, 0); scene.add(goal1);
+    const goal2 = new THREE.Mesh(goalGeo, goalMat); goal2.position.set(40.7, 1.5, 0); scene.add(goal2);
+
+    // Camera setup
+    camera.position.set(0, 30, 30); camera.lookAt(0, 0, 0);
 
     let keys = {};
     document.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
@@ -148,18 +167,22 @@
     const powerbarFrame = document.getElementById('powerbar').contentWindow;
 
     function shoot() {
+      if (!isHoldingBall) return;
       const dx = Math.cos(-player.rotation.y);
       const dz = Math.sin(-player.rotation.y);
-      ball.position.x += dx * (2 + shootPower * 3);
-      ball.position.z += dz * (2 + shootPower * 3);
+      ball.position.x += dx * (2 + shootPower * 8);
+      ball.position.z += dz * (2 + shootPower * 8);
       shootPower = 0;
+      isHoldingBall = false;
     }
 
     function pass() {
+      if (!isHoldingBall) return;
       const dx = Math.cos(-player.rotation.y);
       const dz = Math.sin(-player.rotation.y);
       ball.position.x += dx * 2;
       ball.position.z += dz * 2;
+      isHoldingBall = false;
     }
 
     document.getElementById('btn-shoot').addEventListener('touchstart', () => shootCharging = true);
@@ -201,8 +224,10 @@
         circle.visible = true;
         ball.position.x = player.position.x + Math.cos(-player.rotation.y) * 1.2;
         ball.position.z = player.position.z + Math.sin(-player.rotation.y) * 1.2;
+        isHoldingBall = true;
       } else {
         circle.visible = false;
+        isHoldingBall = false;
       }
     }
 
