@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+    }
+    #bar {
+      height: 100%;
+      background: linear-gradient(to right, #00f, #0ff);
+      transition: width 0.1s ease;
+    }
+  </style>
+</head>
+<body>
+  <div id="bar" style="width: 0%"></div>
+  <script>
+    window.addEventListener('message', e => {
+      const power = Math.max(0, Math.min(1, parseFloat(e.data)));
+      document.getElementById('bar').style.width = (power * 100) + '%';
+    });
+  </script>
+</body>
+</html>
