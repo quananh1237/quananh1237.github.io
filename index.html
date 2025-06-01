@@ -2,13 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
   <title>Super Liquid Soccer Clone</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div id="scoreboard">Team A 0 - 0 Team B</div>
+
+  <!-- Joystick điều khiển -->
+  <div id="joystick-zone">
+    <div id="joystick-base">
+      <div id="joystick-stick"></div>
+    </div>
+  </div>
+
+  <!-- Three.js -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+
+  <!-- Scripts -->
+  <script src="joystick.js"></script>
   <script src="game.js"></script>
 </body>
 </html>
