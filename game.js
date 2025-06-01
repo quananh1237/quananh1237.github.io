@@ -1,4 +1,4 @@
-// Khởi tạo cảnh 3D
+// Cảnh 3D
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -33,31 +33,41 @@ scene.add(player);
 camera.position.set(0, 30, 30);
 camera.lookAt(0, 0, 0);
 
-// Input
+// Input phím
 const keys = {};
 document.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
 document.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 
-// Di chuyển
+// Di chuyển cầu thủ (phím + joystick)
 function movePlayer() {
   const speed = 0.25;
   let moved = false;
-  if (keys['w']) { player.position.z -= speed; moved = true; }
-  if (keys['s']) { player.position.z += speed; moved = true; }
-  if (keys['a']) { player.position.x -= speed; moved = true; }
-  if (keys['d']) { player.position.x += speed; moved = true; }
+  let vx = 0, vz = 0;
 
-  if (moved) {
-    // Xoay theo hướng
-    const angle = Math.atan2(
-      player.position.z - ball.position.z,
-      player.position.x - ball.position.x
-    );
+  // Phím
+  if (keys['w']) vz -= 1;
+  if (keys['s']) vz += 1;
+  if (keys['a']) vx -= 1;
+  if (keys['d']) vx += 1;
+
+  // Joystick
+  vx += joystickVector.x;
+  vz += joystickVector.y;
+
+  const len = Math.sqrt(vx * vx + vz * vz);
+  if (len > 0) {
+    vx /= len;
+    vz /= len;
+    player.position.x += vx * speed;
+    player.position.z += vz * speed;
+    moved = true;
+
+    const angle = Math.atan2(vz, vx);
     player.rotation.y = -angle;
   }
 }
 
-// Sút
+// Sút bóng
 function kickBall() {
   const dx = ball.position.x - player.position.x;
   const dz = ball.position.z - player.position.z;
@@ -69,7 +79,7 @@ function kickBall() {
   }
 }
 
-// Animate
+// Game loop
 function animate() {
   requestAnimationFrame(animate);
   movePlayer();
