@@ -38,6 +38,15 @@
     .btn-action:active {
       background: rgba(255,255,255,0.5);
     }
+    iframe#powerbar {
+      position: absolute;
+      bottom: 110px;
+      right: 20px;
+      width: 160px;
+      height: 20px;
+      border: none;
+      background: transparent;
+    }
   </style>
 </head>
 <body>
@@ -51,11 +60,14 @@
     <div id="btn-pass" class="btn-action">Pass</div>
     <div id="btn-sprint" class="btn-action">Sprint</div>
   </div>
+  <iframe id="powerbar" src="powerbar.html"></iframe>
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
   <script>
     const isTouch = 'ontouchstart' in window;
     let joystickVector = { x: 0, y: 0 };
+    let shootPower = 0;
+    let shootCharging = false;
 
     if (isTouch) {
       document.getElementById('joystick-zone').style.display = 'block';
@@ -63,11 +75,7 @@
       const stick = document.getElementById('joystick-stick');
       let dragging = false;
 
-      base.addEventListener('touchstart', e => {
-        e.preventDefault();
-        dragging = true;
-      });
-
+      base.addEventListener('touchstart', e => { e.preventDefault(); dragging = true; });
       base.addEventListener('touchmove', e => {
         e.preventDefault();
         if (!dragging) return;
@@ -84,10 +92,8 @@
         stick.style.top = `${dy + rect.height / 2 - 25}px`;
         joystickVector = { x: dx / maxDist, y: dy / maxDist };
       });
-
       base.addEventListener('touchend', e => {
-        e.preventDefault();
-        dragging = false;
+        e.preventDefault(); dragging = false;
         joystickVector = { x: 0, y: 0 };
         stick.style.left = '35px';
         stick.style.top = '35px';
@@ -104,6 +110,20 @@
     field.rotation.x = -Math.PI / 2;
     scene.add(field);
 
+    const linesMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+    const linePoints = [
+      [-40, -25], [40, -25], [40, 25], [-40, 25], [-40, -25],
+      [0, -25], [0, 25]
+    ];
+    for (let i = 0; i < linePoints.length - 1; i++) {
+      const geometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(linePoints[i][0], 0.01, linePoints[i][1]),
+        new THREE.Vector3(linePoints[i+1][0], 0.01, linePoints[i+1][1])
+      ]);
+      const line = new THREE.Line(geometry, linesMaterial);
+      scene.add(line);
+    }
+
     const ball = new THREE.Mesh(new THREE.SphereGeometry(0.5, 16, 16), new THREE.MeshBasicMaterial({ color: 0xffffff }));
     ball.position.set(0, 0.5, 0);
     scene.add(ball);
@@ -112,7 +132,7 @@
     player.position.set(-10, 1, 0);
     scene.add(player);
 
-    const circle = new THREE.Mesh(new THREE.RingGeometry(0.6, 0.8, 32), new THREE.MeshBasicMaterial({ color: 0x00ff00, side: THREE.DoubleSide }));
+    const circle = new THREE.Mesh(new THREE.RingGeometry(0.6, 0.8, 32), new THREE.MeshBasicMaterial({ color: 0x00ccff, side: THREE.DoubleSide }));
     circle.rotation.x = -Math.PI / 2;
     circle.visible = false;
     scene.add(circle);
@@ -125,12 +145,31 @@
     document.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 
     let sprinting = false;
-    document.getElementById('btn-shoot').addEventListener('touchstart', e => { e.preventDefault(); shoot(); });
-    document.getElementById('btn-pass').addEventListener('touchstart', e => { e.preventDefault(); pass(); });
-    document.getElementById('btn-sprint').addEventListener('touchstart', e => { e.preventDefault(); sprinting = true; });
-    document.getElementById('btn-sprint').addEventListener('touchend', e => { e.preventDefault(); sprinting = false; });
+    const powerbarFrame = document.getElementById('powerbar').contentWindow;
 
-    document.getElementById('btn-shoot').addEventListener('mousedown', shoot);
+    function shoot() {
+      const dx = Math.cos(-player.rotation.y);
+      const dz = Math.sin(-player.rotation.y);
+      ball.position.x += dx * (2 + shootPower * 3);
+      ball.position.z += dz * (2 + shootPower * 3);
+      shootPower = 0;
+    }
+
+    function pass() {
+      const dx = Math.cos(-player.rotation.y);
+      const dz = Math.sin(-player.rotation.y);
+      ball.position.x += dx * 2;
+      ball.position.z += dz * 2;
+    }
+
+    document.getElementById('btn-shoot').addEventListener('touchstart', () => shootCharging = true);
+    document.getElementById('btn-shoot').addEventListener('touchend', () => { shoot(); shootCharging = false; });
+    document.getElementById('btn-pass').addEventListener('touchstart', pass);
+    document.getElementById('btn-sprint').addEventListener('touchstart', () => sprinting = true);
+    document.getElementById('btn-sprint').addEventListener('touchend', () => sprinting = false);
+
+    document.getElementById('btn-shoot').addEventListener('mousedown', () => shootCharging = true);
+    document.getElementById('btn-shoot').addEventListener('mouseup', () => { shoot(); shootCharging = false; });
     document.getElementById('btn-pass').addEventListener('mousedown', pass);
     document.getElementById('btn-sprint').addEventListener('mousedown', () => sprinting = true);
     document.getElementById('btn-sprint').addEventListener('mouseup', () => sprinting = false);
@@ -167,24 +206,12 @@
       }
     }
 
-    function shoot() {
-      const dx = Math.cos(-player.rotation.y);
-      const dz = Math.sin(-player.rotation.y);
-      ball.position.x += dx * 3;
-      ball.position.z += dz * 3;
-    }
-
-    function pass() {
-      const dx = Math.cos(-player.rotation.y);
-      const dz = Math.sin(-player.rotation.y);
-      ball.position.x += dx * 2;
-      ball.position.z += dz * 2;
-    }
-
     function animate() {
       requestAnimationFrame(animate);
       movePlayer();
       checkBallControl();
+      if (shootCharging) shootPower = Math.min(shootPower + 0.01, 1);
+      powerbarFrame.postMessage(shootPower, '*');
       renderer.render(scene, camera);
     }
     animate();
