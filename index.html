@@ -1,24 +1,93 @@
 <!DOCTYPE html>
-<html lang="en">
-<head><meta charset="utf-8"><title>Flappy - Part1 Menu</title>
-<style>body{margin:0;overflow:hidden;background:#70c5ce;font-family:Arial}canvas{display:block;margin:0 auto;background:#70c5ce}#menuButton{position:absolute;top:50px;left:50px;width:60px;height:60px;border-radius:50%;background:url('https://i.imgur.com/1QdD6BE.png') no-repeat center/cover;cursor:grab;z-index:1000}#menuContent{position:absolute;top:120px;left:50px;width:200px;background:rgba(0,0,0,0.8);color:#fff;padding:10px;border-radius:8px;display:none}</style></head><body>
-<canvas id="gameCanvas" width="320" height="480"></canvas>
-<div id="menuButton" title="Menu"></div>
-<div id="menuContent"><h3>Menu</h3><p>(Profile / Shop / Auto coming)</p></div>
-<script>
-const canvas=document.getElementById('gameCanvas'),ctx=canvas.getContext('2d');
-let frames=0; const DEGREE=Math.PI/180;
-const sprite=new Image(); sprite.src='https://i.imgur.com/Q9nQZ6k.png';
-const state={current:0,getReady:0,game:1,over:2};
-document.addEventListener('keydown',e=>{ if(e.code==='Space'){ bird.flap(); if(state.current===state.getReady) state.current=state.game; } });
-const bird={animation:[{sX:276,sY:112},{sX:276,sY:139},{sX:276,sY:164},{sX:276,sY:139}],x:50,y:150,w:34,h:26,frame:0,gravity:0.25,jump:4.6,speed:0,draw(){let b=this.animation[this.frame];ctx.drawImage(sprite,b.sX,b.sY,this.w,this.h,this.x-this.w/2,this.y-this.h/2,this.w,this.h)},flap(){this.speed=-this.jump},update(){this.period=state.current===state.getReady?10:5;this.frame+=frames%this.period===0?1:0;this.frame%=this.animation.length;if(state.current===state.getReady)this.y=150;else{this.speed+=this.gravity;this.y+=this.speed;if(this.y+this.h/2>=canvas.height)state.current=state.over}},reset(){this.speed=0;this.y=150}};
-const pipes={position:[],w:53,h:400,gap:85,maxYPos:-150,dx:2,draw(){for(let p of this.position){ctx.drawImage(sprite,553,0,this.w,this.h,p.x,p.y,this.w,this.h);ctx.drawImage(sprite,502,0,this.w,this.h,p.x,p.y+this.h+this.gap,this.w,this.h)}},update(){if(state.current!==state.game)return; if(frames%100===0)this.position.push({x:canvas.width,y:this.maxYPos*(Math.random()+1)}); for(let i=0;i<this.position.length;i++){let p=this.position[i];p.x-=this.dx; if(p.x+this.w<=0)this.position.shift()}},reset(){this.position=[]}};
-const score={value:0,draw(){ctx.fillStyle='#fff';ctx.strokeStyle='#000';ctx.lineWidth=2;ctx.font='28px Arial';ctx.fillText(this.value,canvas.width/2,50);ctx.strokeText(this.value,canvas.width/2,50)},reset(){this.value=0}};
-function draw(){ctx.fillStyle='#70c5ce';ctx.fillRect(0,0,canvas.width,canvas.height);pipes.draw();bird.draw();score.draw()}
-function update(){bird.update();pipes.update()}function loop(){update();draw();frames++;requestAnimationFrame(loop)}loop();
-const menuButton=document.getElementById('menuButton'),menuContent=document.getElementById('menuContent');
-let isDown=false,offsetX=0,offsetY=0;menuButton.addEventListener('pointerdown',e=>{isDown=true;offsetX=e.clientX-menuButton.offsetLeft;offsetY=e.clientY-menuButton.offsetTop;menuButton.setPointerCapture(e.pointerId)});
-document.addEventListener('pointermove',e=>{if(!isDown) return; menuButton.style.left=e.clientX-offsetX+'px'; menuButton.style.top=e.clientY-offsetY+'px'});
-document.addEventListener('pointerup',e=>{isDown=false; try{menuButton.releasePointerCapture(e.pointerId)}catch(e){} });
-menuButton.addEventListener('click',()=>{ if(menuContent.style.display==='none' || menuContent.style.display==='' ) { menuContent.style.display='block'; menuContent.style.left=menuButton.offsetLeft+'px'; menuContent.style.top=(menuButton.offsetTop+70)+'px'; } else { menuContent.style.display='none'; } });
-</script></body></html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Game + Menu</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      text-align: center;
+    }
+    header {
+      background: #222;
+      padding: 10px;
+    }
+    button {
+      margin: 5px;
+      padding: 10px 15px;
+      background: #444;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover { background: #666; }
+    .page {
+      display: none;
+      padding: 20px;
+    }
+    .active { display: block; }
+    .item {
+      margin: 20px;
+      padding: 10px;
+      border: 1px solid #444;
+    }
+    input[type=range] { width: 80%; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎮 Game Demo</h1>
+    <button onclick="showPage('home')">Home</button>
+    <button onclick="showPage('profile')">Profile</button>
+    <button onclick="showPage('shop')">Shop</button>
+    <button onclick="showPage('fov')">FOV</button>
+  </header>
+
+  <!-- Trang Home -->
+  <div id="home" class="page active">
+    <h2>Trang chính - Game ở đây</h2>
+    <p>👉 Đây là khu vực game chính (có thể chèn code game).</p>
+  </div>
+
+  <!-- Trang Profile -->
+  <div id="profile" class="page">
+    <h1>👤 Profile</h1>
+    <p>Đây là trang profile của bạn.</p>
+  </div>
+
+  <!-- Trang Shop -->
+  <div id="shop" class="page">
+    <h1>🛒 Shop</h1>
+    <div class="item">Vật phẩm 1 - 100 coin</div>
+    <div class="item">Vật phẩm 2 - 200 coin</div>
+    <div class="item">Vật phẩm 3 - 300 coin</div>
+  </div>
+
+  <!-- Trang FOV -->
+  <div id="fov" class="page">
+    <h1>🔭 FOV Settings</h1>
+    <p>Điều chỉnh FOV (Field of View):</p>
+    <input type="range" min="30" max="120" value="75" id="fovSlider">
+    <p>Giá trị: <span id="fovValue">75</span>°</p>
+  </div>
+
+  <script>
+    function showPage(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    const slider = document.getElementById("fovSlider");
+    const value = document.getElementById("fovValue");
+    if (slider) {
+      slider.oninput = () => {
+        value.textContent = slider.value;
+        // Ở đây bạn có thể thêm code thay đổi FOV trong game
+      };
+    }
+  </script>
+</body>
+</html>
