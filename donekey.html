@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bindz Done Key</title>
+<style>
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background: linear-gradient(270deg,#a1c4fd,#c2e9fb,#ff9a9e,#fad0c4);
+    background-size:800% 800%;
+    animation:gradientMove 15s ease infinite;
+    font-family:'Segoe UI',sans-serif;
+    color:#fff;
+    text-align:center;
+}
+@keyframes gradientMove{
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
+}
+.container{
+    background: rgba(255,255,255,0.1);
+    padding:50px 40px;
+    border-radius:20px;
+    box-shadow:0 0 50px rgba(255,255,255,0.3);
+}
+h1{
+    font-size:48px;
+    text-shadow:0 0 20px #fff;
+    margin-bottom:40px;
+}
+#keyDisplay{
+    font-size:36px;
+    text-shadow:0 0 20px #fff;
+    word-break:break-word;
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Your Key 🤩</h1>
+    <div id="keyDisplay">Đang tạo key...</div>
+</div>
+<script>
+// Kiểm tra 24h lần trước
+let lastTime = localStorage.getItem("lastKeyTime");
+let now = Date.now();
+if(lastTime && now - parseInt(lastTime) < 24*60*60*1000){
+    document.getElementById("keyDisplay").textContent = "Bạn phải chờ 24h mới lấy key mới!";
+} else {
+    // tạo key ngẫu nhiên bindz-1d-xxxxxx
+    function generateKey(){
+        const chars="abcdefghijklmnopqrstuvwxyz0123456789";
+        let key="";
+        for(let i=0;i<6;i++){
+            key+=chars[Math.floor(Math.random()*chars.length)];
+        }
+        return "bindz-1d-"+key;
+    }
+    const key = generateKey();
+    document.getElementById("keyDisplay").textContent = key;
+    localStorage.setItem("lastKeyTime", now.toString());
+}
+</script>
+</body>
+</html>
