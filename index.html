@@ -1,93 +1,65 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>Game + Menu</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: white;
-      text-align: center;
-    }
-    header {
-      background: #222;
-      padding: 10px;
-    }
-    button {
-      margin: 5px;
-      padding: 10px 15px;
-      background: #444;
-      border: none;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover { background: #666; }
-    .page {
-      display: none;
-      padding: 20px;
-    }
-    .active { display: block; }
-    .item {
-      margin: 20px;
-      padding: 10px;
-      border: 1px solid #444;
-    }
-    input[type=range] { width: 80%; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bindz Key</title>
+<style>
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background: linear-gradient(270deg,#ff9a9e,#fad0c4,#a1c4fd,#c2e9fb);
+    background-size:800% 800%;
+    animation:gradientMove 15s ease infinite;
+    font-family:'Segoe UI',sans-serif;
+}
+@keyframes gradientMove{
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
+}
+.container{
+    text-align:center;
+    background: rgba(255,255,255,0.1);
+    padding:50px 40px;
+    border-radius:20px;
+    box-shadow:0 0 50px rgba(255,255,255,0.3);
+}
+h1{font-size:48px;color:#fff;text-shadow:0 0 20px #fff;margin-bottom:40px;}
+button{
+    margin-top:20px;
+    padding:15px 40px;
+    font-size:20px;
+    border:none;
+    border-radius:15px;
+    cursor:pointer;
+    background:linear-gradient(45deg,#ff9a9e,#fad0c4);
+    color:#fff;
+    transition:.3s;
+    box-shadow:0 0 20px rgba(255,255,255,0.5);
+}
+button:hover{
+    transform: scale(1.1);
+    box-shadow:0 0 30px rgba(255,255,255,0.7);
+}
+</style>
 </head>
 <body>
-  <header>
-    <h1>🎮 Game Demo</h1>
-    <button onclick="showPage('home')">Home</button>
-    <button onclick="showPage('profile')">Profile</button>
-    <button onclick="showPage('shop')">Shop</button>
-    <button onclick="showPage('fov')">FOV</button>
-  </header>
-
-  <!-- Trang Home -->
-  <div id="home" class="page active">
-    <h2>Trang chính - Game ở đây</h2>
-    <p>👉 Đây là khu vực game chính (có thể chèn code game).</p>
-  </div>
-
-  <!-- Trang Profile -->
-  <div id="profile" class="page">
-    <h1>👤 Profile</h1>
-    <p>Đây là trang profile của bạn.</p>
-  </div>
-
-  <!-- Trang Shop -->
-  <div id="shop" class="page">
-    <h1>🛒 Shop</h1>
-    <div class="item">Vật phẩm 1 - 100 coin</div>
-    <div class="item">Vật phẩm 2 - 200 coin</div>
-    <div class="item">Vật phẩm 3 - 300 coin</div>
-  </div>
-
-  <!-- Trang FOV -->
-  <div id="fov" class="page">
-    <h1>🔭 FOV Settings</h1>
-    <p>Điều chỉnh FOV (Field of View):</p>
-    <input type="range" min="30" max="120" value="75" id="fovSlider">
-    <p>Giá trị: <span id="fovValue">75</span>°</p>
-  </div>
-
-  <script>
-    function showPage(id) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-    }
-
-    const slider = document.getElementById("fovSlider");
-    const value = document.getElementById("fovValue");
-    if (slider) {
-      slider.oninput = () => {
-        value.textContent = slider.value;
-        // Ở đây bạn có thể thêm code thay đổi FOV trong game
-      };
-    }
-  </script>
+<div class="container">
+    <h1>Welcome to Bindz 🤩</h1>
+    <button id="getKeyBtn">Lấy Key ⬇️</button>
+</div>
+<script>
+const btn = document.getElementById("getKeyBtn");
+btn.addEventListener("click",()=>{
+    // mở Linkvertise
+    window.open("https://byvn.net/EjEf","_blank");
+    // sau 2s chuyển sang donekey.html
+    setTimeout(()=>{window.location.href="donekey.html"},2000);
+});
+</script>
 </body>
 </html>
