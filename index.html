@@ -1,65 +1,159 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bindz Key</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Key Menu Bindz</title>
 <style>
-body{
-    margin:0;
-    height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background: linear-gradient(270deg,#ff9a9e,#fad0c4,#a1c4fd,#c2e9fb);
-    background-size:800% 800%;
-    animation:gradientMove 15s ease infinite;
-    font-family:'Segoe UI',sans-serif;
-}
-@keyframes gradientMove{
-    0%{background-position:0% 50%;}
-    50%{background-position:100% 50%;}
-    100%{background-position:0% 50%;}
-}
-.container{
-    text-align:center;
-    background: rgba(255,255,255,0.1);
-    padding:50px 40px;
-    border-radius:20px;
-    box-shadow:0 0 50px rgba(255,255,255,0.3);
-}
-h1{font-size:48px;color:#fff;text-shadow:0 0 20px #fff;margin-bottom:40px;}
-button{
-    margin-top:20px;
-    padding:15px 40px;
-    font-size:20px;
-    border:none;
-    border-radius:15px;
-    cursor:pointer;
-    background:linear-gradient(45deg,#ff9a9e,#fad0c4);
-    color:#fff;
-    transition:.3s;
-    box-shadow:0 0 20px rgba(255,255,255,0.5);
-}
-button:hover{
-    transform: scale(1.1);
-    box-shadow:0 0 30px rgba(255,255,255,0.7);
-}
+  :root{--bg1:#071029;--bg2:#0b2a40;--accent1:#7b61ff;--accent2:#00ffd1}
+  *{box-sizing:border-box} html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial}
+  body{
+    background:
+      radial-gradient(circle at 10% 20%, rgba(123,97,255,0.08), transparent 10%),
+      radial-gradient(circle at 90% 80%, rgba(0,255,209,0.03), transparent 12%),
+      linear-gradient(180deg,var(--bg1),var(--bg2));
+    display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden;
+  }
+  .card{width:min(980px,94vw);max-width:980px;padding:28px;border-radius:16px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border:1px solid rgba(255,255,255,0.04);box-shadow:0 10px 40px rgba(2,6,23,0.6);display:flex;gap:20px;}
+  .left{flex:1 1 420px;min-width:300px}
+  h1{font-size:28px;margin:0}
+  .code-wrap{margin-top:8px;border-radius:12px;overflow:hidden;background:rgba(255,255,255,0.01);padding:8px}
+  canvas{display:block;width:100%;height:140px;background:transparent}
+  .btn{padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:700;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#021}
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:#fff}
+  .right{width:340px;min-width:240px;display:flex;flex-direction:column;gap:12px}
+  .key-card{padding:16px;border-radius:12px;background:linear-gradient(180deg, rgba(0,0,0,0.25), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.04)}
+  .key-real{font-family:ui-monospace,Menlo,monospace;font-weight:800;font-size:20px;letter-spacing:2px}
+  .small{font-size:12px;opacity:0.8}
+  .hidden{display:none}
+  @media (max-width:880px){.card{flex-direction:column;padding:16px}.right{width:100%}canvas{height:120px}}
 </style>
 </head>
 <body>
-<div class="container">
-    <h1>Welcome to Bindz 🤩</h1>
-    <button id="getKeyBtn">Lấy Key ⬇️</button>
-</div>
+  <div class="card" role="main" aria-label="Key Menu Bindz">
+    <div class="left">
+      <h1>Key Menu — Bindz</h1>
+      <div class="small">Mã phiên (session) vẽ bằng canvas — copy lên game để check.</div>
+      <div class="code-wrap"><canvas id="sessionCanvas" width="800" height="200" aria-hidden="true"></canvas></div>
+      <div style="margin-top:12px;display:flex;gap:10px">
+        <button id="reGen" class="btn ghost">Tạo lại mã</button>
+        <button id="copySession" class="btn ghost">Sao chép mã phiên</button>
+        <button id="showKey" class="btn">Hiện Key</button>
+      </div>
+      <div id="sessionText" class="small" style="margin-top:8px"></div>
+    </div>
+
+    <div class="right">
+      <div class="key-card">
+        <div class="small">Key thật (bấm "Hiện Key")</div>
+        <div id="keyBox" class="key-real">•••••••••••</div>
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <button id="copyKey" class="btn ghost">Sao chép key</button>
+          <button id="openRaw" class="btn ghost">Mở raw</button>
+        </div>
+        <div class="small" style="margin-top:8px">Link raw: đang update ₫</div>
+      </div>
+    </div>
+  </div>
+
 <script>
-const btn = document.getElementById("getKeyBtn");
-btn.addEventListener("click",()=>{
-    // mở Linkvertise
-    window.open("https://byvn.net/EjEf","_blank");
-    // sau 2s chuyển sang donekey.html
-    setTimeout(()=>{window.location.href="donekey.html"},2000);
+/* ==== CẤU HÌNH ==== */
+const RAW_LINK = ""; // nếu có raw file chứa key, gán link vào đây (optional)
+const PREFIX = "BNDZ"; // tiền tố key trong Lua sẽ dùng cùng giá trị này
+
+/* ==== HÀM HỢP NHẤT GIỮA JS & LUA ==== */
+/* simple deterministic derivation:
+   key = PREFIX + "-" + (sumAscii(session) % 100000).padStart(5,'0')
+*/
+function sumAscii(s){
+  let sum = 0;
+  for(let i=0;i<s.length;i++) sum += s.charCodeAt(i);
+  return sum;
+}
+function makeKeyFromSession_simple(session){
+  const mod = sumAscii(session) % 100000;
+  const pad = String(mod).padStart(5,'0');
+  return PREFIX + "-" + pad;
+}
+
+/* ==== UI + Canvas draw ==== */
+const canvas = document.getElementById('sessionCanvas');
+const ctx = canvas.getContext('2d');
+const sessionText = document.getElementById('sessionText');
+const keyBox = document.getElementById('keyBox');
+let currentSession = "";
+
+function randInt(min,max){return Math.floor(Math.random()*(max-min+1))+min}
+function randomHex(len=5){const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';let s='';for(let i=0;i<len;i++) s+=chars.charAt(Math.floor(Math.random()*chars.length)); return s;}
+
+function genSession(){
+  const now = new Date();
+  const code = randomHex(5) + "-" + now.getHours().toString().padStart(2,'0') + now.getMinutes().toString().padStart(2,'0') + "-" + randomHex(3);
+  currentSession = code;
+  sessionText.textContent = "Session: " + code;
+  drawSessionCode(code);
+  keyBox.textContent = "•••••••••••";
+  return code;
+}
+
+function drawSessionCode(code){
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+  // faint bg
+  const g = ctx.createLinearGradient(0,0,w,h); g.addColorStop(0,'rgba(255,255,255,0.02)'); g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+  // glow
+  ctx.globalAlpha = 0.16;
+  const gg = ctx.createRadialGradient(w*0.2,h*0.3,10,w*0.2,h*0.3,260);
+  gg.addColorStop(0,'#7b61ff'); gg.addColorStop(1,'transparent');
+  ctx.fillStyle = gg; ctx.fillRect(0,0,w,h);
+  ctx.globalAlpha = 1;
+  // text
+  const fs = Math.floor(h*0.42);
+  ctx.font = `700 ${fs}px "Segoe UI", Roboto, Arial`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const cx = w/2, cy = h/2;
+  // offscreen for gradient
+  const off = document.createElement('canvas'); off.width = w; off.height = h;
+  const octx = off.getContext('2d');
+  octx.font = ctx.font; octx.textAlign='center'; octx.textBaseline='middle';
+  const grad = octx.createLinearGradient(0,0,w,0);
+  grad.addColorStop(0,'#ffffff'); grad.addColorStop(0.35,'#ffd36b'); grad.addColorStop(0.7,'#7b61ff'); grad.addColorStop(1,'#00ffd1');
+  octx.fillStyle = grad; octx.fillText(code, cx, cy);
+  octx.lineWidth = 6; octx.strokeStyle = 'rgba(0,0,0,0.22)'; octx.strokeText(code,cx,cy);
+  // wave slices
+  const slices = 16;
+  for(let i=0;i<slices;i++){
+    const sy = Math.floor(i*(h/slices)); const sh = Math.ceil(h/slices);
+    const dx = Math.sin((Date.now()/600)+i*0.6) * randInt(-6,6);
+    ctx.drawImage(off, 0, sy, w, sh, dx, sy, w, sh);
+  }
+  // noise
+  ctx.globalAlpha = 0.12;
+  for(let i=0;i<30;i++){
+    ctx.beginPath(); ctx.moveTo(randInt(0,w), randInt(0,h)); ctx.lineTo(randInt(0,w), randInt(0,h));
+    ctx.strokeStyle = (i%2 ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)');
+    ctx.lineWidth = Math.random()*1.6; ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+}
+
+document.getElementById('reGen').addEventListener('click', ()=>genSession());
+document.getElementById('copySession').addEventListener('click', ()=>{
+  navigator.clipboard.writeText(currentSession).then(()=>alert('Đã copy mã phiên: ' + currentSession)).catch(()=>alert('Không copy được'));
 });
+document.getElementById('showKey').addEventListener('click', ()=>{
+  const k = makeKeyFromSession_simple(currentSession);
+  keyBox.textContent = k;
+  if(RAW_LINK) document.getElementById('openRaw').onclick = ()=>window.open(RAW_LINK,'_blank');
+});
+document.getElementById('copyKey').addEventListener('click', ()=>{ navigator.clipboard.writeText(keyBox.textContent).then(()=>alert('Key đã copy')).catch(()=>alert('Không copy được')); });
+
+genSession();
+// subtle redraw motion
+setInterval(()=>{ if(currentSession) drawSessionCode(currentSession); }, 900 + Math.random()*700);
 </script>
 </body>
 </html>
