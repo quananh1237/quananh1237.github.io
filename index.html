@@ -3,157 +3,487 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Key Menu Bindz</title>
+<title>Bindz Music - Demo</title>
 <style>
-  :root{--bg1:#071029;--bg2:#0b2a40;--accent1:#7b61ff;--accent2:#00ffd1}
-  *{box-sizing:border-box} html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial}
-  body{
-    background:
-      radial-gradient(circle at 10% 20%, rgba(123,97,255,0.08), transparent 10%),
-      radial-gradient(circle at 90% 80%, rgba(0,255,209,0.03), transparent 12%),
-      linear-gradient(180deg,var(--bg1),var(--bg2));
-    display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden;
+  /* RESET nhẹ */
+  *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial}
+  html,body{height:100%;background:#0b0f14;color:#eaf0f6;}
+
+  /* Intro full-screen */
+  .intro-screen{
+    position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(120deg,#05060a 0%, #0b1220 60%);
+    z-index:9999;flex-direction:column;
   }
-  .card{width:min(980px,94vw);max-width:980px;padding:28px;border-radius:16px;
+  /* Bindz logo circular */
+  .bindz-wrap{
+    width:240px;height:240px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 30% 20%, rgba(255,255,255,0.03), transparent 30%),
+               linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00));
+    position:relative;overflow:visible;
+    transform-origin:center;
+    animation:popIn 900ms cubic-bezier(.22,1,.36,1) forwards;
+  }
+  @keyframes popIn{
+    from{transform:scale(.6);opacity:0}
+    to{transform:scale(1);opacity:1}
+  }
+
+  /* glowing rainbow ring - animated gradient sweep */
+  .rainbow-ring{
+    position:absolute;inset:-6px;border-radius:50%;padding:6px;
+    background:conic-gradient(from 0deg, #ff004d, #ff7a00, #ffd200, #4fff00, #00ffd1, #007bff, #7a00ff, #ff004d);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 12px), black calc(100% - 11px));
+    animation:spin 6s linear infinite;
+    filter:blur(6px) saturate(1.2);
+    opacity:.95;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* inner content */
+  .bindz-text{
+    z-index:3;display:flex;flex-direction:column;align-items:center;gap:8px;
+  }
+  .bindz-title{
+    font-size:36px;font-weight:800;letter-spacing:1px;color:white;
+    display:flex;gap:8px;align-items:center;
+  }
+  .bindz-title .b-letter{
+    display:inline-block;transform-origin:center;opacity:0;
+    animation:letterIn .9s cubic-bezier(.2,.9,.3,1) forwards;
+  }
+  /* stagger letters */
+  .bindz-title .b-letter:nth-child(1){animation-delay:.05s}
+  .bindz-title .b-letter:nth-child(2){animation-delay:.10s}
+  .bindz-title .b-letter:nth-child(3){animation-delay:.15s}
+  .bindz-title .b-letter:nth-child(4){animation-delay:.20s}
+  .bindz-title .b-letter:nth-child(5){animation-delay:.25s}
+
+  @keyframes letterIn{
+    from{transform:translateY(20px) rotate(-8deg) scale(.8);opacity:0}
+    to{transform:translateY(0) rotate(0) scale(1);opacity:1}
+  }
+
+  .bindz-sub{font-size:12px;color:rgba(255,255,255,.7);transform:translateY(6px);opacity:0;animation:subFade 900ms .6s forwards}
+  @keyframes subFade{to{transform:translateY(0);opacity:1}}
+
+  /* loading bar shown after intro */
+  .loading{
+    width:320px;height:10px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden;margin-top:26px;
+    transform-origin:center;opacity:0;transition:opacity .3s;
+  }
+  .loading .bar{height:100%;width:0;background:linear-gradient(90deg,#6ef0ff,#ff8ef5);transition:width .2s linear}
+
+  /* After intro hide */
+  .hidden{display:none !important}
+
+  /* MAIN UI */
+  .app{
+    display:flex;flex-direction:column;min-height:100vh;padding:28px;gap:18px;
+    background:linear-gradient(180deg,#071017 0%, #05111a 100%);
+  }
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .logo-small{display:flex;gap:10px;align-items:center}
+  .logo-small .logo-dot{width:46px;height:46px;border-radius:50%;
+    background:conic-gradient(#ff004d,#ff7a00,#ffd200,#4fff00,#00ffd1,#007bff,#7a00ff);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;box-shadow:0 6px 30px rgba(0,0,0,.6)}
+  .title-main{font-size:18px;font-weight:700}
+
+  /* search rounded with moving rainbow border (small circle on top-right) */
+  .search-wrap{position:relative;display:flex;align-items:center;gap:10px}
+  .search-input{
+    padding:12px 14px;border-radius:999px;border:none;outline:none;background:rgba(255,255,255,0.03);color:inherit;min-width:260px
+  }
+  .search-btn{
+    width:52px;height:52px;border-radius:50%;border:none;display:grid;place-items:center;background:transparent;cursor:pointer;position:relative;
+  }
+  /* small animated rainbow orb */
+  .orb{
+    width:100%;height:100%;border-radius:50%;display:block;background:conic-gradient(from 0deg,#ff004d,#ff7a00,#ffd200,#4fff00,#00ffd1,#007bff,#7a00ff);
+    -webkit-mask: radial-gradient(circle at 30% 30%, rgba(0,0,0,0.0) 0%, rgba(0,0,0,1) 30%, rgba(0,0,0,1) 100%);
+    animation:orbSpin 5s linear infinite;box-shadow:0 6px 20px rgba(0,0,0,.6);
+  }
+  @keyframes orbSpin{to{transform:rotate(360deg)}}
+
+  main{display:grid;grid-template-columns: 320px 1fr;gap:20px;align-items:start}
+  /* left playlist column */
+  .playlist{
     background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    border:1px solid rgba(255,255,255,0.04);box-shadow:0 10px 40px rgba(2,6,23,0.6);display:flex;gap:20px;}
-  .left{flex:1 1 420px;min-width:300px}
-  h1{font-size:28px;margin:0}
-  .code-wrap{margin-top:8px;border-radius:12px;overflow:hidden;background:rgba(255,255,255,0.01);padding:8px}
-  canvas{display:block;width:100%;height:140px;background:transparent}
-  .btn{padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:700;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#021}
-  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:#fff}
-  .right{width:340px;min-width:240px;display:flex;flex-direction:column;gap:12px}
-  .key-card{padding:16px;border-radius:12px;background:linear-gradient(180deg, rgba(0,0,0,0.25), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.04)}
-  .key-real{font-family:ui-monospace,Menlo,monospace;font-weight:800;font-size:20px;letter-spacing:2px}
-  .small{font-size:12px;opacity:0.8}
-  .hidden{display:none}
-  @media (max-width:880px){.card{flex-direction:column;padding:16px}.right{width:100%}canvas{height:120px}}
+    border-radius:12px;padding:14px;backdrop-filter:blur(6px);min-height:300px;
+  }
+  .track{
+    display:flex;gap:12px;align-items:center;padding:8px;border-radius:10px;margin-bottom:8px;
+    transition:background .12s;cursor:default;
+  }
+  .track:hover{background:rgba(255,255,255,0.02)}
+  .thumb{
+    width:56px;height:56px;border-radius:8px;background:linear-gradient(180deg,#1b2b37,#0e161b);display:flex;align-items:center;justify-content:center;font-weight:700;
+    color:#fff;font-size:12px;flex-shrink:0;overflow:hidden;
+  }
+  .track-info{flex:1;display:flex;flex-direction:column;gap:4px}
+  .track-title{font-weight:700}
+  .track-sub{font-size:12px;color:rgba(255,255,255,.6)}
+  .track-controls{display:flex;gap:8px;align-items:center}
+
+  .btn{
+    padding:8px 12px;border-radius:999px;border:none;background:linear-gradient(90deg,#1b6cff,#7a00ff);
+    color:white;font-weight:700;cursor:pointer;display:inline-flex;gap:8px;align-items:center;
+  }
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+  .btn.square{border-radius:10px;padding:8px}
+
+  /* large player / lyrics area */
+  .player{
+    background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+    border-radius:12px;padding:18px;min-height:300px;
+  }
+  .player-top{display:flex;align-items:center;gap:16px}
+  .player-cover{width:120px;height:120px;border-radius:12px;background:linear-gradient(180deg,#22313d,#0f1b20);display:flex;align-items:center;justify-content:center;font-weight:800}
+  .player-meta{flex:1}
+  .timebar{margin-top:12px;height:8px;background:rgba(255,255,255,0.03);border-radius:999px;overflow:hidden}
+  .timebar .filled{height:100%;width:0;background:linear-gradient(90deg,#6ef0ff,#ff8ef5)}
+
+  .lyrics{margin-top:12px;background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;color:rgba(255,255,255,.9);min-height:100px;font-size:14px}
+
+  footer{margin-top:18px;display:flex;justify-content:center;color:rgba(255,255,255,.45);font-size:13px;padding-bottom:40px}
+
+  /* responsive */
+  @media (max-width:880px){
+    main{grid-template-columns:1fr;padding-bottom:40px}
+    .logo-small .logo-dot{width:40px;height:40px}
+    .search-input{min-width:140px}
+  }
 </style>
 </head>
 <body>
-  <div class="card" role="main" aria-label="Key Menu Bindz">
-    <div class="left">
-      <h1>Key Menu — Bindz</h1>
-      <div class="small">Mã phiên (session) vẽ bằng canvas — copy lên game để check.</div>
-      <div class="code-wrap"><canvas id="sessionCanvas" width="800" height="200" aria-hidden="true"></canvas></div>
-      <div style="margin-top:12px;display:flex;gap:10px">
-        <button id="reGen" class="btn ghost">Tạo lại mã</button>
-        <button id="copySession" class="btn ghost">Sao chép mã phiên</button>
-        <button id="showKey" class="btn">Hiện Key</button>
-      </div>
-      <div id="sessionText" class="small" style="margin-top:8px"></div>
-    </div>
 
-    <div class="right">
-      <div class="key-card">
-        <div class="small">Key thật (bấm "Hiện Key")</div>
-        <div id="keyBox" class="key-real">•••••••••••</div>
-        <div style="margin-top:10px;display:flex;gap:8px">
-          <button id="copyKey" class="btn ghost">Sao chép key</button>
-          <button id="openRaw" class="btn ghost">Mở raw</button>
-        </div>
-        <div class="small" style="margin-top:8px">Link raw: đang update ₫</div>
+<!-- INTRO -->
+<div class="intro-screen" id="intro">
+  <div class="bindz-wrap" role="img" aria-label="Bindz Intro">
+    <div class="rainbow-ring" aria-hidden="true"></div>
+    <div class="bindz-text">
+      <div class="bindz-title" aria-hidden="true">
+        <span class="b-letter">B</span>
+        <span class="b-letter">I</span>
+        <span class="b-letter">N</span>
+        <span class="b-letter">D</span>
+        <span class="b-letter">Z</span>
       </div>
+      <div class="bindz-sub">Aesthetics · Music · Vibes</div>
     </div>
   </div>
 
+  <div class="loading" id="introLoading" aria-hidden="true" style="opacity:0">
+    <div class="bar" id="introBar"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app" style="display:none">
+  <header>
+    <div class="logo-small">
+      <div class="logo-dot">B</div>
+      <div>
+        <div class="title-main">Bindz Music</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.55)">Trang demo nhạc cho GitHub Pages</div>
+      </div>
+    </div>
+
+    <div class="search-wrap" title="Tìm nhạc">
+      <input class="search-input" id="search" placeholder="Tìm bài hoặc nghệ sĩ..." />
+      <button class="search-btn" id="searchBtn" aria-label="Search">
+        <span class="orb" aria-hidden="true"></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="playlist" id="playlist">
+      <!-- tracks sẽ được JS thêm vào -->
+    </section>
+
+    <section class="player" id="playerArea">
+      <div class="player-top">
+        <div class="player-cover" id="playerCover">HVN</div>
+        <div class="player-meta">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="flex:1">
+              <div id="playerTitle" style="font-weight:800;font-size:18px">Hello Việt Nam</div>
+              <div style="font-size:13px;color:rgba(255,255,255,.6)" id="playerArtist">Artist: Demo</div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+              <div style="display:flex;gap:8px">
+                <button class="btn square" id="playBtn" aria-label="Play/Pause">▶</button>
+                <button class="btn ghost square" id="stopBtn" aria-label="Stop">⏹</button>
+              </div>
+              <div style="font-size:12px;color:rgba(255,255,255,.6);display:flex;gap:8px;align-items:center">
+                <div id="timeCur">00:00</div>
+                <div>/</div>
+                <div id="timeTot">00:00</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="timebar" aria-hidden="true">
+            <div class="filled" id="timeFilled"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;display:flex;gap:12px;align-items:center">
+        <button class="btn ghost" id="langToggle">Anh → Việt</button>
+        <div style="font-size:13px;color:rgba(255,255,255,.65)">Chuyển đổi hiển thị ngôn ngữ tiêu đề / lyrics</div>
+      </div>
+
+      <div class="lyrics" id="lyrics">
+        <!-- lyrics / mô tả bài sẽ thay đổi theo ngôn ngữ -->
+        Hello Vietnam — (English demo text). Click "Anh → Việt" to switch to Vietnamese lyrics/translation.
+      </div>
+    </section>
+  </main>
+
+  <footer>Made with ♥ — Bindz Music demo</footer>
+</div>
+
+<!-- AUDIO ELEMENT (hidden but controlled by JS) -->
+<audio id="audio" preload="auto"></audio>
+
 <script>
-/* ==== CẤU HÌNH ==== */
-const RAW_LINK = ""; // nếu có raw file chứa key, gán link vào đây (optional)
-const PREFIX = "BNDZ"; // tiền tố key trong Lua sẽ dùng cùng giá trị này
-
-/* ==== HÀM HỢP NHẤT GIỮA JS & LUA ==== */
-/* simple deterministic derivation:
-   key = PREFIX + "-" + (sumAscii(session) % 100000).padStart(5,'0')
+/*
+  NOTES:
+  - Bản demo này sử dụng một file audio mẫu online (CC0) cho "Hello Việt Nam demo".
+  - Bạn có thể thay src của track.src thành đường dẫn MP3 trên GitHub (ví dụ: /assets/hello-vn.mp3).
+  - Danh sách tracks là mảng JS, dễ thêm / chỉnh.
 */
-function sumAscii(s){
-  let sum = 0;
-  for(let i=0;i<s.length;i++) sum += s.charCodeAt(i);
-  return sum;
-}
-function makeKeyFromSession_simple(session){
-  const mod = sumAscii(session) % 100000;
-  const pad = String(mod).padStart(5,'0');
-  return PREFIX + "-" + pad;
-}
 
-/* ==== UI + Canvas draw ==== */
-const canvas = document.getElementById('sessionCanvas');
-const ctx = canvas.getContext('2d');
-const sessionText = document.getElementById('sessionText');
-const keyBox = document.getElementById('keyBox');
-let currentSession = "";
-
-function randInt(min,max){return Math.floor(Math.random()*(max-min+1))+min}
-function randomHex(len=5){const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';let s='';for(let i=0;i<len;i++) s+=chars.charAt(Math.floor(Math.random()*chars.length)); return s;}
-
-function genSession(){
-  const now = new Date();
-  const code = randomHex(5) + "-" + now.getHours().toString().padStart(2,'0') + now.getMinutes().toString().padStart(2,'0') + "-" + randomHex(3);
-  currentSession = code;
-  sessionText.textContent = "Session: " + code;
-  drawSessionCode(code);
-  keyBox.textContent = "•••••••••••";
-  return code;
-}
-
-function drawSessionCode(code){
-  const w = canvas.width, h = canvas.height;
-  ctx.clearRect(0,0,w,h);
-  // faint bg
-  const g = ctx.createLinearGradient(0,0,w,h); g.addColorStop(0,'rgba(255,255,255,0.02)'); g.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
-  // glow
-  ctx.globalAlpha = 0.16;
-  const gg = ctx.createRadialGradient(w*0.2,h*0.3,10,w*0.2,h*0.3,260);
-  gg.addColorStop(0,'#7b61ff'); gg.addColorStop(1,'transparent');
-  ctx.fillStyle = gg; ctx.fillRect(0,0,w,h);
-  ctx.globalAlpha = 1;
-  // text
-  const fs = Math.floor(h*0.42);
-  ctx.font = `700 ${fs}px "Segoe UI", Roboto, Arial`;
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  const cx = w/2, cy = h/2;
-  // offscreen for gradient
-  const off = document.createElement('canvas'); off.width = w; off.height = h;
-  const octx = off.getContext('2d');
-  octx.font = ctx.font; octx.textAlign='center'; octx.textBaseline='middle';
-  const grad = octx.createLinearGradient(0,0,w,0);
-  grad.addColorStop(0,'#ffffff'); grad.addColorStop(0.35,'#ffd36b'); grad.addColorStop(0.7,'#7b61ff'); grad.addColorStop(1,'#00ffd1');
-  octx.fillStyle = grad; octx.fillText(code, cx, cy);
-  octx.lineWidth = 6; octx.strokeStyle = 'rgba(0,0,0,0.22)'; octx.strokeText(code,cx,cy);
-  // wave slices
-  const slices = 16;
-  for(let i=0;i<slices;i++){
-    const sy = Math.floor(i*(h/slices)); const sh = Math.ceil(h/slices);
-    const dx = Math.sin((Date.now()/600)+i*0.6) * randInt(-6,6);
-    ctx.drawImage(off, 0, sy, w, sh, dx, sy, w, sh);
+const tracks = [
+  {
+    id: 'hello-vn',
+    title_en: 'Hello Vietnam',
+    title_vi: 'Xin chào Việt Nam',
+    artist: 'Demo Artist',
+    thumbText: 'HVN',
+    // Demo audio (public domain short sample). Thay bằng file của bạn nếu muốn.
+    src: 'https://cdn.pixabay.com/download/audio/2022/02/08/audio_3f0f8f5f3c.mp3?filename=small-loop-11018.mp3',
+    lyrics_en: `Hello Vietnam — this is a demo track in English.
+Click the language button to switch to Vietnamese.`,
+    lyrics_vi: `Xin chào Việt Nam — đây là bản demo tiếng Việt.
+Nhấn nút ngôn ngữ để chuyển sang tiếng Anh.`,
   }
-  // noise
-  ctx.globalAlpha = 0.12;
-  for(let i=0;i<30;i++){
-    ctx.beginPath(); ctx.moveTo(randInt(0,w), randInt(0,h)); ctx.lineTo(randInt(0,w), randInt(0,h));
-    ctx.strokeStyle = (i%2 ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)');
-    ctx.lineWidth = Math.random()*1.6; ctx.stroke();
-  }
-  ctx.globalAlpha = 1;
+  // Bạn có thể thêm object track mới ở đây
+];
+
+// --- UI helpers ---
+const intro = document.getElementById('intro');
+const introLoading = document.getElementById('introLoading');
+const introBar = document.getElementById('introBar');
+const app = document.getElementById('app');
+const playlistEl = document.getElementById('playlist');
+const audio = document.getElementById('audio');
+const playBtn = document.getElementById('playBtn');
+const stopBtn = document.getElementById('stopBtn');
+const playerTitle = document.getElementById('playerTitle');
+const playerArtist = document.getElementById('playerArtist');
+const playerCover = document.getElementById('playerCover');
+const timeCur = document.getElementById('timeCur');
+const timeTot = document.getElementById('timeTot');
+const timeFilled = document.getElementById('timeFilled');
+const lyricsEl = document.getElementById('lyrics');
+const langToggle = document.getElementById('langToggle');
+const searchInput = document.getElementById('search');
+
+// state
+let currentTrack = null;
+let lang = 'en'; // 'en' hoặc 'vi'
+
+// make playlist UI
+function renderPlaylist(list){
+  playlistEl.innerHTML = '';
+  list.forEach(track=>{
+    const t = document.createElement('div');
+    t.className = 'track';
+    t.dataset.id = track.id;
+    t.innerHTML = `
+      <div class="thumb">${escapeHtml(track.thumbText)}</div>
+      <div class="track-info">
+        <div class="track-title">${escapeHtml(track.title_en)}</div>
+        <div class="track-sub">${escapeHtml(track.artist)}</div>
+      </div>
+      <div class="track-controls">
+        <button class="btn play-track">▶</button>
+        <button class="btn ghost stop-track">⏹</button>
+      </div>
+    `;
+    playlistEl.appendChild(t);
+  });
+
+  // attach handlers
+  document.querySelectorAll('.play-track').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      const id = e.target.closest('.track').dataset.id;
+      playById(id);
+    });
+  });
+  document.querySelectorAll('.stop-track').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      const id = e.target.closest('.track').dataset.id;
+      if(currentTrack && currentTrack.id === id){
+        stopAudio();
+      } else {
+        // if not current, just load and stop (or do nothing)
+        loadTrackById(id);
+        stopAudio();
+      }
+    });
+  });
 }
 
-document.getElementById('reGen').addEventListener('click', ()=>genSession());
-document.getElementById('copySession').addEventListener('click', ()=>{
-  navigator.clipboard.writeText(currentSession).then(()=>alert('Đã copy mã phiên: ' + currentSession)).catch(()=>alert('Không copy được'));
-});
-document.getElementById('showKey').addEventListener('click', ()=>{
-  const k = makeKeyFromSession_simple(currentSession);
-  keyBox.textContent = k;
-  if(RAW_LINK) document.getElementById('openRaw').onclick = ()=>window.open(RAW_LINK,'_blank');
-});
-document.getElementById('copyKey').addEventListener('click', ()=>{ navigator.clipboard.writeText(keyBox.textContent).then(()=>alert('Key đã copy')).catch(()=>alert('Không copy được')); });
 
-genSession();
-// subtle redraw motion
-setInterval(()=>{ if(currentSession) drawSessionCode(currentSession); }, 900 + Math.random()*700);
+// play / load helpers
+function loadTrackById(id){
+  const t = tracks.find(x=>x.id===id);
+  if(!t) return;
+  currentTrack = t;
+  audio.src = t.src;
+  playerTitle.textContent = (lang === 'en')? t.title_en : t.title_vi;
+  playerArtist.textContent = 'Artist: ' + t.artist;
+  playerCover.textContent = t.thumbText || t.title_en.slice(0,3).toUpperCase();
+  lyricsEl.textContent = (lang === 'en')? t.lyrics_en : t.lyrics_vi;
+  // reset time display
+  timeCur.textContent = '00:00'; timeTot.textContent = '00:00';
+  timeFilled.style.width = '0%';
+}
+
+function playById(id){
+  if(!currentTrack || currentTrack.id !== id) loadTrackById(id);
+  playAudio();
+}
+
+function playAudio(){
+  if(!audio.src) return;
+  audio.play().catch(err=>{
+    console.warn('Autoplay blocked or error', err);
+  });
+  playBtn.textContent = '⏸';
+}
+function pauseAudio(){
+  audio.pause();
+  playBtn.textContent = '▶';
+}
+function stopAudio(){
+  audio.pause();
+  audio.currentTime = 0;
+  playBtn.textContent = '▶';
+  timeCur.textContent = formatTime(0);
+  timeFilled.style.width = '0%';
+}
+
+// toggle play button global
+playBtn.addEventListener('click', ()=>{
+  if(!audio.src){
+    // if no track loaded, load first
+    loadTrackById(tracks[0].id);
+  }
+  if(audio.paused) playAudio(); else pauseAudio();
+});
+
+stopBtn.addEventListener('click', ()=>stopAudio());
+
+// language toggle
+langToggle.addEventListener('click', ()=>{
+  lang = (lang === 'en')? 'vi' : 'en';
+  langToggle.textContent = (lang === 'en')? 'Anh → Việt' : 'Việt → Anh';
+  if(currentTrack){
+    playerTitle.textContent = (lang === 'en')? currentTrack.title_en : currentTrack.title_vi;
+    lyricsEl.textContent = (lang === 'en')? currentTrack.lyrics_en : currentTrack.lyrics_vi;
+  }
+});
+
+// audio time updates
+audio.addEventListener('timeupdate', ()=>{
+  const cur = audio.currentTime || 0;
+  const tot = audio.duration || 0;
+  timeCur.textContent = formatTime(cur);
+  timeTot.textContent = isFinite(tot) && tot>0 ? formatTime(tot) : '00:00';
+  const pct = (tot>0) ? Math.min(100, (cur/tot)*100) : 0;
+  timeFilled.style.width = pct + '%';
+  // show play/pause state
+  playBtn.textContent = audio.paused ? '▶' : '⏸';
+});
+
+audio.addEventListener('ended', ()=>{
+  playBtn.textContent = '▶';
+});
+
+// search filter
+searchInput.addEventListener('input', (e)=>{
+  const q = e.target.value.trim().toLowerCase();
+  const filtered = tracks.filter(t=>{
+    return t.title_en.toLowerCase().includes(q) || t.title_vi.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q);
+  });
+  renderPlaylist(filtered);
+});
+
+// small helper functions
+function formatTime(sec){
+  if(!isFinite(sec) || sec<=0) return '00:00';
+  sec = Math.floor(sec);
+  const m = Math.floor(sec/60);
+  const s = sec%60;
+  return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+function escapeHtml(str){ return (str+'').replace(/[&<>"']/g, s=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' })[s]); }
+
+// INTRO simulation: animate loading then show app
+function runIntroThenShowApp(){
+  // show loading bar after small delay
+  setTimeout(()=> {
+    introLoading.style.opacity = '1';
+    let progress = 0;
+    const iv = setInterval(()=>{
+      progress += Math.random()*14; // random-ish loading
+      if(progress >= 100) progress = 100;
+      introBar.style.width = progress + '%';
+      if(progress >= 100) {
+        clearInterval(iv);
+        setTimeout(()=> {
+          // fade out intro
+          intro.style.transition = 'opacity .5s ease';
+          intro.style.opacity = '0';
+          setTimeout(()=> { intro.classList.add('hidden'); app.style.display = ''; initApp(); }, 550);
+        }, 450);
+      }
+    }, 220);
+  }, 700);
+}
+
+function initApp(){
+  // render playlist
+  renderPlaylist(tracks);
+  // load first track but do not autoplay
+  loadTrackById(tracks[0].id);
+  // show app visible
+  app.style.display = 'block';
+}
+
+// kick off
+runIntroThenShowApp();
+
+// small accessibility: Enter in search - focus first result
+searchInput.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){
+    const first = document.querySelector('.track .play-track');
+    if(first) first.click();
+  }
+});
+
+// allow clicking on cover to toggle play
+playerCover.addEventListener('click', ()=>{
+  if(audio.paused) playAudio(); else pauseAudio();
+});
+
 </script>
 </body>
 </html>
