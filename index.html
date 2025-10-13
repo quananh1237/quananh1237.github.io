@@ -121,7 +121,8 @@ main{grid-template-columns:1fr}
           <div style="display:flex;align-items:center;gap:12px">
             <div style="flex:1">
               <div id="playerTitle" style="font-weight:800;font-size:18px">Hello Việt Nam</div>
-              <div id="playerArtist" style="font-size:13px;color:rgba(255,255,255,.6)">Artist: Demo</div>
+              <div id="playerArtist" style="font-size:13px;color:rgba(255,255,255,.6)">Artist: Demo Bybindx
+              z</div>
             </div>
             <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
               <div style="display:flex;gap:8px"><button class="btn square" id="playBtn">▶</button><button class="btn ghost square" id="stopBtn">⏹</button></div>
@@ -156,7 +157,8 @@ main{grid-template-columns:1fr}
 </div>
 
 <script>
-const tracks=[{id:'hello-vn',title_en:'Hello Vietnam',title_vi:'Xin chào Việt Nam',artist:'Demo Artist',thumbText:'HVN',src:'https://cdn.pixabay.com/download/audio/2022/02/08/audio_3f0f8f5f3c.mp3?filename=small-loop-11018.mp3',lyrics_en:'Hello Vietnam (English demo).',lyrics_vi:'Xin chào Việt Nam (tiếng Việt demo).'}];
+const tracks=[{id:'hello-vn',title_en:'Hello Vietnam',title_vi:'Xin chào Việt Nam',artist:'Demo Artist',thumbText:'HVN',src:'src: "music/Hello Vietnam - Pham Quynh Anh (Lyrics) - Levy Lyrics.mp3"
+?filename=small-loop-11018.mp3',lyrics_en:'Hello Vietnam (English demo).',lyrics_vi:'Xin chào Việt Nam (tiếng Việt demo).'}];
 let currentTrack=null,lang='en';
 const intro=document.getElementById('intro'),introLoading=document.getElementById('introLoading'),introBar=document.getElementById('introBar'),app=document.getElementById('app');
 const playlistEl=document.getElementById('playlist'),audio=document.getElementById('audio');
