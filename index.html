@@ -3,189 +3,414 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Bindz Music - Demo</title>
+<title>Bindz Music — Hello Vietnam</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial}
-html,body{height:100%;background:#0b0f14;color:#eaf0f6;}
-/* Intro */
-.intro-screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(120deg,#05060a 0%, #0b1220 60%);z-index:9999;flex-direction:column;}
-.bindz-wrap{width:240px;height:240px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 30% 20%, rgba(255,255,255,0.03), transparent 30%),linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00));position:relative;overflow:visible;transform-origin:center;animation:popIn .9s cubic-bezier(.22,1,.36,1) forwards;}
-@keyframes popIn{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
-.rainbow-ring{position:absolute;inset:-6px;border-radius:50%;padding:6px;background:conic-gradient(from 0deg, #ff004d, #ff7a00, #ffd200, #4fff00, #00ffd1, #007bff, #7a00ff, #ff004d);-webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 12px), black calc(100% - 11px));animation:spin 6s linear infinite;filter:blur(6px) saturate(1.2);opacity:.95;}
-@keyframes spin{to{transform:rotate(360deg)}}
-.bindz-text{z-index:3;display:flex;flex-direction:column;align-items:center;gap:8px}
-.bindz-title{font-size:36px;font-weight:800;color:white;display:flex;gap:8px;align-items:center}
-.bindz-title .b-letter{display:inline-block;transform-origin:center;opacity:0;animation:letterIn .9s cubic-bezier(.2,.9,.3,1) forwards}
-.bindz-title .b-letter:nth-child(1){animation-delay:.05s}
-.bindz-title .b-letter:nth-child(2){animation-delay:.1s}
-.bindz-title .b-letter:nth-child(3){animation-delay:.15s}
-.bindz-title .b-letter:nth-child(4){animation-delay:.2s}
-.bindz-title .b-letter:nth-child(5){animation-delay:.25s}
-@keyframes letterIn{from{transform:translateY(20px) rotate(-8deg) scale(.8);opacity:0}to{transform:translateY(0) rotate(0) scale(1);opacity:1}}
-.bindz-sub{font-size:12px;color:rgba(255,255,255,.7);transform:translateY(6px);opacity:0;animation:subFade .9s .6s forwards}
-@keyframes subFade{to{transform:translateY(0);opacity:1}}
-.loading{width:320px;height:10px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden;margin-top:26px;opacity:0;transition:opacity .3s}
-.loading .bar{height:100%;width:0;background:linear-gradient(90deg,#6ef0ff,#ff8ef5);transition:width .2s linear}
-.hidden{display:none!important}
+  /* --- SIMPLE RESET --- */
+  *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial}
+  html,body{height:100%;background:#071018;color:#eaf0f6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
 
-/* App UI */
-.app{display:flex;flex-direction:column;min-height:100vh;padding:28px;gap:18px;background:linear-gradient(180deg,#071017 0%, #05111a 100%)}
-header{display:flex;align-items:center;justify-content:space-between;gap:16px}
-.logo-small{display:flex;gap:10px;align-items:center}
-.logo-small .logo-dot{width:46px;height:46px;border-radius:50%;background:conic-gradient(#ff004d,#ff7a00,#ffd200,#4fff00,#00ffd1,#007bff,#7a00ff);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;box-shadow:0 6px 30px rgba(0,0,0,.6)}
-.title-main{font-size:18px;font-weight:700}
-.search-wrap{position:relative;display:flex;align-items:center;gap:10px}
-.search-input{padding:12px 14px;border-radius:999px;border:none;outline:none;background:rgba(255,255,255,0.03);color:inherit;min-width:260px}
-.search-btn{width:52px;height:52px;border-radius:50%;border:none;display:grid;place-items:center;background:transparent;cursor:pointer;position:relative}
-.orb{width:100%;height:100%;border-radius:50%;background:conic-gradient(from 0deg,#ff004d,#ff7a00,#ffd200,#4fff00,#00ffd1,#007bff,#7a00ff);-webkit-mask: radial-gradient(circle at 30% 30%, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 30%);animation:orbSpin 5s linear infinite;box-shadow:0 6px 20px rgba(0,0,0,.6)}
-@keyframes orbSpin{to{transform:rotate(360deg)}}
-main{display:grid;grid-template-columns:320px 1fr;gap:20px;align-items:start}
-.playlist{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:12px;padding:14px;backdrop-filter:blur(6px)}
-.track{display:flex;gap:12px;align-items:center;padding:8px;border-radius:10px;margin-bottom:8px;transition:background .12s;cursor:default}
-.track:hover{background:rgba(255,255,255,0.02)}
-.thumb{width:56px;height:56px;border-radius:8px;background:linear-gradient(180deg,#1b2b37,#0e161b);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:12px}
-.track-info{flex:1;display:flex;flex-direction:column;gap:4px}
-.track-title{font-weight:700}
-.track-sub{font-size:12px;color:rgba(255,255,255,.6)}
-.track-controls{display:flex;gap:8px;align-items:center}
-.btn{padding:8px 12px;border-radius:999px;border:none;background:linear-gradient(90deg,#1b6cff,#7a00ff);color:white;font-weight:700;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
-.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
-.btn.square{border-radius:10px;padding:8px}
-.player{background:linear-gradient(180deg,rgba(255,255,255,0.015),rgba(255,255,255,0.01));border-radius:12px;padding:18px}
-.player-top{display:flex;align-items:center;gap:16px}
-.player-cover{width:120px;height:120px;border-radius:12px;background:linear-gradient(180deg,#22313d,#0f1b20);display:flex;align-items:center;justify-content:center;font-weight:800}
-.player-meta{flex:1}
-.timebar{margin-top:12px;height:8px;background:rgba(255,255,255,0.03);border-radius:999px;overflow:hidden}
-.timebar .filled{height:100%;width:0;background:linear-gradient(90deg,#6ef0ff,#ff8ef5)}
-.lyrics{margin-top:12px;background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;color:rgba(255,255,255,.9);min-height:100px;font-size:14px}
-footer{margin-top:18px;display:flex;justify-content:center;color:rgba(255,255,255,.45);font-size:13px;padding-bottom:40px}
+  /* --- INTRO --- */
+  .intro-screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(120deg,#03060a,#071022);z-index:9999;flex-direction:column}
+  .bindz-wrap{width:240px;height:240px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;overflow:visible;animation:popIn .9s cubic-bezier(.22,1,.36,1) forwards}
+  .rainbow-ring{position:absolute;inset:-8px;border-radius:50%;padding:8px;background:conic-gradient(from 0deg,#ff004d,#ff7a00,#ffd200,#4fff00,#00ffd1,#007bff,#7a00ff);filter:blur(6px);animation:spin 6s linear infinite;opacity:.95}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes popIn{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+  .bindz-text{z-index:2;text-align:center}
+  .bindz-title{font-size:36px;font-weight:800;letter-spacing:1px;color:#fff;display:inline-flex;gap:6px}
+  .b-letter{display:inline-block;opacity:0;transform:translateY(20px);animation:letterIn .7s cubic-bezier(.2,.9,.3,1) forwards}
+  .b-letter:nth-child(1){animation-delay:.05s}.b-letter:nth-child(2){animation-delay:.1s}.b-letter:nth-child(3){animation-delay:.15s}.b-letter:nth-child(4){animation-delay:.2s}.b-letter:nth-child(5){animation-delay:.25s}
+  @keyframes letterIn{to{opacity:1;transform:translateY(0)}}
+  .bindz-sub{color:rgba(255,255,255,.72);margin-top:8px;font-size:13px}
 
-/* Responsive */
-@media (max-width:880px){
-main{grid-template-columns:1fr}
-}
+  .loading{width:320px;height:10px;border-radius:999px;background:rgba(255,255,255,0.04);overflow:hidden;margin-top:22px;opacity:0;transition:opacity .3s}
+  .loading .bar{height:100%;width:0;background:linear-gradient(90deg,#6ef0ff,#ff8ef5);transition:width .2s linear}
 
-/* === DOWNLOAD PANEL === */
-.download-panel-toggle{
-  position:fixed;left:20px;bottom:24px;z-index:999;background:linear-gradient(45deg,#ff004d,#ff7a00,#ffd200,#4fff00,#00ffd1,#007bff,#7a00ff);
-  background-size:300% 300%;border:none;border-radius:50%;width:58px;height:58px;color:#fff;font-size:24px;cursor:pointer;
-  animation:moveGradient 5s linear infinite;box-shadow:0 0 20px rgba(0,0,0,.6);
-  transition:transform .3s ease;
-}
-.download-panel-toggle:hover{transform:scale(1.1) rotate(8deg)}
-@keyframes moveGradient{
-  0%{background-position:0 50%}
-  50%{background-position:100% 50%}
-  100%{background-position:0 50%}
-}
-.download-panel{
-  position:fixed;left:20px;bottom:100px;width:260px;border-radius:16px;backdrop-filter:blur(10px);
-  background:linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02));
-  box-shadow:0 10px 40px rgba(0,0,0,.5);
-  transform:translateY(200px);opacity:0;pointer-events:none;
-  transition:all .4s cubic-bezier(.25,.8,.25,1);z-index:998;padding:16px;text-align:center;
-}
-.download-panel.show{
-  transform:translateY(0);opacity:1;pointer-events:auto;
-}
-.download-thumb{width:100px;height:100px;border-radius:12px;background:linear-gradient(180deg,#1b2b37,#0e161b);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-weight:800}
-.download-title{font-weight:700;margin-bottom:8px}
-.download-buttons{display:flex;gap:8px;justify-content:center}
-.download-buttons .btn{font-size:14px;padding:6px 10px}
+  /* --- APP --- */
+  .app{display:none;min-height:100vh;padding:28px;gap:18px;background:linear-gradient(180deg,#071017 0%, #05111a 100%);transition:opacity .3s}
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px}
+  .logo{display:flex;gap:12px;align-items:center}
+  .logo-dot{width:56px;height:56px;border-radius:50%;background:conic-gradient(#ff004d,#ff7a00,#ffd200,#4fff00,#00ffd1,#007bff,#7a00ff);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;box-shadow:0 6px 30px rgba(0,0,0,.5)}
+  .title-main{font-weight:800;font-size:18px}
+  .search-wrap{display:flex;align-items:center;gap:10px}
+  .search-input{padding:12px 14px;border-radius:999px;border:none;background:rgba(255,255,255,0.03);color:inherit;min-width:220px}
+  .search-btn{width:54px;height:54px;border-radius:50%;border:none;background:transparent;display:grid;place-items:center;cursor:pointer;position:relative}
+  .orb{width:100%;height:100%;border-radius:50%;background:conic-gradient(from 0deg,#ff004d,#ff7a00,#ffd200,#4fff00,#00ffd1,#007bff,#7a00ff);animation:orbSpin 5s linear infinite;box-shadow:0 6px 20px rgba(0,0,0,.45)}
+  @keyframes orbSpin{to{transform:rotate(360deg)}}
+
+  main{display:grid;grid-template-columns:320px 1fr;gap:20px;align-items:start}
+  .playlist{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:14px;backdrop-filter:blur(6px);min-height:300px}
+  .track{display:flex;gap:12px;align-items:center;padding:8px;border-radius:10px;margin-bottom:8px;transition:background .12s}
+  .thumb{width:56px;height:56px;border-radius:8px;background:linear-gradient(180deg,#1b2b37,#0e161b);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:12px}
+  .track-info{flex:1}
+  .track-title{font-weight:700}
+  .track-sub{font-size:12px;color:rgba(255,255,255,.6)}
+  .track-controls{display:flex;gap:8px;align-items:center}
+
+  .btn{padding:8px 12px;border-radius:999px;border:none;background:linear-gradient(90deg,#1b6cff,#7a00ff);color:white;font-weight:700;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+  .btn.square{border-radius:10px;padding:8px}
+
+  .player{background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));border-radius:12px;padding:18px;min-height:300px}
+  .player-top{display:flex;align-items:center;gap:16px}
+  .player-cover{width:120px;height:120px;border-radius:12px;background:linear-gradient(180deg,#22313d,#0f1b20);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff}
+  .player-meta{flex:1}
+  .timebar{margin-top:12px;height:8px;background:rgba(255,255,255,0.03);border-radius:999px;overflow:hidden}
+  .timebar .filled{height:100%;width:0;background:linear-gradient(90deg,#6ef0ff,#ff8ef5)}
+
+  .lyrics{margin-top:12px;background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;color:rgba(255,255,255,.9);min-height:100px;font-size:14px}
+
+  footer{margin-top:18px;display:flex;justify-content:center;color:rgba(255,255,255,.45);font-size:13px;padding-bottom:40px}
+
+  /* DOWNLOAD PANEL */
+  .download-panel-toggle{position:fixed;left:20px;bottom:20px;z-index:999;background:conic-gradient(#ff004d,#ff7a00,#ffd200,#4fff00,#00ffd1,#007bff);width:60px;height:60px;border-radius:50%;border:none;color:#fff;font-size:22px;display:grid;place-items:center;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.45);transition:transform .25s}
+  .download-panel-toggle:hover{transform:scale(1.05)}
+  .download-panel{position:fixed;left:20px;bottom:100px;width:280px;border-radius:14px;padding:14px;background:linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02));backdrop-filter:blur(10px);box-shadow:0 12px 40px rgba(0,0,0,.5);transform:translateY(30px);opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.2,.9,.3,1);z-index:998}
+  .download-panel.show{transform:translateY(0);opacity:1;pointer-events:auto}
+  .download-thumb{width:120px;height:120px;border-radius:10px;margin:0 auto 10px;background:linear-gradient(180deg,#1b2b37,#0e161b);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff}
+  .download-title{text-align:center;font-weight:700;margin-bottom:10px}
+  .download-buttons{display:flex;gap:10px;justify-content:center}
+
+  /* Responsive */
+  @media (max-width:860px){main{grid-template-columns:1fr} .logo-dot{width:48px;height:48px}}
 </style>
 </head>
 <body>
 
 <!-- INTRO -->
 <div class="intro-screen" id="intro">
-  <div class="bindz-wrap"><div class="rainbow-ring"></div><div class="bindz-text"><div class="bindz-title"><span class="b-letter">B</span><span class="b-letter">I</span><span class="b-letter">N</span><span class="b-letter">D</span><span class="b-letter">Z</span></div><div class="bindz-sub">Aesthetics · Music · Vibes</div></div></div>
-  <div class="loading" id="introLoading"><div class="bar" id="introBar"></div></div>
+  <div class="bindz-wrap" role="img" aria-label="Bindz intro">
+    <div class="rainbow-ring" aria-hidden="true"></div>
+    <div class="bindz-text">
+      <div class="bindz-title" aria-hidden="true">
+        <span class="b-letter">B</span>
+        <span class="b-letter">I</span>
+        <span class="b-letter">N</span>
+        <span class="b-letter">D</span>
+        <span class="b-letter">Z</span>
+      </div>
+      <div class="bindz-sub">Aesthetics · Music · Vibes</div>
+    </div>
+  </div>
+
+  <div class="loading" id="introLoading" aria-hidden="true">
+    <div class="bar" id="introBar"></div>
+  </div>
 </div>
 
-<!-- MAIN APP -->
-<div class="app" id="app" style="display:none">
+<!-- APP -->
+<div class="app" id="app">
   <header>
-    <div class="logo-small"><div class="logo-dot">B</div><div><div class="title-main">Bindz Music</div><div style="font-size:12px;color:rgba(255,255,255,.55)">Demo nhạc cho GitHub Pages</div></div></div>
+    <div class="logo">
+      <div class="logo-dot">B</div>
+      <div>
+        <div class="title-main">Bindz Music</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.6)">Demo cho GitHub Pages</div>
+      </div>
+    </div>
+
     <div class="search-wrap">
-      <input class="search-input" id="search" placeholder="Tìm bài hoặc nghệ sĩ...">
-      <button class="search-btn"><span class="orb"></span></button>
+      <input class="search-input" id="search" placeholder="Tìm bài hoặc nghệ sĩ..." />
+      <button class="search-btn" id="searchBtn" aria-label="Search"><span class="orb" aria-hidden="true"></span></button>
     </div>
   </header>
 
   <main>
-    <section class="playlist" id="playlist"></section>
+    <section class="playlist" id="playlist">
+      <!-- playlist được render bằng JS -->
+    </section>
+
     <section class="player" id="playerArea">
       <div class="player-top">
         <div class="player-cover" id="playerCover">HVN</div>
         <div class="player-meta">
           <div style="display:flex;align-items:center;gap:12px">
             <div style="flex:1">
-              <div id="playerTitle" style="font-weight:800;font-size:18px">Hello Việt Nam</div>
-              <div id="playerArtist" style="font-size:13px;color:rgba(255,255,255,.6)">Artist: Demo Bybindx
-              z</div>
+              <div id="playerTitle" style="font-weight:800;font-size:18px">Hello Vietnam</div>
+              <div id="playerArtist" style="font-size:13px;color:rgba(255,255,255,.6)">Artist: Pham Quynh Anh</div>
             </div>
+
             <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
-              <div style="display:flex;gap:8px"><button class="btn square" id="playBtn">▶</button><button class="btn ghost square" id="stopBtn">⏹</button></div>
-              <div style="font-size:12px;color:rgba(255,255,255,.6);display:flex;gap:6px"><div id="timeCur">00:00</div>/<div id="timeTot">00:00</div></div>
+              <div style="display:flex;gap:8px">
+                <button class="btn square" id="playBtn" aria-label="Play">▶</button>
+                <button class="btn ghost square" id="stopBtn" aria-label="Stop">⏹</button>
+              </div>
+              <div style="font-size:12px;color:rgba(255,255,255,.6);display:flex;gap:8px;align-items:center">
+                <div id="timeCur">00:00</div>
+                <div>/</div>
+                <div id="timeTot">00:00</div>
+              </div>
             </div>
           </div>
-          <div class="timebar"><div class="filled" id="timeFilled"></div></div>
+
+          <div class="timebar" aria-hidden="true">
+            <div class="filled" id="timeFilled"></div>
+          </div>
         </div>
       </div>
+
       <div style="margin-top:14px;display:flex;gap:12px;align-items:center">
         <button class="btn ghost" id="langToggle">Anh → Việt</button>
-        <div style="font-size:13px;color:rgba(255,255,255,.65)">Chuyển ngôn ngữ hiển thị</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.65)">Chuyển hiển thị ngôn ngữ</div>
       </div>
-      <div class="lyrics" id="lyrics">Hello Vietnam — demo. Nhấn “Anh → Việt” để chuyển.</div>
+
+      <div class="lyrics" id="lyrics">
+        Hello Vietnam — (English demo). Nhấn "Anh → Việt" để chuyển sang tiếng Việt.
+      </div>
     </section>
   </main>
+
   <footer>Made with ♥ — Bindz Music demo</footer>
 </div>
 
-<!-- AUDIO -->
+<!-- Audio element -->
 <audio id="audio" preload="auto"></audio>
 
-<!-- DOWNLOAD PANEL -->
-<button class="download-panel-toggle" id="downloadToggle">⇩</button>
-<div class="download-panel" id="downloadPanel">
+<!-- Download panel -->
+<button class="download-panel-toggle" id="downloadToggle" title="Tải xuống">⇩</button>
+<div class="download-panel" id="downloadPanel" aria-hidden="true">
   <div class="download-thumb" id="downloadThumb">HVN</div>
-  <div class="download-title" id="downloadTitle">Hello Việt Nam</div>
+  <div class="download-title" id="downloadTitle">Hello Vietnam</div>
   <div class="download-buttons">
-    <a id="dlMp3" class="btn" href="#" download>MP3</a>
-    <a id="dlMp4" class="btn ghost" href="#" download>MP4</a>
+    <a id="dlMp3" class="btn" href="#" download>Download MP3</a>
+    <a id="dlMp4" class="btn ghost" href="#" download>Download MP4</a>
   </div>
 </div>
 
 <script>
-const tracks=[{id:'hello-vn',title_en:'Hello Vietnam',title_vi:'Xin chào Việt Nam',artist:'Demo Artist',thumbText:'HVN',src:'src: "music/Hello Vietnam - Pham Quynh Anh (Lyrics) - Levy Lyrics.mp3"
-?filename=small-loop-11018',lyrics_en:'Hello Vietnam (English demo).',lyrics_vi:'Xin chào Việt Nam (tiếng Việt demo).'}];
-let currentTrack=null,lang='en';
-const intro=document.getElementById('intro'),introLoading=document.getElementById('introLoading'),introBar=document.getElementById('introBar'),app=document.getElementById('app');
-const playlistEl=document.getElementById('playlist'),audio=document.getElementById('audio');
-const playBtn=document.getElementById('playBtn'),stopBtn=document.getElementById('stopBtn'),playerTitle=document.getElementById('playerTitle'),playerArtist=document.getElementById('playerArtist'),playerCover=document.getElementById('playerCover'),timeCur=document.getElementById('timeCur'),timeTot=document.getElementById('timeTot'),timeFilled=document.getElementById('timeFilled'),lyricsEl=document.getElementById('lyrics'),langToggle=document.getElementById('langToggle');
-const downloadToggle=document.getElementById('downloadToggle'),downloadPanel=document.getElementById('downloadPanel'),downloadThumb=document.getElementById('downloadThumb'),downloadTitle=document.getElementById('downloadTitle'),dlMp3=document.getElementById('dlMp3'),dlMp4=document.getElementById('dlMp4');
+/*
+  HƯỚNG DẪN NHANH:
+  - Đặt file MP3 vào thư mục 'music' (cùng cấp với index.html).
+  - Tên file chính xác (tương ứng biến `fileName` bên dưới).
+  - Sau đó mở trang GitHub Pages: player sẽ load file và phần download cũng sẵn sàng.
+*/
 
-function renderPlaylist(list){playlistEl.innerHTML='';list.forEach(t=>{const el=document.createElement('div');el.className='track';el.dataset.id=t.id;el.innerHTML=`<div class="thumb">${t.thumbText}</div><div class="track-info"><div class="track-title">${t.title_en}</div><div class="track-sub">${t.artist}</div></div><div class="track-controls"><button class="btn play-track">▶</button><button class="btn ghost stop-track">⏹</button></div>`;playlistEl.appendChild(el);});
-document.querySelectorAll('.play-track').forEach(b=>b.onclick=e=>playById(e.target.closest('.track').dataset.id));
-document.querySelectorAll('.stop-track').forEach(b=>b.onclick=e=>{const id=e.target.closest('.track').dataset.id;if(currentTrack&&currentTrack.id===id)stopAudio();});}
+/* TÊN FILE BẠN ĐÃ TẢI (để nguyên như bạn gửi) */
+const fileName = "Hello Vietnam - Pham Quynh Anh (Lyrics) - Levy Lyrics.mp3";
 
-function loadTrackById(id){const t=tracks.find(x=>x.id===id);if(!t)return;currentTrack=t;audio.src=t.src;playerTitle.textContent=lang==='en'?t.title_en:t.title_vi;playerArtist.textContent='Artist: '+t.artist;playerCover.textContent=t.thumbText;lyricsEl.textContent=lang==='en'?t.lyrics_en:t.lyrics_vi;
-downloadThumb.textContent=t.thumbText;downloadTitle.textContent=lang==='en'?t.title_en:t.title_vi;
-dlMp3.href=t.src;dlMp4.href=t.src.replace('.mp3','.mp4');}
-function playById(id){if(!currentTrack||currentTrack.id!==id)loadTrackById(id);audio.play();}
-function stopAudio(){audio.pause();audio.currentTime=0;}
-audio.addEventListener('play',()=>{playBtn.textContent='⏸';});
-audio.addEventListener('pause',()=>{playBtn.textContent='▶';});
-audio.addEventListener('timeupdate',()=>{const c=audio.currentTime,d=audio.duration||0;timeCur.textContent=formatTime(c);timeTot.textContent=formatTime(d);timeFilled.style.width=(c/d*100)+'%';});
-function formatTime(s){if(!s||isNaN(s))return'00:00';const m=Math.floor(s/60),ss=Math.floor(s%60);return`${m.toString().padStart(2,'0')}:${ss.toString().padStart(2,'0')}`;}
+/* DANH SÁCH BÀI */
+const tracks = [
+  {
+    id: 'hello-vn',
+    title_en: 'Hello Vietnam',
+    title_vi: 'Xin chào Việt Nam',
+    artist: 'Pham Quynh Anh',
+    thumbText: 'HVN',
+    // LƯU Ý: chúng ta sẽ build src bằng encodeURIComponent để tránh lỗi do khoảng trắng / ký tự đặc biệt
+    srcLocalFileName: fileName,
+    lyrics_en: `Hello Vietnam — (English demo).`,
+    lyrics_vi: `Xin chào Việt Nam — (Tiếng Việt demo).`
+  }
+];
 
-playBtn.onclick=()=>{if(audio.paused)audio.play();else audio.pause();}
-stopBtn.onclick=()=>stopAudio();
-langToggle.onclick=()=>{lang=lang==='en'?'vi':'en';langToggle.textContent=lang==='en'?'Anh → Việt':'Việt → Anh';if(currentTrack)loadTrackById(currentTrack.id);}
-downloadToggle.onclick=()=>{downloadPanel.classList.toggle('show');};
+/* --- UI REFERENCES --- */
+const intro = document.getElementById('intro');
+const introLoading = document.getElementById('introLoading');
+const introBar = document.getElementById('introBar');
+const app = document.getElementById('app');
+const playlistEl = document.getElementById('playlist');
+const audio = document.getElementById('audio');
+const playBtn = document.getElementById('playBtn');
+const stopBtn = document.getElementById('stopBtn');
+const playerTitle = document.getElementById('playerTitle');
+const playerArtist = document.getElementById('playerArtist');
+const playerCover = document.getElementById('playerCover');
+const timeCur = document.getElementById('timeCur');
+const timeTot = document.getElementById('timeTot');
+const timeFilled = document.getElementById('timeFilled');
+const lyricsEl = document.getElementById('lyrics');
+const langToggle = document.getElementById('langToggle');
 
-function simulateLoading(){introLoading.style.opacity=1;let p=0;const int=setInterval(()=>{p+=2;introBar.style.width=p+'%';if(p>=100){clearInterval(int);setTimeout(()=>{intro.style.display='none';app.style.display='flex';loadTrackById(tracks[0].id);renderPlaylist(tracks);},400);} },40);}
-simulateLoading();
+const downloadToggle = document.getElementById('downloadToggle');
+const downloadPanel = document.getElementById('downloadPanel');
+const downloadThumb = document.getElementById('downloadThumb');
+const downloadTitle = document.getElementById('downloadTitle');
+const dlMp3 = document.getElementById('dlMp3');
+const dlMp4 = document.getElementById('dlMp4');
+const searchInput = document.getElementById('search');
+
+/* STATE */
+let currentTrack = null;
+let lang = 'en';
+
+/* HELPERS */
+function encodePath(p){
+  // encode each path segment; we only have 'music/<filename>'
+  return 'music/' + encodeURIComponent(p).replace(/%2F/g, '/');
+}
+function formatTime(sec){
+  if(!isFinite(sec) || sec <= 0) return '00:00';
+  sec = Math.floor(sec);
+  const m = Math.floor(sec/60), s = sec % 60;
+  return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+/* RENDER PLAYLIST */
+function renderPlaylist(list){
+  playlistEl.innerHTML = '';
+  list.forEach(track => {
+    const t = document.createElement('div');
+    t.className = 'track';
+    t.dataset.id = track.id;
+    t.innerHTML = `
+      <div class="thumb">${escapeHtml(track.thumbText)}</div>
+      <div class="track-info">
+        <div class="track-title">${escapeHtml(track.title_en)}</div>
+        <div class="track-sub">${escapeHtml(track.artist)}</div>
+      </div>
+      <div class="track-controls">
+        <button class="btn play-track">▶</button>
+        <button class="btn ghost stop-track">⏹</button>
+      </div>
+    `;
+    playlistEl.appendChild(t);
+  });
+
+  document.querySelectorAll('.play-track').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      const id = e.target.closest('.track').dataset.id;
+      playById(id);
+    });
+  });
+  document.querySelectorAll('.stop-track').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      const id = e.target.closest('.track').dataset.id;
+      if(currentTrack && currentTrack.id === id) stopAudio();
+    });
+  });
+}
+
+function escapeHtml(str){ return (str+'').replace(/[&<>"']/g, s=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' })[s]); }
+
+/* LOAD TRACK */
+function loadTrackById(id){
+  const t = tracks.find(x => x.id === id);
+  if(!t) return;
+  currentTrack = t;
+
+  // build src using encode to be safe with spaces and parentheses
+  const srcPath = encodePath(t.srcLocalFileName);
+  audio.src = srcPath;
+
+  playerTitle.textContent = (lang === 'en') ? t.title_en : t.title_vi;
+  playerArtist.textContent = 'Artist: ' + t.artist;
+  playerCover.textContent = t.thumbText || t.title_en.slice(0,3).toUpperCase();
+  lyricsEl.textContent = (lang === 'en') ? t.lyrics_en : t.lyrics_vi;
+
+  // update download links (use raw file link)
+  dlMp3.href = srcPath;
+  dlMp3.setAttribute('download', t.srcLocalFileName);
+
+  // MP4: we can't convert server-side; so we link to a .mp4 same name (user can convert)
+  // create a "suggested" mp4 filename (same base, .mp4)
+  const mp4Name = t.srcLocalFileName.replace(/\.mp3$/i, '.mp4');
+  dlMp4.href = 'music/' + encodeURIComponent(mp4Name);
+  dlMp4.setAttribute('download', mp4Name);
+
+  // update download panel visuals
+  downloadThumb.textContent = t.thumbText || 'MP3';
+  downloadTitle.textContent = (lang === 'en') ? t.title_en : t.title_vi;
+
+  // reset time UI
+  timeCur.textContent = '00:00';
+  timeTot.textContent = '00:00';
+  timeFilled.style.width = '0%';
+}
+
+/* PLAY/PAUSE/STOP */
+function playById(id){
+  if(!currentTrack || currentTrack.id !== id) loadTrackById(id);
+  playAudio();
+}
+function playAudio(){
+  if(!audio.src) return;
+  audio.play().catch(err => {
+    console.warn('Play error:', err);
+  });
+}
+function pauseAudio(){ audio.pause(); }
+function stopAudio(){ audio.pause(); audio.currentTime = 0; }
+
+/* UI EVENTS */
+playBtn.addEventListener('click', ()=>{
+  if(!audio.src) loadTrackById(tracks[0].id);
+  if(audio.paused) playAudio(); else pauseAudio();
+});
+stopBtn.addEventListener('click', ()=> stopAudio());
+
+audio.addEventListener('play', ()=> playBtn.textContent = '⏸');
+audio.addEventListener('pause', ()=> playBtn.textContent = '▶');
+audio.addEventListener('timeupdate', ()=>{
+  const c = audio.currentTime || 0;
+  const d = audio.duration || 0;
+  timeCur.textContent = formatTime(c);
+  timeTot.textContent = isFinite(d) && d>0 ? formatTime(d) : '00:00';
+  const pct = (d>0) ? Math.min(100, (c/d)*100) : 0;
+  timeFilled.style.width = pct + '%';
+});
+
+audio.addEventListener('ended', ()=> playBtn.textContent = '▶');
+
+/* LANGUAGE TOGGLE */
+langToggle.addEventListener('click', ()=>{
+  lang = (lang === 'en') ? 'vi' : 'en';
+  langToggle.textContent = (lang === 'en') ? 'Anh → Việt' : 'Việt → Anh';
+  if(currentTrack) loadTrackById(currentTrack.id);
+});
+
+/* DOWNLOAD PANEL TOGGLE (slide) */
+downloadToggle.addEventListener('click', ()=>{
+  downloadPanel.classList.toggle('show');
+  downloadToggle.animate(
+    [{ transform: 'rotate(0) scale(1)'}, { transform: 'rotate(-15deg) scale(1.07)'}, { transform: 'rotate(0) scale(1)'}],
+    { duration: 450, easing: 'cubic-bezier(.2,.9,.3,1)' }
+  );
+});
+
+/* SEARCH */
+searchInput.addEventListener('input', (e)=>{
+  const q = e.target.value.trim().toLowerCase();
+  const filtered = tracks.filter(t=>{
+    return t.title_en.toLowerCase().includes(q) || t.title_vi.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q);
+  });
+  renderPlaylist(filtered);
+});
+
+/* INIT UI AFTER INTRO (simulate loading) */
+function runIntroThenShowApp(){
+  introLoading.style.opacity = '1';
+  let progress = 0;
+  const iv = setInterval(()=>{
+    progress += Math.random()*12 + 6;
+    if(progress >= 100) progress = 100;
+    introBar.style.width = progress + '%';
+    if(progress >= 100){
+      clearInterval(iv);
+      setTimeout(()=>{
+        intro.style.transition = 'opacity .45s ease';
+        intro.style.opacity = '0';
+        setTimeout(()=> {
+          intro.style.display = 'none';
+          document.getElementById('app').style.display = '';
+          // render playlist and load first track without autoplay
+          renderPlaylist(tracks);
+          loadTrackById(tracks[0].id);
+        }, 420);
+      }, 400);
+    }
+  }, 180);
+}
+
+/* small helpers */
+function init(){
+  // keep app hidden initially (CSS shows none); run intro then show
+  runIntroThenShowApp();
+  // make cover clickable to toggle play
+  document.getElementById('playerCover').addEventListener('click', ()=> {
+    if(audio.paused) playAudio(); else pauseAudio();
+  });
+}
+init();
 </script>
 </body>
 </html>
