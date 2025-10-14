@@ -2,140 +2,518 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Casio fx-580VN X — Emulator</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>🧮</text></svg>">
-<link rel="stylesheet" href="style.css">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>RO320-like Cockpit — Simulator (A320-ish)</title>
+
+<!-- Three.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.155.0/examples/js/controls/OrbitControls.js"></script>
+
+<style>
+  html,body{height:100%;margin:0;background:#000;overflow:hidden;font-family:Inter,Segoe UI,Roboto,Arial;}
+  #app{position:relative;width:100vw;height:100vh; touch-action:none;}
+  canvas{display:block;}
+
+  /* HUD / Panels */
+  .hud {
+    position:absolute; right:12px; top:12px; width:260px;
+    background:rgba(0,0,0,0.45); color:#e8f6ff; padding:10px; border-radius:10px;
+    border:1px solid rgba(255,255,255,0.06); backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px); user-select:none;
+  }
+  .hud h2{margin:0 0 8px 0;font-size:16px;color:#dff}
+  .row{display:flex;gap:6px;margin:6px 0;}
+  .btn{
+    flex:1;padding:8px 6px;text-align:center;background:#171717;border-radius:8px;border:1px solid rgba(255,255,255,0.04);
+    color:#ddd;cursor:pointer;touch-action:manipulation;
+  }
+  .btn.small{flex:0.48;padding:6px;font-size:13px;}
+  .btn.on{background:linear-gradient(90deg,#2ecc71,#27ae60);color:#04260a;font-weight:700;}
+  .btn.warn{background:linear-gradient(90deg,#f05a3f,#a62a00);color:#fff;}
+  .status{font-size:13px;margin-top:6px;color:#cde;}
+  .instr{position:absolute;left:50%;top:12px;transform:translateX(-50%);padding:8px 12px;border-radius:8px;background:rgba(0,0,0,0.45);color:#dff;font-size:13px;}
+  
+  /* Throttle area */
+  .throttle-ui{position:absolute;left:12px;bottom:12px;width:340px;max-width:46vw;background:rgba(0,0,0,0.45);padding:10px;border-radius:10px;color:#def;}
+  .throttle-title{font-size:14px;margin-bottom:6px;}
+  .throttle-track{position:relative;height:160px;background:rgba(255,255,255,0.03);border-radius:10px;padding:8px;display:flex;align-items:center;justify-content:center; touch-action:none;}
+  .lever{width:56px;height:110px;border-radius:10px;background:linear-gradient(#2b2b2b,#161616);box-shadow:0 8px 20px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;font-weight:700;color:#dfe;}
+  .meter{height:8px;background:rgba(255,255,255,0.06);border-radius:6px;overflow:hidden;margin-top:8px;}
+  .meter > i{display:block;height:100%;width:0%;background:linear-gradient(90deg,#00bcd4,#00ff9d);transition:width .06s linear;}
+
+  /* Sidestick */
+  .stick-ui{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);background:rgba(0,0,0,0.35);padding:8px 12px;border-radius:8px;color:#def;}
+  .small{font-size:13px}
+
+  @media (max-width:420px){
+    .hud{width:180px;padding:8px;}
+    .throttle-ui{left:8px;right:8px;max-width:unset;}
+  }
+</style>
 </head>
 <body>
-<div class="wrap">
-  <div class="calc-frame" role="application" aria-label="Casio fx-580VN X Emulator">
-    <div class="device" id="device">
-      <div class="brand">
-        <div class="title">Casio <span style="font-weight:900">fx-580VN X</span> — Emulator</div>
-        <div class="muted">Model: Emu</div>
-      </div>
-      <div class="screen-shell" aria-hidden="false">
-        <div class="screen" id="screen">
-          <div class="statusline">
-            <div id="status-left">MODE: COMP</div>
-            <div id="status-right">SHIFT: OFF • ALPHA: OFF</div>
-          </div>
-          <div class="display-main">
-            <div class="display-expr" id="displayExpr">0</div>
-            <div class="display-res" id="displayRes">0</div>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div class="muted" id="angle">DEG</div>
-            <div class="muted">M: <span id="memCount">0</span> • Ans: <span id="ansVal">0</span></div>
-          </div>
-        </div>
-      </div>
-      <div class="keys" id="keys">
-        <div class="key yellow phys" data-key="SHIFT">SHIFT</div>
-        <div class="key red phys" data-key="ALPHA">ALPHA</div>
-        <div class="key gray phys" data-key="MODE">MODE</div>
-        <div class="key gray phys" data-key="SETUP">SETUP</div>
-        <div class="key gray phys" data-key="AC">AC</div>
-        <div class="key gray phys" data-key="DEL">DEL</div>
-        <div class="key gray phys" data-key="(">(</div>
-        <div class="key gray phys" data-key=")">)</div>
-        <div class="key gray phys" data-key="ANS">Ans</div>
-        <div class="key gray phys" data-key="EXP">EXP</div>
-        <div class="key phys" data-key="7">7</div>
-        <div class="key phys" data-key="8">8</div>
-        <div class="key phys" data-key="9">9</div>
-        <div class="key phys" data-key="DEL2">⌫</div>
-        <div class="key phys" data-key="^">^</div>
-        <div class="key phys" data-key="=" data-op="compute">=</div>
-        <div class="key phys" data-key="sin">sin</div>
-        <div class="key phys" data-key="cos">cos</div>
-        <div class="key phys" data-key="tan">tan</div>
-        <div class="key phys" data-key="π">π</div>
-        <div class="key phys" data-key="4">4</div>
-        <div class="key phys" data-key="5">5</div>
-        <div class="key phys" data-key="6">6</div>
-        <div class="key phys" data-key="×">*</div>
-        <div class="key phys" data-key="sqrt">√</div>
-        <div class="key phys" data-key="^2">x²</div>
-        <div class="key phys" data-key="asin">sin⁻¹</div>
-        <div class="key phys" data-key="acos">cos⁻¹</div>
-        <div class="key phys" data-key="atan">tan⁻¹</div>
-        <div class="key phys" data-key="i">i</div>
-        <div class="key phys" data-key="1">1</div>
-        <div class="key phys" data-key="2">2</div>
-        <div class="key phys" data-key="3">3</div>
-        <div class="key phys" data-key="-">−</div>
-        <div class="key phys" data-key="log">log</div>
-        <div class="key phys" data-key="ln">ln</div>
-        <div class="key phys" data-key="e^x">e^x</div>
-        <div class="key phys" data-key="x!">x!</div>
-        <div class="key phys" data-key="nPr">nPr</div>
-        <div class="key phys" data-key="nCr">nCr</div>
-        <div class="key phys" data-key="0">0</div>
-        <div class="key phys" data-key=".">.</div>
-        <div class="key phys" data-key="+">+</div>
-        <div class="key phys" data-key="ANS2">ANS</div>
-        <div class="key phys" data-key="%">%</div>
-        <div class="key phys" data-key="1/x">1/x</div>
-        <div class="key phys" data-key="RND">Ran</div>
-        <div class="key phys" data-key="rec">rec</div>
-        <div class="key phys" data-key="BASE">BASE</div>
-        <div class="key phys" data-key="M+">M+</div>
-        <div class="key wide3 phys" data-key="M-">M-</div>
-        <div class="key phys" data-key="MR">MR</div>
-        <div class="key phys" data-key="ACLEAR">MC</div>
-        <div class="key phys" data-key="MAT">MATRIX</div>
-        <div class="key phys" data-key="STAT">STAT</div>
-        <div class="key phys" data-key="SOLVE">SOLVE</div>
-        <div class="key phys" data-key="SHIFT_LABEL" title="shows shifted functions">(shift)</div>
-        <div class="key phys" data-key="ALPHA_LABEL" title="shows alpha letters">(alpha)</div>
-      </div>
-      <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:8px">
-        <div class="muted">Built for Web — math.js</div>
-        <div style="display:flex;gap:8px">
-          <button class="small-btn" id="exportBtn">Export</button>
-          <button class="small-btn" id="importBtn">Import</button>
-        </div>
-      </div>
+<div id="app">
+  <div id="three-root"></div>
+
+  <div class="instr" id="instr">
+    Nhấn đúng thứ tự: <b>Battery → APU → Engine Start</b>. Mỗi nút chức năng riêng.
+  </div>
+
+  <div class="hud" id="panel">
+    <h2>RO320-like Cockpit</h2>
+
+    <div class="row">
+      <div class="btn small" id="btnBattery">Battery</div>
+      <div class="btn small" id="btnAPU">APU</div>
     </div>
 
-    <div class="tools">
-      <div class="panel">
-        <h3>Quick Controls</h3>
-        <div class="row" style="margin-bottom:8px">
-          <select id="modeSelect">
-            <option value="COMP">COMP</option>
-            <option value="STAT">STAT</option>
-            <option value="MATRIX">MATRIX</option>
-            <option value="EQUA">EQUA</option>
-            <option value="BASE">BASE</option>
-            <option value="COMPLEX">COMPLEX</option>
-          </select>
-          <button class="small-btn" id="openHistory">History</button>
-          <button class="small-btn" id="clearHistory">Clear</button>
-        </div>
-        <div class="muted">Tips: SHIFT + key -> access upper (yellow) functions. ALPHA + key -> letters/variables.</div>
-      </div>
-      <div class="panel">
-        <h3>History</h3>
-        <div class="history" id="historyBox"></div>
-      </div>
-      <div class="panel">
-        <h3>Advanced Tools</h3>
-        <div style="display:flex;gap:8px;margin-bottom:8px">
-          <button class="small-btn" id="openMatrix">Matrix Editor</button>
-          <button class="small-btn" id="openStat">STAT Editor</button>
-          <button class="small-btn" id="openEq">Equation Solver</button>
-          <button class="small-btn" id="openBase">Base Converter</button>
-        </div>
-        <div class="muted">Alpha input supports A..Z variables for custom labeling. Memory registers: M (single) and variables A..F saved in storage (simulate).</div>
-      </div>
+    <div class="row">
+      <div class="btn" id="btnEngine">Engine Start</div>
+    </div>
+
+    <div class="row">
+      <div class="btn small" id="btnLights">Lights</div>
+      <div class="btn small" id="btnAvionics">Avionics</div>
+    </div>
+
+    <div style="margin-top:8px;">
+      <div class="status">Power: <span id="powerState">OFF</span> — <span id="apustate">APU OFF</span></div>
+      <div class="status">Engine: <span id="engineState">STOPPED</span></div>
+      <div class="status">Throttle: <span id="throttlePct">0%</span></div>
+    </div>
+
+    <div style="margin-top:8px;">
+      <div class="btn warn" id="btnShutdown">Emergency Shutdown</div>
     </div>
   </div>
+
+  <div class="throttle-ui" id="thrustArea">
+    <div class="throttle-title">Throttle Quadrant (kéo lên để tăng)</div>
+    <div class="throttle-track" id="throttleTrack">
+      <div class="lever" id="lever">⇧</div>
+    </div>
+    <div class="meter"><i id="meterBar"></i></div>
+  </div>
+
+  <div class="stick-ui small" id="stickUI">
+    Sidestick: giữ kéo để xoay 360° / click để reset
+  </div>
 </div>
-<div id="modalRoot"></div>
-<script src="https://cdn.jsdelivr.net/npm/mathjs@11.11.0/lib/browser/math.js"></script>
-<script src="script.js"></script>
+
+<script>
+/* ============================
+   Minimal A320-like cockpit 3D
+   - Three.js scene created with panels, sidestick, throttle quadrant (visual),
+   - Interactive DOM buttons controlling system states,
+   - Throttle lever draggable (mouse + touch), maps to engine audio oscillator,
+   - Enforce startup sequence: Battery -> APU -> Engine Start.
+   ============================ */
+
+let scene, camera, renderer, controls, clock;
+let engineOn = false, batteryOn = false, apuOn = false, avionicsOn = false, lightsOn = false;
+let throttle = 0; // 0..1
+let engineNode = null;
+let audioCtx, osc, gainNode;
+const app = document.getElementById('three-root');
+
+// --- Setup Three.js
+function initThree(){
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x020202); // outside black (night)
+
+  camera = new THREE.PerspectiveCamera(50, width/height, 0.1, 2000);
+  camera.position.set(0, 1.4, 3.2);
+
+  renderer = new THREE.WebGLRenderer({antialias:true});
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  document.getElementById('three-root').appendChild(renderer.domElement);
+
+  // Orbit controls (allow rotate 360)
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.target.set(0,1.2,0);
+  controls.enablePan = false;
+  controls.enableDamping = true;
+  controls.minDistance = 1.2;
+  controls.maxDistance = 6;
+  controls.update();
+
+  // Lights (cockpit interior)
+  const amb = new THREE.AmbientLight(0x333344, 1.0);
+  scene.add(amb);
+
+  const spot = new THREE.PointLight(0xfff6e0, 1.1, 10);
+  spot.position.set(-0.5, 2.6, 1.2);
+  scene.add(spot);
+
+  // Floor / cockpit base
+  const floor = new THREE.Mesh(new THREE.BoxGeometry(6, 0.02, 4), new THREE.MeshStandardMaterial({color:0x0b0b0b}));
+  floor.position.set(0,0,0);
+  scene.add(floor);
+
+  // Instrument panel (curved)
+  const panelGeo = new THREE.BoxGeometry(5.2, 0.6, 0.12);
+  const panelMat = new THREE.MeshStandardMaterial({color:0x111217, metalness:0.3, roughness:0.6});
+  const panel = new THREE.Mesh(panelGeo, panelMat);
+  panel.position.set(0,1.15,-1.05);
+  panel.rotation.x = -0.12;
+  scene.add(panel);
+
+  // PFD and ND (two screens)
+  const screenMat = new THREE.MeshBasicMaterial({color:0x0a2440});
+  const pfd = new THREE.Mesh(new THREE.PlaneGeometry(0.38,0.28), screenMat);
+  pfd.position.set(-0.9,1.2,-0.92);
+  scene.add(pfd);
+  const nd = new THREE.Mesh(new THREE.PlaneGeometry(0.38,0.28), screenMat);
+  nd.position.set(-0.42,1.2,-0.92);
+  scene.add(nd);
+
+  // Centre console (throttle quadrant area)
+  const centerGeo = new THREE.BoxGeometry(1.4,0.55,1.1);
+  const centerMat = new THREE.MeshStandardMaterial({color:0x191919, metalness:0.2, roughness:0.5});
+  const center = new THREE.Mesh(centerGeo, centerMat);
+  center.position.set(0.9,0.8,-0.18);
+  center.rotation.x = -0.05;
+  scene.add(center);
+
+  // Throttle visual (2 levers)
+  const throttleGroup = new THREE.Group();
+  throttleGroup.position.set(0.86,0.9,-0.0);
+  scene.add(throttleGroup);
+
+  function makeLever(x){
+    const base = new THREE.Mesh(new THREE.BoxGeometry(0.18,0.02,0.2), new THREE.MeshStandardMaterial({color:0x0f0f0f}));
+    base.position.set(x, -0.16, 0);
+    throttleGroup.add(base);
+    const lever = new THREE.Mesh(new THREE.BoxGeometry(0.12,0.6,0.12), new THREE.MeshStandardMaterial({color:0x2b2b2b}));
+    lever.position.set(x, 0.16, 0);
+    lever.name = 'lever'+x;
+    throttleGroup.add(lever);
+  }
+  makeLever(-0.14); makeLever(0.14);
+
+  // Sidestick (one on left)
+  const sidestick = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,0.4,12), new THREE.MeshStandardMaterial({color:0x222222}));
+  sidestick.position.set(-1.6,0.75,0.25);
+  sidestick.rotation.z = Math.PI/2;
+  scene.add(sidestick);
+
+  // Yoke-ish (visual front)
+  const yoke = new THREE.Mesh(new THREE.TorusGeometry(0.45,0.04,12,50), new THREE.MeshStandardMaterial({color:0x151515}));
+  yoke.position.set(0,0.95,0.6);
+  yoke.rotation.x = Math.PI/2;
+  scene.add(yoke);
+
+  // Overhead panel (simplified)
+  const overhead = new THREE.Mesh(new THREE.BoxGeometry(4.6,0.18,0.8), new THREE.MeshStandardMaterial({color:0x0f1112}));
+  overhead.position.set(0,2.1,-0.4);
+  scene.add(overhead);
+
+  // Windshield (transparent plane)
+  const wind = new THREE.Mesh(new THREE.PlaneGeometry(5.6,2.1), new THREE.MeshStandardMaterial({color:0x000000,opacity:0.18,transparent:true}));
+  wind.position.set(0,1.1,-2.1);
+  scene.add(wind);
+
+  // Simple decoration: instrument knobs as boxes (clickable visual)
+  const knobMat = new THREE.MeshStandardMaterial({color:0x333333});
+  for(let i=0;i<6;i++){
+    const k = new THREE.Mesh(new THREE.BoxGeometry(0.08,0.06,0.08), knobMat);
+    k.position.set(-0.8 + i*0.22,1.05,-0.9);
+    k.rotation.y = 0.15;
+    scene.add(k);
+  }
+
+  // Add subtle cabin light that toggles
+  cabinLight = new THREE.PointLight(0xfff3d1, 0.0, 6);
+  cabinLight.position.set(0,1.9,0.2);
+  scene.add(cabinLight);
+
+  clock = new THREE.Clock();
+
+  window.addEventListener('resize', onResize);
+  animate();
+}
+
+// --- Resize
+function onResize(){
+  const w = window.innerWidth, h = window.innerHeight;
+  camera.aspect = w/h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w,h);
+}
+
+/* ------------------------
+   Simple animation loop
+   ------------------------ */
+let cabinLight;
+function animate(){
+  requestAnimationFrame(animate);
+  controls.update();
+  // subtle dimming when engine off
+  const t = clock.getElapsedTime();
+  if(!engineOn){
+    // small flicker on PFD to show off state (change color hue)
+    scene.traverse((o)=>{
+      if(o.isMesh && o.material && o.material.color){
+        // keep small subtle movement if needed
+      }
+    });
+  }
+  renderer.render(scene,camera);
+}
+
+/* ============================
+   Audio engine (WebAudio) - create oscillator and gain
+   - volume & frequency depend on throttle & engineOn
+   ============================ */
+function initAudio(){
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    osc = audioCtx.createOscillator();
+    gainNode = audioCtx.createGain();
+    // simple sawtooth-ish feel using periodicWave or multiple oscillators could be better,
+    // but keep single oscillator and a bit of noise-like by detune modulation
+    osc.type = 'sawtooth';
+    osc.frequency.value = 60; // base
+    gainNode.gain.value = 0;
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    osc.start();
+  } catch(e){
+    console.warn('Audio not available',e);
+  }
+}
+
+function updateEngineAudio(){
+  if(!audioCtx) return;
+  // map throttle 0..1 -> frequency 60..1200 and gain 0..0.4
+  const freq = 80 + throttle * 1400;
+  const vol = engineOn ? (0.02 + throttle * 0.25) : 0.0;
+  // smooth transitions
+  osc.frequency.linearRampToValueAtTime(freq, audioCtx.currentTime + 0.05);
+  gainNode.gain.linearRampToValueAtTime(vol, audioCtx.currentTime + 0.08);
+}
+
+/* ============================
+   DOM controls and interactions
+   ============================ */
+const btnBattery = document.getElementById('btnBattery');
+const btnAPU = document.getElementById('btnAPU');
+const btnEngine = document.getElementById('btnEngine');
+const btnLights = document.getElementById('btnLights');
+const btnAvionics = document.getElementById('btnAvionics');
+const btnShutdown = document.getElementById('btnShutdown');
+const powerState = document.getElementById('powerState');
+const apuState = document.getElementById('apustate');
+const engineState = document.getElementById('engineState');
+const throttlePct = document.getElementById('throttlePct');
+const meterBar = document.getElementById('meterBar');
+
+btnBattery.addEventListener('click', ()=>{
+  batteryOn = !batteryOn;
+  btnBattery.classList.toggle('on', batteryOn);
+  powerState.textContent = batteryOn ? 'ON' : 'OFF';
+  // when battery turned off, shutdown systems
+  if(!batteryOn){
+    apuOn=false; btnAPU.classList.remove('on'); apuState.textContent='APU OFF';
+    engineOn=false; btnEngine.classList.remove('on'); engineState.textContent='STOPPED';
+    avionicsOn=false; btnAvionics.classList.remove('on');
+    lightsOn=false; btnLights.classList.remove('on'); cabinLight.intensity = 0.0;
+    throttle = 0; updateThrottleUI();
+    if(audioCtx) updateEngineAudio();
+  }
+});
+
+btnAPU.addEventListener('click', ()=>{
+  if(!batteryOn) { alert('Bật Battery trước!'); return; }
+  apuOn = !apuOn;
+  btnAPU.classList.toggle('on', apuOn);
+  apuState.textContent = apuOn ? 'APU ON' : 'APU OFF';
+  if(apuOn){
+    // APU warms up -> allow engine start
+  } else {
+    // if engine started and APU is cut, allow engine to stay
+  }
+});
+
+btnEngine.addEventListener('click', ()=>{
+  // require battery and apu to be on for successful start (simulate)
+  if(!batteryOn){ alert('Bật Battery trước!'); return; }
+  if(!apuOn){ alert('APU phải ON để start động cơ!'); return; }
+  // toggle engine start sequence: short press = start/stop
+  engineOn = !engineOn;
+  btnEngine.classList.toggle('on', engineOn);
+  engineState.textContent = engineOn ? 'RUNNING' : 'STOPPED';
+  if(engineOn){
+    // small auto-throttle idle on start
+    throttle = Math.max(throttle, 0.12);
+    updateThrottleUI();
+    // enable audio (resume context on iOS requires user gesture)
+    if(!audioCtx) initAudio();
+    if(audioCtx && audioCtx.state === 'suspended') { audioCtx.resume(); }
+    updateEngineAudio();
+  } else {
+    throttle = 0;
+    updateThrottleUI();
+    if(audioCtx) updateEngineAudio();
+  }
+});
+
+btnLights.addEventListener('click', ()=>{
+  lightsOn = !lightsOn; btnLights.classList.toggle('on', lightsOn);
+  cabinLight.intensity = lightsOn ? 0.9 : 0.0;
+});
+
+btnAvionics.addEventListener('click', ()=>{
+  if(!batteryOn){ alert('Power phải ON để bật Avionics'); return; }
+  avionicsOn = !avionicsOn; btnAvionics.classList.toggle('on', avionicsOn);
+});
+
+btnShutdown.addEventListener('click', ()=>{
+  // emergency shutdown - force all off
+  batteryOn=false; apuOn=false; engineOn=false; avionicsOn=false; lightsOn=false;
+  [btnBattery,btnAPU,btnEngine,btnLights,btnAvionics].forEach(b=>b.classList.remove('on'));
+  powerState.textContent='OFF'; apuState.textContent='APU OFF'; engineState.textContent='STOPPED';
+  cabinLight.intensity = 0; throttle = 0; updateThrottleUI();
+  if(audioCtx) updateEngineAudio();
+});
+
+/* ============================
+   Throttle lever (DOM drag mapped to engine throttle)
+   - lever element inside throttle-track is draggable vertically
+   - map track bounds to throttle 0..1
+   ============================ */
+const lever = document.getElementById('lever');
+const track = document.getElementById('throttleTrack');
+let dragging = false;
+let dragStartY = 0, leverStartTop = 0;
+const trackRect = ()=>track.getBoundingClientRect();
+
+function updateThrottleUI(){
+  // update meter & text
+  const pct = Math.round(throttle*100);
+  throttlePct.textContent = pct + '%';
+  meterBar.style.width = (pct) + '%';
+  if(audioCtx) updateEngineAudio();
+}
+
+function setThrottleFromPercent(p){
+  throttle = Math.min(1, Math.max(0, p));
+  updateThrottleUI();
+}
+
+function pointerDown(e){
+  e.preventDefault();
+  dragging = true;
+  dragStartY = (e.touches ? e.touches[0].clientY : e.clientY);
+  leverStartTop = lever.getBoundingClientRect().top;
+  // ensure audio context resumed by user gesture
+  if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}
+function pointerMove(e){
+  if(!dragging) return;
+  const clientY = (e.touches ? e.touches[0].clientY : e.clientY);
+  const dy = dragStartY - clientY; // upward increases throttle
+  const tr = trackRect();
+  // lever visual center initial assumed at center of track
+  // We'll compute percent by mapping dy to track height
+  const percent = Math.min(1, Math.max(0, (dy + tr.height/2) / tr.height));
+  setThrottleFromPercent(percent);
+}
+function pointerUp(e){
+  dragging = false;
+}
+
+lever.addEventListener('mousedown', pointerDown);
+lever.addEventListener('touchstart', pointerDown, {passive:false});
+window.addEventListener('mousemove', pointerMove);
+window.addEventListener('touchmove', pointerMove, {passive:false});
+window.addEventListener('mouseup', pointerUp);
+window.addEventListener('touchend', pointerUp);
+
+/* Make lever UI follow throttle percent (visual only) */
+function refreshLeverVisual(){
+  const tr = trackRect();
+  const pct = throttle;
+  const y = (1 - pct) * (tr.height - 20) - (tr.height/2 - 10);
+  // Instead of absolute positioning (DOM within track), we animate inner transform
+  lever.style.transform = `translateY(${ - (pct*80) }px)`;
+  requestAnimationFrame(refreshLeverVisual);
+}
+refreshLeverVisual();
+
+/* ============================
+   Sidestick rotation: drag scene (we'll implement a simple pointer that rotates a visible stick mesh)
+   - For simplicity we'll rotate an indicator in scene by mouse drag on renderer
+   ============================ */
+let isStickDragging=false, stickStartX=0, stickAngle=0;
+const canvas = () => renderer.domElement;
+canvas().addEventListener('pointerdown', (ev)=>{
+  if(ev.button!==0) return;
+  // If pointer is near left lower area, engage sidestick control
+  const w = window.innerWidth, h=window.innerHeight;
+  if(ev.clientY > h*0.55 && ev.clientX < w*0.5){
+    isStickDragging = true;
+    stickStartX = ev.clientX;
+    canvas().setPointerCapture(ev.pointerId);
+    ev.preventDefault();
+    // resume audio if needed
+    if(audioCtx && audioCtx.state==='suspended') audioCtx.resume();
+  }
+});
+canvas().addEventListener('pointermove', (ev)=>{
+  if(!isStickDragging) return;
+  const dx = ev.clientX - stickStartX;
+  stickAngle += dx * 0.0035; // sensitivity
+  stickStartX = ev.clientX;
+  // rotate camera target slightly or rotate sidestick mesh
+  // rotate entire scene's y for fun (but don't disorient too much)
+  scene.rotation.y = stickAngle;
+});
+canvas().addEventListener('pointerup', (ev)=>{
+  if(isStickDragging) { isStickDragging=false; canvas().releasePointerCapture && canvas().releasePointerCapture(ev.pointerId); }
+});
+
+/* ============================
+   Visual throttle lever DOM reposition (fallback nice)
+   ============================ */
+(function styleLever(){
+  lever.style.transition = 'transform .06s linear';
+  lever.style.touchAction = 'none';
+  lever.style.display = 'flex';
+  lever.style.alignItems = 'center';
+  lever.style.justifyContent = 'center';
+})();
+
+/* ============================
+   Start
+   ============================ */
+initThree();
+initAudio();
+updateThrottleUI();
+
+/* Periodic update to map throttle to engine state and UI */
+setInterval(()=>{
+  // if engine is off but throttle > 0, reduce throttle gradually
+  if(!engineOn && throttle>0){
+    throttle = Math.max(0, throttle - 0.01);
+    updateThrottleUI();
+  }
+  // ensure engine audio always updated
+  if(audioCtx) updateEngineAudio();
+}, 60);
+
+/* Ensure touch friendly: allow orbit controls on touch */
+renderer && renderer.domElement && (function touchSettings(){
+  renderer.domElement.style.touchAction = 'none';
+})();
+
+/* Make sure on iOS the audio starts after a user gesture — handled by click on buttons */
+document.body.addEventListener('touchstart', ()=>{}, {passive:true});
+
+</script>
 </body>
 </html>
