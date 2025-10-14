@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Casio fx-580VN X — Emulator</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>🧮</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="calc-frame" role="application" aria-label="Casio fx-580VN X Emulator">
+    <div class="device" id="device">
+      <div class="brand">
+        <div class="title">Casio <span style="font-weight:900">fx-580VN X</span> — Emulator</div>
+        <div class="muted">Model: Emu</div>
+      </div>
+      <div class="screen-shell" aria-hidden="false">
+        <div class="screen" id="screen">
+          <div class="statusline">
+            <div id="status-left">MODE: COMP</div>
+            <div id="status-right">SHIFT: OFF • ALPHA: OFF</div>
+          </div>
+          <div class="display-main">
+            <div class="display-expr" id="displayExpr">0</div>
+            <div class="display-res" id="displayRes">0</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="muted" id="angle">DEG</div>
+            <div class="muted">M: <span id="memCount">0</span> • Ans: <span id="ansVal">0</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="keys" id="keys">
+        <div class="key yellow phys" data-key="SHIFT">SHIFT</div>
+        <div class="key red phys" data-key="ALPHA">ALPHA</div>
+        <div class="key gray phys" data-key="MODE">MODE</div>
+        <div class="key gray phys" data-key="SETUP">SETUP</div>
+        <div class="key gray phys" data-key="AC">AC</div>
+        <div class="key gray phys" data-key="DEL">DEL</div>
+        <div class="key gray phys" data-key="(">(</div>
+        <div class="key gray phys" data-key=")">)</div>
+        <div class="key gray phys" data-key="ANS">Ans</div>
+        <div class="key gray phys" data-key="EXP">EXP</div>
+        <div class="key phys" data-key="7">7</div>
+        <div class="key phys" data-key="8">8</div>
+        <div class="key phys" data-key="9">9</div>
+        <div class="key phys" data-key="DEL2">⌫</div>
+        <div class="key phys" data-key="^">^</div>
+        <div class="key phys" data-key="=" data-op="compute">=</div>
+        <div class="key phys" data-key="sin">sin</div>
+        <div class="key phys" data-key="cos">cos</div>
+        <div class="key phys" data-key="tan">tan</div>
+        <div class="key phys" data-key="π">π</div>
+        <div class="key phys" data-key="4">4</div>
+        <div class="key phys" data-key="5">5</div>
+        <div class="key phys" data-key="6">6</div>
+        <div class="key phys" data-key="×">*</div>
+        <div class="key phys" data-key="sqrt">√</div>
+        <div class="key phys" data-key="^2">x²</div>
+        <div class="key phys" data-key="asin">sin⁻¹</div>
+        <div class="key phys" data-key="acos">cos⁻¹</div>
+        <div class="key phys" data-key="atan">tan⁻¹</div>
+        <div class="key phys" data-key="i">i</div>
+        <div class="key phys" data-key="1">1</div>
+        <div class="key phys" data-key="2">2</div>
+        <div class="key phys" data-key="3">3</div>
+        <div class="key phys" data-key="-">−</div>
+        <div class="key phys" data-key="log">log</div>
+        <div class="key phys" data-key="ln">ln</div>
+        <div class="key phys" data-key="e^x">e^x</div>
+        <div class="key phys" data-key="x!">x!</div>
+        <div class="key phys" data-key="nPr">nPr</div>
+        <div class="key phys" data-key="nCr">nCr</div>
+        <div class="key phys" data-key="0">0</div>
+        <div class="key phys" data-key=".">.</div>
+        <div class="key phys" data-key="+">+</div>
+        <div class="key phys" data-key="ANS2">ANS</div>
+        <div class="key phys" data-key="%">%</div>
+        <div class="key phys" data-key="1/x">1/x</div>
+        <div class="key phys" data-key="RND">Ran</div>
+        <div class="key phys" data-key="rec">rec</div>
+        <div class="key phys" data-key="BASE">BASE</div>
+        <div class="key phys" data-key="M+">M+</div>
+        <div class="key wide3 phys" data-key="M-">M-</div>
+        <div class="key phys" data-key="MR">MR</div>
+        <div class="key phys" data-key="ACLEAR">MC</div>
+        <div class="key phys" data-key="MAT">MATRIX</div>
+        <div class="key phys" data-key="STAT">STAT</div>
+        <div class="key phys" data-key="SOLVE">SOLVE</div>
+        <div class="key phys" data-key="SHIFT_LABEL" title="shows shifted functions">(shift)</div>
+        <div class="key phys" data-key="ALPHA_LABEL" title="shows alpha letters">(alpha)</div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:8px">
+        <div class="muted">Built for Web — math.js</div>
+        <div style="display:flex;gap:8px">
+          <button class="small-btn" id="exportBtn">Export</button>
+          <button class="small-btn" id="importBtn">Import</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tools">
+      <div class="panel">
+        <h3>Quick Controls</h3>
+        <div class="row" style="margin-bottom:8px">
+          <select id="modeSelect">
+            <option value="COMP">COMP</option>
+            <option value="STAT">STAT</option>
+            <option value="MATRIX">MATRIX</option>
+            <option value="EQUA">EQUA</option>
+            <option value="BASE">BASE</option>
+            <option value="COMPLEX">COMPLEX</option>
+          </select>
+          <button class="small-btn" id="openHistory">History</button>
+          <button class="small-btn" id="clearHistory">Clear</button>
+        </div>
+        <div class="muted">Tips: SHIFT + key -> access upper (yellow) functions. ALPHA + key -> letters/variables.</div>
+      </div>
+      <div class="panel">
+        <h3>History</h3>
+        <div class="history" id="historyBox"></div>
+      </div>
+      <div class="panel">
+        <h3>Advanced Tools</h3>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <button class="small-btn" id="openMatrix">Matrix Editor</button>
+          <button class="small-btn" id="openStat">STAT Editor</button>
+          <button class="small-btn" id="openEq">Equation Solver</button>
+          <button class="small-btn" id="openBase">Base Converter</button>
+        </div>
+        <div class="muted">Alpha input supports A..Z variables for custom labeling. Memory registers: M (single) and variables A..F saved in storage (simulate).</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="modalRoot"></div>
+<script src="https://cdn.jsdelivr.net/npm/mathjs@11.11.0/lib/browser/math.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
