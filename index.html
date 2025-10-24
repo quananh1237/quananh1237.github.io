@@ -3,308 +3,417 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>Flappy Birch Multiplayer — Fix Join</title>
+<title>Flappy Birch — Multiplayer (Firebase)</title>
 <style>
-  html,body{height:100%;margin:0;background:#87ceeb;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;}
-  #container{display:flex;flex-direction:column;height:100%;}
-  header{padding:12px;background:#046; color:#fff; display:flex;align-items:center;justify-content:space-between;}
-  header h1{font-size:16px;margin:0;}
-  main{flex:1;display:flex;align-items:center;justify-content:center;position:relative;padding:12px;}
-  .panel{width:420px;max-width:100%;background:rgba(255,255,255,0.98);border-radius:10px;padding:14px;box-shadow:0 6px 20px rgba(0,0,0,0.15);}
-  label{display:block;margin-top:8px;font-size:13px;color:#333;}
-  input[type="text"]{width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;box-sizing:border-box;}
-  .row{display:flex;gap:8px;margin-top:8px;}
-  button{flex:1;padding:10px;border-radius:8px;border:0;background:#046;color:#fff;font-weight:600;}
-  button.secondary{background:#888;}
-  #lobbyPlayers{margin-top:10px;font-size:13px;}
-  #canvasWrap{width:100%;height:520px;max-height:70vh;background:linear-gradient(#87ceeb,#5cc1ff);border-radius:10px;overflow:hidden;position:relative;}
-  canvas{display:block;width:100%;height:100%;}
-  #overlay{position:absolute;left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;pointer-events:none;}
-  #deathScreen{position:absolute;left:0;top:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;z-index:30;background:rgba(0,0,0,0.5);}
-  body,html,canvas{touch-action:manipulation; -webkit-user-select:none; user-select:none;}
-  footer{padding:8px;text-align:center;font-size:12px;color:#fff;background:#034;}
-  .infoSmall{font-size:12px;color:#333;margin-top:8px;}
-  .fullIdBox{margin-top:8px;background:#eef;padding:8px;border-radius:8px;font-size:12px;word-break:break-all;}
+  *{box-sizing:border-box;font-family:system-ui,Arial;}
+  body,html{height:100%;margin:0;background:#87ceeb;touch-action:manipulation;user-select:none;}
+  .wrap{max-width:920px;margin:12px auto;padding:12px;}
+  .card{background:#fff;padding:12px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.12);}
+  .row{display:flex;gap:8px;}
+  input,select,button{padding:10px;border-radius:8px;border:1px solid #ccc;}
+  button{background:#046;color:#fff;border:0;font-weight:700;}
+  #gameArea{margin-top:12px;position:relative;}
+  canvas{width:100%;height:520px;display:block;border-radius:8px;background:linear-gradient(#87ceeb,#5cc1ff);pointer-events:auto;}
+  #overlayUI{position:absolute;left:8px;top:8px;color:#000;}
+  .chip{display:inline-block;background:rgba(255,255,255,0.9);padding:6px 8px;border-radius:999px;margin-right:6px;font-weight:700;}
+  #deathOverlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);z-index:20;}
+  #deathBox{background:#fff;padding:16px;border-radius:10px;text-align:center;}
+  #playersList{margin-top:8px;}
+  .small{font-size:13px;color:#333;margin-top:6px;}
+  footer{margin-top:12px;text-align:center;color:#fff;}
 </style>
 </head>
 <body>
-<div id="container">
-  <header>
-    <h1>Flappy Birch — Multiplayer (Fix Join)</h1>
-    <div id="statusSmall">Disconnected</div>
-  </header>
-
-  <main>
-    <div class="panel" id="lobbyPanel">
-      <div style="display:flex;gap:8px;align-items:center;">
-        <input id="playerName" type="text" placeholder="Tên bạn (ví dụ: Quân)" />
-        <button id="btnCreate">Create code</button>
-      </div>
-
-      <label>Hoặc nhập mã phòng / Full Peer ID để Join</label>
-      <div class="row">
-        <input id="roomInput" type="text" placeholder="Nhập mã phòng (6 ký tự) hoặc Full PeerID" />
-        <button id="btnJoin" class="secondary">Join</button>
-      </div>
-
-      <div id="lobbyInfo" class="infoSmall">
-        <div id="myRoomArea" style="display:none;margin-top:8px;">
-          <div>Mã phòng (ngắn): <strong id="myRoomCode"></strong></div>
-          <div class="fullIdBox">Full Peer ID: <span id="myFullPeerId" style="font-weight:700"></span></div>
-          <div style="margin-top:8px;">
-            <button id="btnCopyFull" class="secondary">Copy Full ID</button>
-            <button id="btnStart">Start</button>
-            <button id="btnCloseRoom" class="secondary">Close Room</button>
-          </div>
-          <div style="margin-top:8px;color:#555">Click "Copy Full ID" và gửi full id này cho người join nếu mã ngắn bị lỗi.</div>
-        </div>
-
-        <div id="joinedRoomArea" style="display:none;margin-top:8px;">
-          <div>Bạn đã gia nhập phòng: <strong id="joinedRoomCode"></strong></div>
-          <div class="small">Chờ host bấm Start...</div>
-          <div style="margin-top:6px;">
-            <button id="btnRetryJoin" class="secondary">Retry Join</button>
-          </div>
-        </div>
-
-        <div id="lobbyPlayers" style="display:none;">
-          <div>Người trong phòng:</div>
-          <div id="playersList"></div>
-        </div>
-
-        <div id="joinError" style="display:none;margin-top:8px;color:#b00;"></div>
-      </div>
-
-      <div class="infoSmall" style="margin-top:10px;">
-        Lưu ý: nếu bạn thấy lỗi khi nhập mã ngắn, yêu cầu host gửi <strong>Full Peer ID</strong> bằng cách bấm "Copy Full ID" rồi paste vào ô Join.
-      </div>
+<div class="wrap">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h3 style="margin:0">Flappy Birch — Multiplayer</h3>
+      <div class="small">Creator name (host) mặc định: <strong>Bindz</strong></div>
     </div>
 
-    <div id="canvasWrap" style="display:none;">
-      <div id="overlay"></div>
-      <canvas id="gameCanvas" width="800" height="600"></canvas>
-
-      <div id="deathScreen">
-        <div class="modal">
-          <h2 style="margin:0 0 10px 0;color:#fff">Bạn đã chết</h2>
-          <button id="btnReset">Reset & Play Again</button>
-        </div>
-      </div>
+    <div style="margin-top:8px" class="row">
+      <input id="nameInput" placeholder="Tên (mặc định Bindz nếu bạn tạo phòng)" />
+      <select id="modeSelect">
+        <option value="shared">Shared (xem chim nhau)</option>
+        <option value="solo">Solo (chỉ gửi score)</option>
+      </select>
+      <button id="btnCreate">Create Room</button>
+      <input id="joinCode" placeholder="Nhập mã phòng (6 ký tự)" style="width:160px"/>
+      <button id="btnJoin" class="">Join</button>
     </div>
-  </main>
 
-  <footer>Debug build — mở Console (F12) để xem log chi tiết.</footer>
+    <div class="small">
+      <span id="roomInfo"></span>
+    </div>
+
+    <div id="playersList" class="small"></div>
+  </div>
+
+  <div id="gameArea" class="card" style="margin-top:12px;overflow:hidden;">
+    <div id="overlayUI">
+      <span class="chip" id="roomChip">Room: -</span>
+      <span class="chip" id="meChip">You: -</span>
+      <span class="chip" id="scoreChip">Score: 0</span>
+    </div>
+    <canvas id="c" width="900" height="520"></canvas>
+
+    <div id="deathOverlay"><div id="deathBox">
+      <h3>BẠN ĐÃ CHẾT</h3>
+      <div style="margin:8px 0"><button id="btnReset">Reset</button></div>
+    </div></div>
+  </div>
+
+  <footer class="small">Chạy trên điện thoại: chạm để flap. Mỗi người 1 con chim. Khi chết, chim dừng (chỉ hồi khi nhấn Reset).</footer>
 </div>
 
-<script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script>
-const $ = id => document.getElementById(id);
-const btnCreate = $('btnCreate'), btnJoin = $('btnJoin'), btnStart = $('btnStart'),
-      btnCloseRoom = $('btnCloseRoom'), btnCopyFull = $('btnCopyFull'), btnRetryJoin = $('btnRetryJoin'),
-      btnReset = $('btnReset');
-const roomInput = $('roomInput'), playerNameInput = $('playerName');
-const myRoomArea = $('myRoomArea'), joinedRoomArea = $('joinedRoomArea'), myRoomCodeEl = $('myRoomCode'),
-      myFullPeerIdEl = $('myFullPeerId'), joinedRoomCodeEl = $('joinedRoomCode'),
-      playersListEl = $('playersList'), lobbyPlayers = $('lobbyPlayers'),
-      joinErrorEl = $('joinError'), statusSmall = $('statusSmall');
-let peer = null, isHost = false, myPeerId = null, roomCode = null;
-let connections = {}, players = {}, connectionsReverse = {};
-playerNameInput.value = 'Player' + Math.floor(Math.random()*99);
+/* ========== CẤU HÌNH FIREBASE ========== 
+  Tạo project Firebase, bật Realtime Database (test mode là nhanh).
+  Thay object firebaseConfig dưới đây bằng config của bạn.
+*/
+const firebaseConfig = {
+  apiKey: "REPLACE_API_KEY",
+  authDomain: "REPLACE_PROJECT.firebaseapp.com",
+  databaseURL: "https://REPLACE_PROJECT-default-rtdb.firebaseio.com",
+  projectId: "REPLACE_PROJECT",
+  storageBucket: "REPLACE_PROJECT.appspot.com",
+  messagingSenderId: "REPLACE_ID",
+  appId: "REPLACE_APPID"
+};
 
-/* helpers */
-function short(id){ return id ? id.slice(0,6).toUpperCase() : ''; }
-function log(...a){ console.log('[APP]', ...a); }
-function showError(msg){ joinErrorEl.style.display='block'; joinErrorEl.textContent = msg; }
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-/* Create room (host) */
-btnCreate.addEventListener('click', async () => {
-  const name = (playerNameInput.value||'Player').trim();
-  if(peer) { try{ peer.destroy(); }catch(e){} }
-  isHost = true;
-  peer = new Peer(undefined, {secure:true, debug:2});
-  peer.on('open', (id) => {
-    myPeerId = id;
-    roomCode = short(id);
-    myRoomCodeEl.textContent = roomCode;
-    myFullPeerIdEl.textContent = id;
-    myRoomArea.style.display = 'block';
-    lobbyPlayers.style.display = 'block';
-    players = {};
-    players[myPeerId] = {id: myPeerId, name: name};
-    renderLobbyList();
-    statusSmall.textContent = 'Hosting: ' + roomCode;
-    log('Host open, id=', id);
-  });
-  peer.on('connection', (conn) => {
-    const remote = conn.peer;
-    log('Incoming conn from', remote);
-    connections[remote] = conn;
-    conn.on('open', () => {
-      conn.on('data', (d)=> handleHostMessage(remote,d,conn));
-      // send back lobby list so new client can build UI
-      sendToConn(conn, {type:'lobby-list', players: Object.values(players)});
-    });
-    conn.on('close', ()=> {
-      delete connections[remote];
-      delete players[remote];
-      renderLobbyList();
-    });
-  });
-  peer.on('error', (err)=> { console.error(err); alert('Peer error: ' + err); });
-});
+/* ========== UI ========== */
+const nameInput = document.getElementById('nameInput');
+const btnCreate = document.getElementById('btnCreate');
+const btnJoin = document.getElementById('btnJoin');
+const joinCode = document.getElementById('joinCode');
+const roomInfo = document.getElementById('roomInfo');
+const playersList = document.getElementById('playersList');
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+const roomChip = document.getElementById('roomChip');
+const meChip = document.getElementById('meChip');
+const scoreChip = document.getElementById('scoreChip');
+const deathOverlay = document.getElementById('deathOverlay');
+const btnReset = document.getElementById('btnReset');
+const modeSelect = document.getElementById('modeSelect');
 
-/* Copy full id */
-btnCopyFull.addEventListener('click', () => {
-  const full = myFullPeerIdEl.textContent;
-  if(!full) return alert('Full ID chưa sẵn sàng.');
-  navigator.clipboard?.writeText(full).then(()=> alert('Full Peer ID đã copy!'), ()=> alert('Không thể copy, hãy nhấn giữ để chọn và copy thủ công.'));
-});
+nameInput.value = '';
+let myName = '';
+let roomId = null;
+let isHost = false;
+let mode = 'shared'; // shared or solo
+let playerId = null;
 
-/* Join room */
-async function tryJoin(target){
-  joinErrorEl.style.display = 'none';
-  const name = (playerNameInput.value||'Player').trim();
-  if(peer){ try{ peer.destroy(); }catch(e){} }
-  isHost = false;
-  peer = new Peer(undefined, {secure:true, debug:2});
-  peer.on('open', () => {
-    myPeerId = peer.id;
-    statusSmall.textContent = 'Client ready: ' + short(myPeerId);
-    attemptConnect(target, name);
-  });
-  peer.on('error', (err)=> {
-    console.error('Peer error (client):', err);
-    showError('Lỗi Peer client: ' + err);
-  });
+/* ========== Game state ========== */
+let W = c.width, H = c.height;
+let pipes = []; // host authoritative
+let pipeTimer = 0;
+let gravity = 0.45, flapPower = -8;
+let gameRunning = false;
+let localBird = null;
+let players = {}; // id -> bird object {x,y,vy,name,alive,score,color}
+let syncTimer = null;
+let hostListener = null;
+let playersListener = null;
+let pipesListener = null;
+
+/* ========== Helpers ========== */
+function uid(){ return 'p'+Math.random().toString(36).slice(2,9); }
+function genRoom(){ return Math.random().toString(36).slice(2,8).toUpperCase(); }
+function colorRand(){ return '#' + Math.floor(Math.random()*0xFFFFFF).toString(16).padStart(6,'0'); }
+
+/* ========== Bird class ========== */
+function makeBird(id,name,color){
+  return {id:id, name:name || 'Player', x:150, y:H/2, vy:0, w:34, h:24, color: color||colorRand(), alive:true, score:0, passed:-1};
 }
 
-function attemptConnect(target, name, attempt=1){
-  log('Attempt connect to', target, 'attempt', attempt);
-  const conn = peer.connect(target, {metadata:{name:name}, reliable:false});
-  let settled = false;
-  const cleanup = ()=> {
-    try{ conn.off && conn.off('error'); }catch(e){}
-  };
-  conn.on('open', () => {
-    settled = true;
-    connectionsReverse.host = conn;
-    conn.on('data', (d)=> handleClientMessage(d));
-    // send join request
-    conn.send({type:'join-request', name: name, peerId: myPeerId});
-    joinedRoomArea.style.display='block';
-    joinedRoomCodeEl.textContent = target;
-    renderLobbyList();
-    log('Connected to host', target);
-  });
-  conn.on('error', (err) => {
-    console.warn('Conn error to',target, err);
-    if(settled) return;
-    if(attempt===1){
-      // second try: try uppercase / lowercase transformation of short code
-      const alt = (target === target.toUpperCase()) ? target.toLowerCase() : target.toUpperCase();
-      showError('Kết nối thất bại với mã ngắn. Đang thử biến thể mã... Nếu vẫn lỗi, yêu cầu host gửi Full Peer ID và dán vào ô Join.');
-      setTimeout(()=> attemptConnect(alt, name, 2), 400);
-    } else {
-      showError('Không thể kết nối tới host bằng mã này. Hãy yêu cầu host gửi **Full Peer ID** (host bấm "Copy Full ID") và dán full id vào ô Join.');
-    }
-  });
-  // timeout fallback
-  setTimeout(()=> {
-    if(!settled){
-      try { conn.close(); } catch(e){}
-      if(attempt===1){
-        const alt = (target === target.toUpperCase()) ? target.toLowerCase() : target.toUpperCase();
-        attemptConnect(alt, name, 2);
+/* ========== Render ========== */
+function renderAll(){
+  ctx.clearRect(0,0,W,H);
+  // ground
+  ctx.fillStyle = '#6b3';
+  ctx.fillRect(0,H-50,W,50);
+  // pipes
+  for(const p of pipes){
+    ctx.fillStyle = '#2b8';
+    ctx.fillRect(p.x,0,52,p.top);
+    ctx.fillRect(p.x,p.top+p.gap,52,H-(p.top+p.gap)-50);
+  }
+  // players
+  for(const id in players){
+    const b = players[id];
+    if(!b) continue;
+    // draw bird
+    ctx.fillStyle = b.color;
+    ctx.beginPath();
+    ctx.ellipse(b.x,b.y,b.w/2,b.h/2,0,0,Math.PI*2);
+    ctx.fill();
+    // eye
+    ctx.fillStyle='#000';
+    ctx.fillRect(b.x+6,b.y-4,4,4);
+    // name
+    ctx.fillStyle='#000';
+    ctx.textAlign='center';
+    ctx.font='14px system-ui';
+    ctx.fillText(b.name, b.x, b.y-28);
+    // score overlay top-left one per player (only show top-left player's score as global)
+  }
+}
+
+/* ========== Pipes management (host only) ========== */
+function spawnPipe(){ pipes.push({x:W+40, top: Math.floor(Math.random()*(H-200-140))+60, gap:140}); }
+function updatePipes(){
+  for(const p of pipes) p.x -= 2.6;
+  if(pipes.length && pipes[0].x < -80) pipes.shift();
+}
+
+/* ========== Physics update ========== */
+function updatePhysics(){
+  if(!gameRunning) return;
+  // host updates pipes
+  if(isHost && mode === 'shared'){
+    pipeTimer++;
+    if(pipeTimer>110){ spawnPipe(); pipeTimer=0; db.ref('rooms/'+roomId+'/pipes').set(pipes); }
+  }
+  updatePipes();
+  // update each bird
+  for(const id in players){
+    const b = players[id];
+    if(!b.alive) continue;
+    b.vy += gravity;
+    b.y += b.vy;
+    if(b.y + b.h/2 >= H-50){ b.alive=false; onDeath(id); }
+    if(b.y - b.h/2 <= 0){ b.y = b.h/2; b.vy = 0; }
+    // collision with pipes
+    for(const p of pipes){
+      if(b.x + b.w/2 > p.x && b.x - b.w/2 < p.x + 52){
+        if(b.y - b.h/2 < p.top || b.y + b.h/2 > p.top + p.gap){
+          b.alive = false;
+          onDeath(id);
+        }
       } else {
-        showError('Timeout khi cố gắng kết nối. Hãy thử dùng Full Peer ID hoặc reload cả hai thiết bị.');
+        // scoring: when bird passes pipe's trailing edge
+        if(b.passed < pipes.indexOf(p) && b.x > p.x + 52){
+          b.passed = pipes.indexOf(p);
+          b.score = (b.score||0) + 1;
+          if(isHost && mode==='shared'){
+            // update player score in DB
+            db.ref('rooms/'+roomId+'/players/'+id+'/score').set(b.score);
+          }
+          if(id === playerId){
+            scoreChip.textContent = 'Score: ' + b.score;
+          }
+        }
       }
     }
-  }, 6000);
+  }
+  // host write players positions periodically
+  if(isHost && mode==='shared'){
+    db.ref('rooms/'+roomId+'/players').set(players);
+  }
+  renderAll();
 }
 
-btnJoin.addEventListener('click', ()=> {
-  const code = (roomInput.value||'').trim();
-  if(!code) return alert('Nhập mã phòng hoặc Full Peer ID để join.');
-  tryJoin(code);
-});
-btnRetryJoin.addEventListener('click', ()=> {
-  const code = (roomInput.value||'').trim();
-  if(!code) return alert('Nhập mã phòng hoặc Full Peer ID để join.');
-  tryJoin(code);
-});
-
-/* Host message handler (simple) */
-function handleHostMessage(from, data, conn){
-  if(!data || !data.type) return;
-  if(data.type === 'join-request'){
-    players[from] = {id: from, name: data.name || ('P_'+short(from))};
-    log('Player join-request from', from, data.name);
-    renderLobbyList();
-    // broadcast join to others
-    broadcast({type:'player-joined', id: from, name: players[from].name});
-  } else if(data.type === 'sync'){ /* ...ignored for debug version */ }
-}
-
-/* Client message handler */
-function handleClientMessage(data){
-  if(!data || !data.type) return;
-  if(data.type === 'lobby-list'){
-    players = {};
-    for(const p of data.players) players[p.id] = {id:p.id, name:p.name};
-    renderLobbyList();
-  } else if(data.type === 'player-joined'){
-    players[data.id] = {id:data.id, name:data.name};
-    renderLobbyList();
-  } else if(data.type === 'start'){
-    // start game - omitted here; original game start logic should be invoked
-    alert('Host đã bấm START (bắt đầu game).');
+/* ========== Death/reset handling ========== */
+function onDeath(id){
+  // notify DB for solo/shared (only update players alive flag)
+  if(mode==='shared'){
+    db.ref('rooms/'+roomId+'/players/'+id+'/alive').set(false);
+  }
+  if(id === playerId){
+    deathOverlay.style.display = 'flex';
   }
 }
 
-/* send to a single conn (host) */
-function sendToConn(conn, msg){
-  try{ conn.send(msg); }catch(e){ console.warn('sendToConn failed', e); }
-}
-
-/* broadcast from host */
-function broadcast(msg){
-  for(const id in connections){
-    try{ connections[id].send(msg); } catch(e){ console.warn('broadcast fail to', id); }
+/* reset local player */
+function resetLocal(){
+  if(!players[playerId]) return;
+  players[playerId].y = H/2; players[playerId].vy = 0; players[playerId].alive = true; players[playerId].score = 0; players[playerId].passed = -1;
+  scoreChip.textContent = 'Score: 0';
+  deathOverlay.style.display = 'none';
+  // write to DB
+  if(mode==='shared') db.ref('rooms/'+roomId+'/players/'+playerId).set(players[playerId]);
+  if(mode==='solo') {
+    // just local
   }
 }
 
-/* UI helpers */
-function renderLobbyList(){
-  playersListEl.innerHTML = '';
+/* ========== Input (flap) ========== */
+function flapLocal(){
+  if(!players[playerId] || !players[playerId].alive) return;
+  players[playerId].vy = flapPower;
+  // if shared and not host, write small update
+  if(mode==='shared' && !isHost){
+    db.ref('rooms/'+roomId+'/players/'+playerId+'/y').set(players[playerId].y);
+    db.ref('rooms/'+roomId+'/players/'+playerId+'/vy').set(players[playerId].vy);
+  }
+}
+window.addEventListener('keydown', e => { if(e.code==='Space') flapLocal(); });
+c.addEventListener('touchstart', e => { e.preventDefault(); flapLocal(); }, {passive:false});
+c.addEventListener('mousedown', e => { flapLocal(); });
+
+/* ========== Networking: create/join room ========== */
+btnCreate.addEventListener('click', async () => {
+  myName = (nameInput.value||'').trim() || 'Bindz';
+  mode = modeSelect.value;
+  playerId = uid();
+  isHost = true;
+  roomId = genRoom(); // short code easy to type
+  roomInfo.textContent = 'Đã tạo phòng: ' + roomId + ' (host)';
+  roomChip.textContent = 'Room: ' + roomId;
+  meChip.textContent = 'You: ' + myName + ' (Host)';
+  // create initial room in DB
+  const roomRef = db.ref('rooms/'+roomId);
+  const initial = {mode: mode, pipes: [], host: playerId, createdAt: Date.now()};
+  await roomRef.set(initial);
+  // add host player
+  players = {};
+  players[playerId] = makeBird(playerId, myName, colorRand());
+  await roomRef.child('players/'+playerId).set(players[playerId]);
+  // listen for players changes
+  attachRoomListeners();
+  // host will control authoritative pipes; start game only when host presses start (we use Start immediate for simplicity)
+  startAsHost();
+});
+
+btnJoin.addEventListener('click', async () => {
+  const code = (joinCode.value||'').trim().toUpperCase();
+  if(!code){ alert('Nhập mã phòng (6 ký tự).'); return; }
+  const roomRef = db.ref('rooms/'+code);
+  const snap = await roomRef.get();
+  if(!snap.exists()){ alert('Phòng không tồn tại hoặc đã đóng. Kiểm tra lại mã.'); return; }
+  const meta = snap.val();
+  mode = meta.mode || 'shared';
+  // join
+  myName = (nameInput.value||'').trim() || ('Player'+Math.floor(Math.random()*99));
+  playerId = uid();
+  roomId = code;
+  isHost = false;
+  roomChip.textContent = 'Room: ' + roomId;
+  meChip.textContent = 'You: ' + myName;
+  // add self to DB players
+  const myBird = makeBird(playerId, myName, colorRand());
+  await db.ref('rooms/'+roomId+'/players/'+playerId).set(myBird);
+  // attach listeners to read pipes/players/start
+  attachRoomListeners();
+  // if solo mode, we don't need to wait; start local game
+  if(mode==='solo'){ startSolo(); }
+});
+
+/* attach listeners for room updates (players & pipes) */
+function attachRoomListeners(){
+  if(playersListener) playersListener.off();
+  if(pipesListener) pipesListener.off();
+  const playersRef = db.ref('rooms/'+roomId+'/players');
+  playersListener = playersRef.on('value', snapshot => {
+    const data = snapshot.val() || {};
+    // merge into local players (keep local alive)
+    for(const id in data){
+      const p = data[id];
+      if(!players[id]) players[id] = makeBird(id,p.name,p.color||colorRand());
+      // update fields from DB (but if local and moving, we keep local pos)
+      players[id].name = p.name;
+      players[id].score = p.score || 0;
+      players[id].alive = (p.alive === undefined) ? players[id].alive : p.alive;
+      players[id].color = p.color || players[id].color;
+      if(!isHost && id !== playerId){
+        players[id].x = p.x || players[id].x;
+        players[id].y = p.y || players[id].y;
+        players[id].vy = p.vy || players[id].vy;
+      }
+    }
+    // remove any players not in DB
+    for(const id in players){
+      if(!data[id]) delete players[id];
+    }
+    renderPlayersList();
+  });
+
+  const pipesRef = db.ref('rooms/'+roomId+'/pipes');
+  pipesListener = pipesRef.on('value', snap => {
+    pipes = snap.val() || [];
+  });
+}
+
+/* Host starts game authoritative */
+function startAsHost(){
+  gameRunning = true;
+  // host runs pipes and physics and writes players & pipes to DB
+  if(syncTimer) clearInterval(syncTimer);
+  syncTimer = setInterval(()=> {
+    updatePhysics();
+    // host writes players positions and pipes (already in updatePhysics writes pipes occasionally)
+    db.ref('rooms/'+roomId+'/players').set(players);
+    db.ref('rooms/'+roomId+'/pipes').set(pipes);
+  }, 1000/60);
+  // also start render loop if not already
+  requestAnimationFrame(loopRender);
+}
+
+/* Solo mode start */
+function startSolo(){
+  gameRunning = true;
+  // create local bird
+  if(!players[playerId]) players[playerId] = makeBird(playerId,myName,colorRand());
+  localBird = players[playerId];
+  if(syncTimer) clearInterval(syncTimer);
+  syncTimer = setInterval(()=> {
+    updatePhysics(); // local only
+  }, 1000/60);
+  requestAnimationFrame(loopRender);
+}
+
+/* render loop */
+function loopRender(){ renderAll(); if(gameRunning) requestAnimationFrame(loopRender); }
+
+/* render players list UI */
+function renderPlayersList(){
+  playersList.innerHTML = '';
   for(const id in players){
     const p = players[id];
-    const d = document.createElement('div');
-    d.textContent = (p.name || 'Player') + (id===myPeerId ? ' (You)' : '');
-    d.style.padding='6px';
-    d.style.background='#eef';
-    d.style.margin='6px 0';
-    d.style.borderRadius='6px';
-    playersListEl.appendChild(d);
+    const el = document.createElement('div');
+    el.textContent = p.name + (id===playerId ? ' (You)' : '') + ' — score: ' + (p.score||0) + (p.alive ? '' : ' (dead)');
+    playersList.appendChild(el);
   }
-  lobbyPlayers.style.display = Object.keys(players).length ? 'block' : 'none';
 }
 
-/* Start & close room UI handlers (host) */
-btnStart.addEventListener('click', ()=> {
-  if(!isHost) return;
-  broadcast({type:'start'});
-  alert('Start sent to players. (Game start logic should run now.)');
-});
-btnCloseRoom.addEventListener('click', ()=> {
-  if(peer){ try{ peer.destroy(); }catch(e){} }
-  location.reload();
+/* Reset button local */
+btnReset.addEventListener('click', async ()=> {
+  resetLocal();
+  // write to DB
+  if(mode==='shared') await db.ref('rooms/'+roomId+'/players/'+playerId).set(players[playerId]);
 });
 
-/* Reset placeholder */
-btnReset.addEventListener('click', ()=> { location.reload(); });
+/* leave room on unload */
+window.addEventListener('beforeunload', ()=> {
+  if(roomId && playerId){
+    try{ db.ref('rooms/'+roomId+'/players/'+playerId).remove(); }catch(e){}
+  }
+});
 
-/* cleanup when leaving */
-window.addEventListener('beforeunload', ()=> { try{ if(peer) peer.destroy(); }catch(e){} });
+/* start a minimal loop even if not host to update local player pos in DB periodically for other clients */
+setInterval(()=> {
+  if(mode==='shared' && !isHost && roomId && players[playerId]){
+    db.ref('rooms/'+roomId+'/players/'+playerId+'/y').set(players[playerId].y);
+    db.ref('rooms/'+roomId+'/players/'+playerId+'/x').set(players[playerId].x);
+    db.ref('rooms/'+roomId+'/players/'+playerId+'/vy').set(players[playerId].vy);
+  }
+}, 200);
+
+/* Start rendering baseline */
+requestAnimationFrame(loopRender);
+
+/* If user wants quick test without firebase config set, provide simple single-player fallback */
+if(firebaseConfig.apiKey.includes('REPLACE')){
+  roomInfo.textContent = 'Chú ý: Bạn chưa thay Firebase config. Thêm config vào file để bật multiplayer. (Hoặc để test: paste config từ Firebase project của bạn.)';
+}
 
 </script>
 </body>
