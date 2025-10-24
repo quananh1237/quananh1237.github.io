@@ -3,71 +3,77 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>Flappy Birch — Firebase + PeerJS</title>
+<title>Flappy Birch — Multiplayer (Firebase)</title>
 <style>
   *{box-sizing:border-box;font-family:system-ui,Arial;}
   html,body{height:100%;margin:0;background:#87ceeb;touch-action:manipulation;user-select:none;}
-  .wrap{max-width:920px;margin:10px auto;padding:10px;}
+  .wrap{max-width:920px;margin:12px auto;padding:12px;}
   .panel{background:#fff;padding:12px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.12);}
-  .row{display:flex;gap:8px;align-items:center;}
+  .row{display:flex;gap:8px;align-items:center;margin-top:8px;}
   input,select,button{padding:10px;border-radius:8px;border:1px solid #ccc;}
   button{background:#046;color:#fff;border:0;font-weight:700;}
-  #gameWrap{margin-top:12px;position:relative;height:520px;overflow:hidden;border-radius:8px;}
+  #gameArea{margin-top:12px;position:relative;height:520px;overflow:hidden;border-radius:8px;}
   canvas{width:100%;height:100%;display:block;background:linear-gradient(#87ceeb,#5cc1ff);}
   #overlayTop{position:absolute;left:10px;top:10px;z-index:10;}
   .chip{display:inline-block;background:rgba(255,255,255,0.92);padding:6px 8px;border-radius:999px;margin-right:6px;font-weight:700;}
-  #death{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);z-index:30;}
+  #deathOverlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);z-index:40;}
   #deathBox{background:#fff;padding:14px;border-radius:8px;text-align:center;}
   #playersList{margin-top:8px;font-size:14px;}
-  footer{margin-top:10px;text-align:center;color:#fff;}
   .small{font-size:13px;color:#333;}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="panel" id="lobby">
+  <div class="panel" id="lobbyPanel">
     <div style="display:flex;justify-content:space-between;align-items:center;">
       <h3 style="margin:0">Flappy Birch — Multiplayer</h3>
-      <div class="small">Creator mặc định: <strong>Bindz</strong></div>
+      <div class="small">Creator default: <strong>Bindz</strong></div>
     </div>
 
-    <div class="row" style="margin-top:8px;">
-      <input id="name" placeholder="Tên (mặc định Bindz khi Create)" style="flex:1" />
-      <select id="mode"><option value="shared">Shared</option><option value="solo">Solo</option></select>
-      <button id="create">Create</button>
+    <div class="row">
+      <input id="nameInput" placeholder="Tên (nhập hoặc để trống để dùng mặc định)" style="flex:1" />
+      <select id="modeSelect"><option value="shared">Shared (xem chim nhau)</option><option value="solo">Solo (chỉ bạn)</option></select>
+      <button id="btnCreate">Create</button>
     </div>
 
-    <div class="row" style="margin-top:8px;">
-      <input id="codeIn" placeholder="Nhập mã 4 ký tự" style="width:160px" />
-      <button id="join">Join</button>
-      <button id="start" style="display:none">Start</button>
+    <div class="row">
+      <input id="joinInput" placeholder="Nhập mã phòng 4 ký tự" style="width:180px" />
+      <button id="btnJoin">Join</button>
+      <button id="btnStart" style="display:none">Start</button>
     </div>
 
     <div id="roomInfo" class="small" style="margin-top:8px">Room: -</div>
-    <div id="playersList"></div>
+    <div id="playersList" class="small"></div>
   </div>
 
-  <div id="gameWrap" class="panel" style="display:none;">
+  <div id="gameArea" class="panel" style="display:none;">
     <div id="overlayTop">
       <span class="chip" id="roomChip">Room:-</span>
       <span class="chip" id="meChip">You:-</span>
       <span class="chip" id="scoreChip">Score:0</span>
     </div>
-    <canvas id="cv" width="900" height="520"></canvas>
-    <div id="death"><div id="deathBox"><h3>BẠN ĐÃ CHẾT</h3><div style="margin-top:8px"><button id="reset">Reset</button></div></div></div>
+    <canvas id="canvas" width="900" height="520"></canvas>
+
+    <div id="deathOverlay">
+      <div id="deathBox">
+        <h3>BẠN ĐÃ CHẾT</h3>
+        <div style="margin-top:8px"><button id="btnReset">Reset</button></div>
+      </div>
+    </div>
   </div>
 
-  <footer class="small">Chạm để flap. Khi chưa Start, không thấy game. Room code 4 ký tự.</footer>
+  <div class="small" style="margin-top:8px">Chạm màn hình để flap. Nếu chưa paste Firebase config, bản này vẫn cho phép chơi solo thử.</div>
 </div>
 
-<!-- PeerJS -->
-<script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
 <!-- Firebase compat -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-/* ====== CẤU HÌNH FIREBASE (thay bằng config của bạn) ====== */
+/* ------------------- PASTE FIREBASE CONFIG Ở ĐÂY -------------------
+  Tạo project Firebase -> Realtime Database (test mode) -> copy config SDK
+  Dán vào firebaseConfig dưới đây (thay các giá trị REPLACE_...).
+*/
 const firebaseConfig = {
   apiKey: "REPLACE_API_KEY",
   authDomain: "REPLACE_PROJECT.firebaseapp.com",
@@ -77,206 +83,137 @@ const firebaseConfig = {
   messagingSenderId: "REPLACE_ID",
   appId: "REPLACE_APPID"
 };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+/* ------------------------------------------------------------------ */
 
-/* ====== UI ====== */
-const nameEl = document.getElementById('name'), modeEl = document.getElementById('mode');
-const btnCreate = document.getElementById('create'), btnJoin = document.getElementById('join'), btnStart = document.getElementById('start');
-const codeIn = document.getElementById('codeIn'), roomInfo = document.getElementById('roomInfo'), playersListEl = document.getElementById('playersList');
-const gameWrap = document.getElementById('gameWrap'), lobby = document.getElementById('lobby');
-const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
-const roomChip = document.getElementById('roomChip'), meChip = document.getElementById('meChip'), scoreChip = document.getElementById('scoreChip');
-const death = document.getElementById('death'), btnReset = document.getElementById('reset');
+let useFirebase = !(firebaseConfig.apiKey.includes('REPLACE'));
+if(useFirebase) {
+  firebase.initializeApp(firebaseConfig);
+}
+const db = useFirebase ? firebase.database() : null;
 
-let myName='', playerId='', roomId=null, isHost=false, mode='shared';
-let players = {}, pipes = [], pipeTimer=0, gameOn=false;
-let gravity=0.45, flapP=-8, syncTick=null;
-let peer=null, peerConn=null; // PeerJS (optional fast sync)
-let usePeer=false;
+/* ------------------- UI & state ------------------- */
+const nameInput = document.getElementById('nameInput');
+const btnCreate = document.getElementById('btnCreate');
+const btnJoin = document.getElementById('btnJoin');
+const btnStart = document.getElementById('btnStart');
+const joinInput = document.getElementById('joinInput');
+const roomInfo = document.getElementById('roomInfo');
+const playersListEl = document.getElementById('playersList');
+const modeSelect = document.getElementById('modeSelect');
 
-/* helpers */
-const randId = ()=> 'p'+Math.random().toString(36).slice(2,9);
-const genCode = ()=> Math.random().toString(36).slice(2,6).toUpperCase();
+const gameArea = document.getElementById('gameArea');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const roomChip = document.getElementById('roomChip');
+const meChip = document.getElementById('meChip');
+const scoreChip = document.getElementById('scoreChip');
+const deathOverlay = document.getElementById('deathOverlay');
+const btnReset = document.getElementById('btnReset');
+
+let roomId = null;
+let playerId = null;
+let myName = '';
+let isHost = false;
+let mode = 'shared';
+let players = {}; // id -> bird
+let pipes = [];
+let pipeTimer = 0;
+let gravity = 0.45, flapPower = -8;
+let gameRunning = false;
+let syncInterval = null;
+
+/* ------------------- helpers ------------------- */
+const randId = ()=> 'p' + Math.random().toString(36).slice(2,9);
+const genRoom = ()=> Math.random().toString(36).slice(2,6).toUpperCase();
 const colorRand = ()=> '#'+Math.floor(Math.random()*0xFFFFFF).toString(16).padStart(6,'0');
+function bird(id,name,color){ return {id:id,name:name,x:150,y:canvas.height/2,vy:0,w:34,h:24,color:color||colorRand(),alive:true,score:0,passed:-1}; }
 
-/* Bird factory */
-function birdObj(id,name,color){ return {id:id,name:name,x:150,y:cv.height/2,vy:0,w:34,h:24,color:color||colorRand(),alive:true,score:0,passed:-1}; }
-
-/* render */
+/* ------------------- rendering & physics ------------------- */
 function render(){
-  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
   // ground
-  ctx.fillStyle='#6b3'; ctx.fillRect(0,cv.height-50,cv.width,50);
+  ctx.fillStyle='#6b3'; ctx.fillRect(0,canvas.height-50,canvas.width,50);
   // pipes
-  for(const p of pipes){ ctx.fillStyle='#2b8'; ctx.fillRect(p.x,0,52,p.top); ctx.fillRect(p.x,p.top+p.gap,52,cv.height-(p.top+p.gap)-50); }
-  // players
+  for(const p of pipes){ ctx.fillStyle='#2b8'; ctx.fillRect(p.x,0,52,p.top); ctx.fillRect(p.x,p.top+p.gap,52,canvas.height-(p.top+p.gap)-50); }
+  // birds
   for(const id in players){
     const b = players[id];
     if(!b) continue;
     ctx.fillStyle = b.color; ctx.beginPath(); ctx.ellipse(b.x,b.y,b.w/2,b.h/2,0,0,Math.PI*2); ctx.fill();
     ctx.fillStyle='#000'; ctx.fillRect(b.x+6,b.y-4,4,4);
-    ctx.font='14px system-ui'; ctx.textAlign='center'; ctx.fillText(b.name, b.x, b.y-28);
+    ctx.font='14px system-ui'; ctx.textAlign='center'; ctx.fillStyle='#000'; ctx.fillText(b.name, b.x, b.y-28);
   }
 }
-
-/* pipes */
-function spawnPipe(){ pipes.push({x:cv.width+40, top: Math.floor(Math.random()*(cv.height-200-140))+60, gap:140}); }
+function spawnPipe(){ pipes.push({x:canvas.width+40, top: Math.floor(Math.random()*(canvas.height-200-140))+60, gap:140}); }
 function updatePipes(){ for(const p of pipes) p.x -= 2.6; if(pipes.length && pipes[0].x < -80) pipes.shift(); }
 
-/* physics */
-function physics(){
-  if(!gameOn) return;
-  if(isHost && mode==='shared'){ pipeTimer++; if(pipeTimer>110){ spawnPipe(); pipeTimer=0; db.ref('rooms/'+roomId+'/pipes').set(pipes); } }
+function physicsTick(){
+  if(!gameRunning) return;
+  if(isHost && mode==='shared'){
+    pipeTimer++; if(pipeTimer>110){ spawnPipe(); pipeTimer=0; if(useFirebase) db.ref('rooms/'+roomId+'/pipes').set(pipes); }
+  }
   updatePipes();
   for(const id in players){
     const b = players[id];
     if(!b.alive) continue;
-    b.vy += gravity; b.y += b.vy;
-    if(b.y + b.h/2 >= cv.height-50){ b.alive=false; onDeath(id); }
-    if(b.y - b.h/2 <= 0){ b.y = b.h/2; b.vy=0; }
-    // collisions & scoring
+    b.vy += gravity;
+    b.y += b.vy;
+    if(b.y + b.h/2 >= canvas.height-50){ b.alive=false; onDeath(id); }
+    if(b.y - b.h/2 <= 0){ b.y = b.h/2; b.vy = 0; }
+    // collision & scoring
     for(const p of pipes){
       if(b.x + b.w/2 > p.x && b.x - b.w/2 < p.x + 52){
         if(b.y - b.h/2 < p.top || b.y + b.h/2 > p.top + p.gap){ b.alive=false; onDeath(id); }
       } else {
-        if(b.passed < pipes.indexOf(p) && b.x > p.x + 52){ b.passed = pipes.indexOf(p); b.score = (b.score||0)+1;
-          if(isHost && mode==='shared') db.ref('rooms/'+roomId+'/players/'+id+'/score').set(b.score);
-          if(id===playerId) scoreChip.textContent = 'Score:' + b.score;
+        if(b.passed < pipes.indexOf(p) && b.x > p.x + 52){
+          b.passed = pipes.indexOf(p); b.score = (b.score||0)+1;
+          if(isHost && mode==='shared' && useFirebase) db.ref('rooms/'+roomId+'/players/'+id+'/score').set(b.score);
+          if(id === playerId) scoreChip.textContent = 'Score:' + b.score;
         }
       }
     }
   }
-  // host persists players positions
-  if(isHost && mode==='shared') db.ref('rooms/'+roomId+'/players').set(players);
+  if(isHost && mode==='shared' && useFirebase) db.ref('rooms/'+roomId+'/players').set(players);
   render();
 }
 
-/* death handling */
+/* ------------------- death / reset ------------------- */
 function onDeath(id){
-  if(mode==='shared') db.ref('rooms/'+roomId+'/players/'+id+'/alive').set(false);
-  if(id===playerId) death.style.display='flex';
+  if(useFirebase && mode==='shared') db.ref('rooms/'+roomId+'/players/'+id+'/alive').set(false);
+  if(id === playerId) deathOverlay.style.display = 'flex';
 }
-
-/* reset local */
 function resetLocal(){
   if(!players[playerId]) return;
-  players[playerId].y = cv.height/2; players[playerId].vy=0; players[playerId].alive=true; players[playerId].score=0; players[playerId].passed=-1;
-  scoreChip.textContent='Score:0'; death.style.display='none';
-  if(mode==='shared') db.ref('rooms/'+roomId+'/players/'+playerId).set(players[playerId]);
+  players[playerId].y = canvas.height/2; players[playerId].vy = 0; players[playerId].alive = true; players[playerId].score = 0; players[playerId].passed = -1;
+  scoreChip.textContent = 'Score:0'; deathOverlay.style.display = 'none';
+  if(useFirebase && mode==='shared') db.ref('rooms/'+roomId+'/players/'+playerId).set(players[playerId]);
 }
 
-/* input */
+/* ------------------- input ------------------- */
 function flap(){
   if(!players[playerId] || !players[playerId].alive) return;
-  players[playerId].vy = flapP;
-  if(mode==='shared' && !isHost){
-    db.ref('rooms/'+roomId+'/players/'+playerId+'/y').set(players[playerId].y);
-    db.ref('rooms/'+roomId+'/players/'+playerId+'/vy').set(players[playerId].vy);
-  }
+  players[playerId].vy = flapPower;
+  if(useFirebase && mode==='shared') db.ref('rooms/'+roomId+'/players/'+playerId+'/y').set(players[playerId].y);
 }
 window.addEventListener('keydown', e=>{ if(e.code==='Space') flap(); });
-cv.addEventListener('touchstart', e=>{ e.preventDefault(); flap(); }, {passive:false});
-cv.addEventListener('mousedown', e=> flap());
+canvas.addEventListener('touchstart', e=>{ e.preventDefault(); flap(); }, {passive:false});
+canvas.addEventListener('mousedown', ()=> flap());
 
-/* UI list */
+/* ------------------- UI helpers ------------------- */
 function renderPlayersList(){
-  playersListEl.innerHTML='';
+  playersListEl.innerHTML = '';
   for(const id in players){
     const p = players[id];
-    const el = document.createElement('div'); el.textContent = p.name + (id===playerId? ' (You)':'') + ' — ' + (p.score||0) + (p.alive? '' : ' (dead)');
+    const el = document.createElement('div');
+    el.textContent = p.name + (id===playerId ? ' (You)' : '') + ' — ' + (p.score||0) + (p.alive ? '' : ' (dead)');
     playersListEl.appendChild(el);
   }
 }
 
-/* ====== Firebase + PeerJS network logic ====== */
-
-/* Try to start PeerJS and return peer id (async) */
-function startPeerIfPossible(){
-  return new Promise((res)=>{
-    try {
-      peer = new Peer(undefined, {secure:true, debug:1});
-      peer.on('open', id => { console.log('Peer open',id); res(id); });
-      peer.on('error', e => { console.warn('Peer error',e); res(null); });
-    } catch(e){ console.warn('Peer start fail',e); res(null); }
-  });
-}
-
-/* host create */
-btnCreate.addEventListener('click', async ()=>{
-  myName = (nameEl.value||'').trim() || 'Bindz'; playerId = randId(); isHost=true; mode = modeEl.value;
-  roomId = genCode(); roomInfo.textContent = 'Room: ' + roomId + ' (host)';
-  roomChip.textContent = 'Room:' + roomId; meChip.textContent = 'You:' + myName + ' (Host)';
-  // initial DB
-  await db.ref('rooms/'+roomId).set({mode:mode, createdAt:Date.now(), host:playerId});
-  players = {}; players[playerId] = birdObj(playerId,myName,colorRand());
-  await db.ref('rooms/'+roomId+'/players/'+playerId).set(players[playerId]);
-  // try PeerJS and store peerId in room for others
-  const pId = await startPeerIfPossible();
-  if(pId){ usePeer = true; db.ref('rooms/'+roomId+'/peerId').set(pId);
-    peer.on('connection', conn => {
-      conn.on('data', d => {
-        // quick join request from client via peer: client sends {type:'join', id, name}
-        if(d && d.type==='join'){ players[d.id] = birdObj(d.id, d.name, colorRand()); db.ref('rooms/'+roomId+'/players/'+d.id).set(players[d.id]); conn.send({type:'welcome', players}); renderPlayersList(); }
-        if(d && d.type==='sync'){ players[d.id] = Object.assign(players[d.id]||{}, d.state); renderPlayersList(); }
-      });
-    });
-  } else {
-    usePeer = false;
-  }
-  // show UI
-  btnStart.style.display='inline-block';
-  lobby.style.display='block';
-  gameWrap.style.display='none';
-  renderPlayersList();
-  // attach listeners
-  attachListeners();
-});
-
-/* join */
-btnJoin.addEventListener('click', async ()=>{
-  const code = (codeIn.value||'').trim().toUpperCase();
-  if(!code){ alert('Nhập mã phòng 4 ký tự.'); return; }
-  // check room
-  const snap = await db.ref('rooms/'+code).get();
-  if(!snap.exists()){ alert('Phòng không tồn tại'); return; }
-  roomId = code; isHost=false; mode = snap.val().mode || 'shared';
-  myName = (nameEl.value||'').trim() || ('Guest'+Math.floor(Math.random()*99));
-  playerId = randId();
-  roomChip.textContent = 'Room:' + roomId; meChip.textContent = 'You:' + myName;
-  // add to DB players
-  players[playerId] = birdObj(playerId,myName); await db.ref('rooms/'+roomId+'/players/'+playerId).set(players[playerId]);
-  // try PeerJS: if host wrote peerId, try connect P2P for quick sync
-  const roomMeta = snap.val();
-  if(roomMeta && roomMeta.peerId){
-    try {
-      peer = new Peer(undefined, {secure:true, debug:1});
-      peer.on('open', id => {
-        const conn = peer.connect(roomMeta.peerId);
-        conn.on('open', ()=> { usePeer = true; peerConn = conn; conn.send({type:'join', id:playerId, name:myName}); conn.on('data', d=>{ if(d.type==='welcome'){ players = Object.assign(players, d.players); renderPlayersList(); } }); });
-        conn.on('error', e => { console.warn('peer conn error',e); usePeer=false; attachListeners(); });
-      });
-    } catch(e){ usePeer=false; attachListeners(); }
-  } else {
-    attachListeners();
-  }
-  // show lobby
-  btnStart.style.display='none';
-  lobby.style.display='block';
-  gameWrap.style.display='none';
-});
-
-/* start: host only */
-btnStart.addEventListener('click', ()=>{
-  if(!isHost) return;
-  // start game: set flag and let host loop
-  db.ref('rooms/'+roomId+'/running').set(true);
-  startGameAsHost();
-});
-
-/* attach firebase listeners for pipes & players & running */
+/* ------------------- Firebase networking ------------------- */
 let playersRef=null, pipesRef=null, runningRef=null;
-function attachListeners(){
+function attachRoomListeners(){
+  if(!useFirebase) return;
   if(playersRef) playersRef.off();
   playersRef = db.ref('rooms/'+roomId+'/players');
   playersRef.on('value', snap => {
@@ -284,74 +221,127 @@ function attachListeners(){
     // merge
     for(const id in data){
       const d = data[id];
-      if(!players[id]) players[id] = birdObj(id,d.name,d.color||colorRand());
-      players[id].name = d.name; players[id].score = d.score||0; players[id].alive = (d.alive===undefined? players[id].alive : d.alive);
-      if(!isHost && id!==playerId){ players[id].x = d.x||players[id].x; players[id].y = d.y||players[id].y; players[id].vy = d.vy||players[id].vy; }
+      if(!players[id]) players[id] = bird(id,d.name,d.color||colorRand());
+      players[id].name = d.name; players[id].score = d.score||0; players[id].alive = (d.alive===undefined ? players[id].alive : d.alive); players[id].color = d.color || players[id].color;
+      if(!isHost && id !== playerId){
+        players[id].x = d.x || players[id].x; players[id].y = d.y || players[id].y; players[id].vy = d.vy || players[id].vy;
+      }
     }
     for(const id in players) if(!data[id]) delete players[id];
     renderPlayersList();
   });
+
   if(pipesRef) pipesRef.off();
   pipesRef = db.ref('rooms/'+roomId+'/pipes');
   pipesRef.on('value', snap => { pipes = snap.val() || []; });
 
+  if(runningRef) runningRef.off();
   runningRef = db.ref('rooms/'+roomId+'/running');
   runningRef.on('value', snap => {
     const val = snap.val();
-    if(val) { // game started
-      lobby.style.display='none'; gameWrap.style.display='block';
-      if(isHost) startGameAsHost(); else startGameAsClient();
+    if(val){
+      // start game for everyone
+      lobbyPanel.style.display = 'none';
+      gameArea.style.display = 'block';
+      if(isHost) startHostLoop(); else startClientLoop();
     }
   });
 }
 
-/* host game loop */
-function startGameAsHost(){
-  if(syncTick) clearInterval(syncTick);
-  gameOn = true;
-  syncTick = setInterval(()=>{ physics(); }, 1000/60);
-  requestAnimationFrame(loop);
+/* ------------------- Create / Join / Start handlers ------------------- */
+btnCreate.addEventListener('click', async ()=>{
+  mode = modeSelect.value;
+  myName = (nameInput.value||'').trim() || 'Bindz';
+  playerId = randId();
+  isHost = true;
+  roomId = genRoom();
+  roomInfo.textContent = 'Room: ' + roomId + ' (host)';
+  roomChip.textContent = 'Room:' + roomId;
+  meChip.textContent = 'You:' + myName + ' (Host)';
+  // init players
+  players = {}; players[playerId] = bird(playerId,myName,colorRand());
+  // write to DB if available
+  if(useFirebase){
+    await db.ref('rooms/'+roomId).set({mode:mode, createdAt:Date.now(), host:playerId});
+    await db.ref('rooms/'+roomId+'/players/'+playerId).set(players[playerId]);
+    await db.ref('rooms/'+roomId+'/pipes').set(pipes);
+    attachRoomListeners();
+  } else {
+    // local fallback: still show lobby and permit Start for solo testing
+    attachRoomListeners();
+  }
+  btnStart.style.display = 'inline-block';
+  renderPlayersList();
+});
+
+btnJoin.addEventListener('click', async ()=>{
+  const code = (joinInput.value||'').trim().toUpperCase();
+  if(!code){ alert('Nhập mã phòng 4 ký tự'); return; }
+  if(useFirebase){
+    const snap = await db.ref('rooms/'+code).get();
+    if(!snap.exists()){ alert('Phòng không tồn tại'); return; }
+    roomId = code; mode = snap.val().mode || 'shared';
+    myName = (nameInput.value||'').trim() || ('Guest'+Math.floor(Math.random()*99));
+    playerId = randId();
+    isHost = false;
+    players[playerId] = bird(playerId,myName,colorRand());
+    roomInfo.textContent = 'Room: ' + roomId + ' (joined)';
+    roomChip.textContent = 'Room:' + roomId; meChip.textContent = 'You:' + myName;
+    await db.ref('rooms/'+roomId+'/players/'+playerId).set(players[playerId]);
+    attachRoomListeners();
+    btnStart.style.display = 'none';
+    // do not auto start; wait for host or allow host to start alone
+  } else {
+    alert('Chưa có Firebase config — bạn có thể thử Create để chơi solo thử.');
+  }
+});
+
+btnStart.addEventListener('click', async ()=>{
+  // host can start even nếu không ai vào
+  if(!isHost){ alert('Chỉ host mới Start được'); return; }
+  if(useFirebase) await db.ref('rooms/'+roomId+'/running').set(true);
+  else { // local fallback
+    lobbyPanel.style.display = 'none'; gameArea.style.display = 'block'; startHostLoop();
+  }
+});
+
+/* ------------------- game loops ------------------- */
+function startHostLoop(){
+  if(syncInterval) clearInterval(syncInterval);
+  gameRunning = true; isHost = true;
+  syncInterval = setInterval(()=> physicsTick(), 1000/60);
+  requestAnimationFrame(loopRender);
 }
-
-/* client game loop (non-authoritative): read DB updates rendered by host */
-function startGameAsClient(){
-  if(syncTick) clearInterval(syncTick);
-  gameOn = true;
-  syncTick = setInterval(()=>{ physics(); }, 1000/60);
-  requestAnimationFrame(loop);
+function startClientLoop(){
+  if(syncInterval) clearInterval(syncInterval);
+  gameRunning = true;
+  syncInterval = setInterval(()=> physicsTick(), 1000/60);
+  requestAnimationFrame(loopRender);
 }
+function loopRender(){ render(); if(gameRunning) requestAnimationFrame(loopRender); }
 
-/* simple loop for rendering */
-function loop(){ render(); if(gameOn) requestAnimationFrame(loop); }
+/* ------------------- reset / leave ------------------- */
+btnReset.addEventListener('click', ()=> resetLocal());
+window.addEventListener('beforeunload', ()=> {
+  if(useFirebase && roomId && playerId){ try{ db.ref('rooms/'+roomId+'/players/'+playerId).remove(); }catch(e){} }
+});
 
-/* on unload remove player */
-window.addEventListener('beforeunload', ()=> { if(roomId && playerId) db.ref('rooms/'+roomId+'/players/'+playerId).remove(); });
-
-/* reset local button */
-btnReset.addEventListener('click', ()=> { resetLocal(); });
-
-/* If firebase not configured (placeholders), show notice */
-if(firebaseConfig.apiKey.includes('REPLACE')) {
-  roomInfo.textContent = 'Lưu ý: Bạn chưa thay Firebase config. Thêm firebaseConfig để bật ổn định. PeerJS vẫn cố dùng nếu host/peer available.';
-}
-
-/* start periodic client->peer or db sync for non-host to send position updates (speed up) */
+/* ------------------- periodic client update (send own y to db) ------------------- */
 setInterval(()=> {
   if(!roomId || !playerId) return;
-  if(usePeer && peerConn && peerConn.open){
-    // send lightweight sync
-    peerConn.send({type:'sync', id:playerId, state:{x:players[playerId]?.x, y:players[playerId]?.y, vy:players[playerId]?.vy, alive:players[playerId]?.alive, score:players[playerId]?.score}});
-  } else if(!isHost && mode==='shared' && players[playerId]){
-    // fallback: update small fields in DB
+  if(useFirebase && !isHost && mode==='shared' && players[playerId]){
     db.ref('rooms/'+roomId+'/players/'+playerId+'/y').set(players[playerId].y);
     db.ref('rooms/'+roomId+'/players/'+playerId+'/vy').set(players[playerId].vy);
   }
 }, 200);
 
-/* initial visual state */
-render();
+/* ------------------- allow quick single-player test if no firebase config ------------------- */
+if(!useFirebase){
+  roomInfo.textContent = 'Bạn chưa paste Firebase config. Dùng Create để test solo (local only).';
+}
 
-/* small utility: if nobody joined but host presses Start, still start */
+/* ------------------- initial render ------------------- */
+render();
 </script>
 </body>
 </html>
