@@ -1,164 +1,298 @@
-<!-- (Phần đầu bạn giữ nguyên y chang — từ <!doctype html> đến hết script cũ) -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Flappy Birch Multiplayer</title>
+<style>
+body {
+  margin: 0;
+  background: #222;
+  color: white;
+  font-family: sans-serif;
+  text-align: center;
+  overflow: hidden;
+}
+#lobbyPanel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+input,button {
+  font-size: 16px;
+  padding: 8px;
+  border: none;
+  border-radius: 5px;
+}
+button {
+  background: #00aaff;
+  color: white;
+  cursor: pointer;
+}
+#playerList {
+  margin-top: 10px;
+  background: rgba(0,0,0,0.3);
+  padding: 10px;
+  border-radius: 5px;
+  width: 200px;
+}
+#canvasWrap {
+  display: none;
+}
+canvas {
+  background: #70c5ce;
+  display: block;
+  margin: 0 auto;
+  border-bottom: 3px solid #0a0;
+}
+#deathScreen {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  color: white;
+  font-size: 24px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+</style>
+</head>
+<body>
+
+<div id="lobbyPanel">
+  <h2>🐦 Flappy Birch Multiplayer</h2>
+  <input id="nameInput" placeholder="Tên của bạn" value="Bindz">
+  <div>
+    <button id="btnCreate">Create Server</button>
+    <button id="btnJoin">Join Server</button>
+  </div>
+  <input id="codeInput" placeholder="Nhập code (VD: ABCD)" maxlength="6" style="display:none;">
+  <div id="playerList"></div>
+  <button id="btnStart" style="display:none;">Start Game</button>
+</div>
+
+<div id="canvasWrap">
+  <canvas id="gameCanvas" width="400" height="600"></canvas>
+</div>
+
+<div id="deathScreen">
+  <div>Bạn đã chết 💀</div>
+  <button id="btnReset">Reset</button>
+</div>
 
 <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
 <script>
-/* ... nguyên toàn bộ script bạn gửi ở trên ... */
-/* (không đổi gì, không xóa gì) */
-
-/* Reset placeholder */
-btnReset.addEventListener('click', ()=> { location.reload(); });
-
-/* cleanup when leaving */
-window.addEventListener('beforeunload', ()=> { try{ if(peer) peer.destroy(); }catch(e){} });
-
-
-// === FLAPPY GAME START ===
+const nameInput = document.getElementById('nameInput');
+const btnCreate = document.getElementById('btnCreate');
+const btnJoin = document.getElementById('btnJoin');
+const codeInput = document.getElementById('codeInput');
+const playerList = document.getElementById('playerList');
+const btnStart = document.getElementById('btnStart');
+const btnReset = document.getElementById('btnReset');
+const lobbyPanel = document.getElementById('lobbyPanel');
+const deathScreen = document.getElementById('deathScreen');
+const canvasWrap = document.getElementById('canvasWrap');
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const wrap = document.getElementById('canvasWrap');
-const deathScreen = document.getElementById('deathScreen');
-let gameRunning = false;
-let birds = {};
-let pipes = [];
-let gravity = 0.35, flapPower = -6, pipeGap = 130, pipeSpeed = 2;
-let myBird = null, score = 0, frame = 0;
 
-function startFlappy(){
-  document.getElementById('lobbyPanel').style.display = 'none';
-  wrap.style.display = 'block';
+let peer, conn, connections = {};
+let myPeerId = null, roomCode = null, isHost = false;
+let players = {};
+
+function randomCode(){return Math.random().toString(36).substring(2,6).toUpperCase();}
+
+// === LOBBY ===
+btnCreate.onclick = ()=>{
+  isHost = true;
+  roomCode = randomCode();
+  initPeer(roomCode);
+  playerList.innerHTML = `Tạo server: <b>${roomCode}</b>`;
+  btnStart.style.display = 'block';
+};
+btnJoin.onclick = ()=>{
+  const val = codeInput.style.display === 'none';
+  if(val){
+    codeInput.style.display = 'block';
+    return;
+  }
+  roomCode = codeInput.value.trim().toUpperCase();
+  if(!roomCode) return alert('Nhập mã code!');
+  isHost = false;
+  initPeer();
+};
+function initPeer(id=null){
+  peer = new Peer(id);
+  peer.on('open', id=>{
+    myPeerId = id;
+    if(isHost){
+      players[id] = {id, name: nameInput.value};
+      renderList();
+    } else {
+      conn = peer.connect(roomCode);
+      conn.on('open', ()=> send({type:'join', name:nameInput.value}));
+      conn.on('data', handleMessage);
+    }
+  });
+  peer.on('connection', c=>{
+    if(!isHost) return;
+    c.on('data', d=>handleHostData(c,d));
+    c.on('open', ()=>{
+      connections[c.peer] = c;
+      players[c.peer] = {id:c.peer,name:'Đang vào...'};
+      renderList();
+    });
+    c.on('close', ()=>{
+      delete connections[c.peer];
+      delete players[c.peer];
+      renderList();
+    });
+  });
+}
+
+function handleHostData(c,data){
+  if(data.type==='join'){
+    players[c.peer] = {id:c.peer,name:data.name};
+    renderList();
+    broadcast({type:'list',players:Object.values(players)});
+  }else if(data.type==='sync'){
+    broadcast(data,c.peer);
+  }
+}
+function handleMessage(data){
+  if(data.type==='list'){
+    players = {};
+    for(const p of data.players) players[p.id]=p;
+    renderList();
+  }else if(data.type==='start'){
+    startGame();
+  }else if(data.type==='sync'){
+    const b=data.bird;
+    if(b && b.id!==myPeerId) birds[b.id]=b;
+  }
+}
+function renderList(){
+  playerList.innerHTML = `<b>Phòng ${roomCode}</b><br>`+
+    Object.values(players).map(p=>p.name).join('<br>');
+}
+function broadcast(data,except=null){
+  for(const id in connections){
+    if(id===except) continue;
+    connections[id].send(data);
+  }
+}
+btnStart.onclick = ()=>{
+  if(isHost){
+    broadcast({type:'start'});
+    startGame();
+  }
+};
+btnReset.onclick = ()=>location.reload();
+
+// === GAME ===
+let birds={}, pipes=[], gravity=0.35, flapPower=-6, pipeGap=130, pipeSpeed=2;
+let myBird=null, frame=0, score=0, gameRunning=false;
+
+function startGame(){
+  lobbyPanel.style.display='none';
+  canvasWrap.style.display='block';
   initGame();
 }
-
 function initGame(){
-  birds = {};
-  pipes = [];
-  score = 0;
-  frame = 0;
-  myBird = {
-    id: myPeerId,
-    name: players[myPeerId]?.name || 'You',
-    x: 150,
-    y: canvas.height/2,
-    vy: 0,
-    dead: false,
-    color: isHost ? '#ff0' : '#0ff',
-    score: 0
+  birds={};pipes=[];frame=0;score=0;
+  myBird={
+    id:myPeerId,
+    name:players[myPeerId]?.name||"You",
+    x:150,
+    y:canvas.height/2,
+    vy:0,
+    color:isHost?'#ff0':'#0ff',
+    score:0,
+    dead:false
   };
-  birds[myPeerId] = myBird;
-  gameRunning = true;
-  deathScreen.style.display = 'none';
+  birds[myPeerId]=myBird;
+  deathScreen.style.display='none';
+  gameRunning=true;
   loop();
 }
-
-function flap(){
-  if(myBird && !myBird.dead) myBird.vy = flapPower;
-}
-canvas.addEventListener('touchstart', flap);
-canvas.addEventListener('mousedown', flap);
+function flap(){if(myBird&&!myBird.dead)myBird.vy=flapPower;}
+canvas.addEventListener('mousedown',flap);
+canvas.addEventListener('touchstart',flap);
 
 function loop(){
-  if(!gameRunning) return;
+  if(!gameRunning)return;
   frame++;
   update();
   draw();
   requestAnimationFrame(loop);
 }
-
 function update(){
-  if(frame % 90 === 0){
-    const top = Math.random() * (canvas.height - pipeGap - 100) + 50;
-    pipes.push({x: canvas.width, top: top, bottom: top + pipeGap});
+  if(frame%90===0){
+    const top=Math.random()*(canvas.height-pipeGap-100)+50;
+    pipes.push({x:canvas.width,top,bottom:top+pipeGap});
   }
-  for(let p of pipes) p.x -= pipeSpeed;
-  pipes = pipes.filter(p => p.x > -60);
-  for(let id in birds){
-    const b = birds[id];
-    if(!b.dead){
-      b.vy += gravity;
-      b.y += b.vy;
-      for(let p of pipes){
-        if(b.x + 24 > p.x && b.x - 24 < p.x + 60){
-          if(b.y - 12 < p.top || b.y + 12 > p.bottom){
-            b.dead = true;
-            if(id === myPeerId) onDie();
-          }
+  for(const p of pipes)p.x-=pipeSpeed;
+  pipes=pipes.filter(p=>p.x>-60);
+  for(const id in birds){
+    const b=birds[id];
+    if(b.dead)continue;
+    b.vy+=gravity;
+    b.y+=b.vy;
+    for(const p of pipes){
+      if(b.x+24>p.x && b.x-24<p.x+60){
+        if(b.y-12<p.top || b.y+12>p.bottom){
+          b.dead=true;
+          if(id===myPeerId)die();
         }
       }
-      if(b.y > canvas.height - 24 || b.y < 0){
-        b.dead = true;
-        if(id === myPeerId) onDie();
-      }
-      if(!b.dead && id === myPeerId){
-        for(let p of pipes){
-          if(!p.passed && p.x + 60 < b.x){
-            p.passed = true;
-            score++;
-            b.score = score;
-          }
+    }
+    if(b.y>canvas.height-24||b.y<0){
+      b.dead=true;
+      if(id===myPeerId)die();
+    }
+    if(id===myPeerId&&!b.dead){
+      for(const p of pipes){
+        if(!p.passed&&p.x+60<b.x){
+          p.passed=true;
+          score++;
+          b.score=score;
         }
       }
     }
   }
-  if(myBird && !myBird.dead) broadcast({type:'sync', bird: myBird});
+  if(myBird&&!myBird.dead)send({type:'sync',bird:myBird});
 }
-
 function draw(){
-  ctx.fillStyle = '#87ceeb';
+  ctx.fillStyle='#70c5ce';
   ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle = '#4ec04e';
+  ctx.fillStyle='#2ecc71';
   ctx.fillRect(0,canvas.height-30,canvas.width,30);
-  ctx.fillStyle = '#2a9d8f';
-  for(let p of pipes){
-    ctx.fillRect(p.x, 0, 60, p.top);
-    ctx.fillRect(p.x, p.bottom, 60, canvas.height - p.bottom);
+  ctx.fillStyle='#2a9d8f';
+  for(const p of pipes){
+    ctx.fillRect(p.x,0,60,p.top);
+    ctx.fillRect(p.x,p.bottom,60,canvas.height-p.bottom);
   }
-  for(let id in birds){
-    const b = birds[id];
-    ctx.fillStyle = b.color;
+  for(const id in birds){
+    const b=birds[id];
+    ctx.fillStyle=b.color;
     ctx.beginPath();
-    ctx.arc(b.x, b.y, 12, 0, Math.PI*2);
+    ctx.arc(b.x,b.y,12,0,Math.PI*2);
     ctx.fill();
-    ctx.fillStyle = '#000';
-    ctx.font = 'bold 14px Arial';
-    ctx.fillText(`${b.name} (${b.score||0})`, b.x - 30, b.y - 20);
+    ctx.fillStyle='#000';
+    ctx.font='bold 14px Arial';
+    ctx.fillText(`${b.name} (${b.score||0})`,b.x-30,b.y-20);
   }
 }
-
-function onDie(){
-  myBird.dead = true;
-  gameRunning = false;
-  deathScreen.style.display = 'flex';
+function die(){
+  myBird.dead=true;
+  gameRunning=false;
+  deathScreen.style.display='flex';
 }
-
-/* Khi host bấm START thì bắt đầu game */
-btnStart.addEventListener('click', ()=> {
-  if(isHost){
-    broadcast({type:'start'});
-    startFlappy();
-  }
-});
-
-/* Khi client nhận START từ host */
-function handleClientMessage(data){
-  if(!data || !data.type) return;
-  if(data.type === 'lobby-list'){
-    players = {};
-    for(const p of data.players) players[p.id] = {id:p.id, name:p.name};
-    renderLobbyList();
-  } else if(data.type === 'player-joined'){
-    players[data.id] = {id:data.id, name:data.name};
-    renderLobbyList();
-  } else if(data.type === 'start'){
-    startFlappy();
-  } else if(data.type === 'sync'){
-    const b = data.bird;
-    if(b && b.id !== myPeerId){
-      birds[b.id] = b;
-    }
-  }
-}
-
-// === FLAPPY GAME END ===
+function send(data){if(isHost)return handleHostData(null,data);else if(conn)conn.send(data);}
 </script>
 </body>
 </html>
