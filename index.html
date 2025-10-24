@@ -2,180 +2,238 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>Flappy Birch Multiplayer — Fix Join + Score</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Google — giả lập</title>
 <style>
-  html,body{height:100%;margin:0;background:#87ceeb;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;}
-  #container{display:flex;flex-direction:column;height:100%;}
-  header{padding:12px;background:#046;color:#fff;display:flex;align-items:center;justify-content:space-between;}
-  header h1{font-size:16px;margin:0;}
-  main{flex:1;display:flex;align-items:center;justify-content:center;position:relative;padding:12px;}
-  .panel{width:420px;max-width:100%;background:rgba(255,255,255,0.98);border-radius:10px;padding:14px;box-shadow:0 6px 20px rgba(0,0,0,0.15);}
-  label{display:block;margin-top:8px;font-size:13px;color:#333;}
-  input[type="text"]{width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;box-sizing:border-box;}
-  .row{display:flex;gap:8px;margin-top:8px;}
-  button{flex:1;padding:10px;border-radius:8px;border:0;background:#046;color:#fff;font-weight:600;}
-  button.secondary{background:#888;}
-  #lobbyPlayers{margin-top:10px;font-size:13px;}
-  #canvasWrap{width:100%;height:520px;max-height:70vh;background:linear-gradient(#87ceeb,#5cc1ff);border-radius:10px;overflow:hidden;position:relative;}
-  canvas{display:block;width:100%;height:100%;}
-  #overlay{position:absolute;left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;pointer-events:none;}
-  #deathScreen{position:absolute;left:0;top:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;z-index:30;background:rgba(0,0,0,0.5);}
-  #score{position:absolute;top:10px;left:50%;transform:translateX(-50%);font-size:22px;color:#fff;font-weight:bold;text-shadow:1px 1px 2px #000;}
-  footer{padding:8px;text-align:center;font-size:12px;color:#fff;background:#034;}
+  :root{
+    --bg:#f6f7fb;
+    --card:#fff;
+    --muted:#6b7280;
+    --accent:#1a73e8;
+    --shadow: 0 10px 30px rgba(25, 45, 80, 0.06);
+    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(#eef3ff,#f7f9fc);color:#111}
+  .container{max-width:980px;margin:28px auto;padding:18px}
+  /* faux address bar */
+  .address{
+    display:flex;align-items:center;gap:10px;background:var(--card);padding:10px 12px;border-radius:10px;
+    box-shadow:var(--shadow);border:1px solid rgba(0,0,0,0.04);
+  }
+  .address .favicon{
+    width:18px;height:18px;border-radius:4px;background:linear-gradient(135deg,#4285F4,#34A853);
+    display:inline-block;
+  }
+  .address .url{
+    color:#0b63d6;font-weight:600;font-size:14px;margin-left:6px;
+  }
+  /* search area */
+  .hero{margin:40px 0 18px;text-align:center}
+  .logo{
+    font-weight:700;font-size:74px;line-height:1;margin-bottom:18px;letter-spacing:-2px;
+    font-family:"Product Sans","Segoe UI", Roboto, Arial, sans-serif;
+  }
+  /* Google-like colored letters */
+  .logo .g{color:#4285F4}
+  .logo .o1{color:#EA4335}
+  .logo .o2{color:#FBBC05}
+  .logo .g2{color:#4285F4}
+  .logo .l{color:#34A853}
+  .logo .e{color:#EA4335}
+  .searchbox{
+    display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;
+    width:min(760px,92%);background:var(--card);box-shadow:0 6px 18px rgba(32,33,36,0.06);
+    border:1px solid rgba(0,0,0,0.06);
+  }
+  .searchbox input{
+    border:0;outline:0;font-size:18px;width:100%;
+    padding:6px 4px;background:transparent;
+  }
+  .icons{display:flex;gap:8px;align-items:center;margin-left:6px}
+  .icon{
+    width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(180deg,rgba(0,0,0,0.03),transparent);
+  }
+  .buttons{margin-top:18px;display:flex;gap:12px;justify-content:center}
+  .btn{
+    background:var(--card);border:1px solid rgba(0,0,0,0.08);padding:10px 14px;border-radius:6px;font-size:14px;
+    box-shadow:0 4px 12px rgba(16,24,40,0.04);cursor:pointer;
+  }
+  .btn.primary{background:var(--accent);color:#fff;border-color:transparent;box-shadow:0 6px 20px rgba(26,115,232,0.18)}
+  /* results */
+  .results{max-width:760px;margin:30px auto 80px}
+  .result{background:var(--card);padding:14px;border-radius:8px;margin-bottom:12px;border:1px solid rgba(0,0,0,0.04)}
+  .result .title{font-size:18px;color:#1a0dab;font-weight:600;margin-bottom:6px;text-decoration:none}
+  .result .url{color:#006621;font-size:13px;margin-bottom:6px;display:block}
+  .result .snippet{color:var(--muted);font-size:14px}
+  .footer{max-width:760px;margin:30px auto;color:var(--muted);font-size:13px;text-align:center}
+  /* responsive */
+  @media (max-width:520px){
+    .logo{font-size:48px}
+    .searchbox{width:94%}
+  }
 </style>
 </head>
 <body>
-<div id="container">
-  <header>
-    <h1>Flappy Birch — Multiplayer (Fix Join)</h1>
-    <div id="statusSmall">Disconnected</div>
-  </header>
-
-  <main>
-    <div class="panel" id="lobbyPanel">
-      <div style="display:flex;gap:8px;align-items:center;">
-        <input id="playerName" type="text" placeholder="Tên bạn (ví dụ: Quân)" />
-        <button id="btnCreate">Create code</button>
+  <div class="container">
+    <div class="address" title="Address bar">
+      <div style="display:flex;align-items:center;">
+        <div class="favicon" aria-hidden="true"></div>
+        <div class="url">https://www.google.com</div>
       </div>
-      <label>Hoặc nhập mã phòng / Full Peer ID để Join</label>
-      <div class="row">
-        <input id="roomInput" type="text" placeholder="Nhập mã phòng (6 ký tự) hoặc Full PeerID" />
-        <button id="btnJoin" class="secondary">Join</button>
-      </div>
-      <div id="lobbyInfo" class="infoSmall">
-        <div id="myRoomArea" style="display:none;margin-top:8px;">
-          <div>Mã phòng (ngắn): <strong id="myRoomCode"></strong></div>
-          <div class="fullIdBox">Full Peer ID: <span id="myFullPeerId" style="font-weight:700"></span></div>
-          <div style="margin-top:8px;">
-            <button id="btnCopyFull" class="secondary">Copy Full ID</button>
-            <button id="btnStart">Start</button>
-            <button id="btnCloseRoom" class="secondary">Close Room</button>
-          </div>
-        </div>
-        <div id="joinedRoomArea" style="display:none;margin-top:8px;">
-          <div>Bạn đã gia nhập phòng: <strong id="joinedRoomCode"></strong></div>
-          <div class="small">Chờ host bấm Start...</div>
-          <div style="margin-top:6px;">
-            <button id="btnRetryJoin" class="secondary">Retry Join</button>
-          </div>
-        </div>
-        <div id="lobbyPlayers" style="display:none;">
-          <div>Người trong phòng:</div>
-          <div id="playersList"></div>
-        </div>
-      </div>
+      <div style="margin-left:auto;color:var(--muted);font-size:13px">Goggle ảo • Demo</div>
     </div>
 
-    <div id="canvasWrap" style="display:none;">
-      <div id="score">0</div>
-      <canvas id="gameCanvas" width="800" height="600"></canvas>
-      <div id="deathScreen">
-        <div>
-          <h2 style="color:#fff;text-align:center">Bạn đã chết</h2>
-          <button id="btnReset">Reset & Chơi lại</button>
-        </div>
+    <div class="hero">
+      <div class="logo" aria-hidden="true">
+        <span class="g">G</span><span class="o1">o</span><span class="o2">o</span><span class="g2">g</span><span class="l">l</span><span class="e">e</span>
       </div>
+
+      <form id="searchForm" onsubmit="return doSearch()">
+        <div class="searchbox" role="search" aria-label="Tìm kiếm">
+          <input id="q" type="search" placeholder="Tìm kiếm trên Google giả..." aria-label="Search" autocomplete="off" />
+          <div class="icons">
+            <div class="icon" title="Tìm bằng giọng nói">🎤</div>
+          </div>
+        </div>
+
+        <div class="buttons">
+          <button type="submit" class="btn primary">Google Tìm kiếm</button>
+          <button type="button" class="btn" onclick="lucky()">Cảm thấy may mắn</button>
+        </div>
+      </form>
     </div>
-  </main>
 
-  <footer>Debug build — mở Console (F12) để xem log chi tiết.</footer>
-</div>
+    <div id="results" class="results" aria-live="polite"></div>
 
-<script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <div class="footer">© 2025 — Đây là trang giả lập cho mục đích demo. Không phải Google chính thức.</div>
+  </div>
+
 <script>
-// === GIỮ NGUYÊN TOÀN BỘ MÃ GỐC ===
-// (phần host/join y chang như bạn gửi, không chỉnh gì)
+  // Một vài kết quả mẫu để hiển thị (giả lập)
+  const sampleResults = [
+    {title: "Trang chủ của %q", url: "https://www.example.com", snippet: "Đây là trang chủ giả lập chứa nội dung liên quan tới \"%q\". Đây chỉ là mô phỏng kết quả."},
+    {title: "Hướng dẫn %q cho người mới", url: "https://howto.example.com", snippet: "Bắt đầu với cơ bản về \"%q\" — bước 1, bước 2, mẹo và tài nguyên hữu ích."},
+    {title: "Tin tức mới nhất về %q", url: "https://news.example.com", snippet: "Cập nhật nhanh các tin liên quan đến \"%q\" được tổng hợp từ nhiều nguồn (giả lập)."},
+    {title: "Hình ảnh %q (bộ sưu tập)", url: "https://images.example.com", snippet: "Xem bộ sưu tập hình ảnh liên quan tới \"%q\" (mẫu demo)."},
+    {title: "%q trên Wikipedia (giả lập)", url: "https://vi.wikipedia.org", snippet: "Bài viết giới thiệu về \"%q\" — tóm tắt ngắn, lịch sử và liên kết tham khảo (giả lập)."},
+    {title: "Video: %q — Xem nhanh", url: "https://video.example.com", snippet: "Video hướng dẫn và tài liệu liên quan tới \"%q\" (ví dụ demo)."},
+    {title: "Bảng tin cộng đồng về %q", url: "https://forum.example.com", snippet: "Thảo luận, hỏi đáp và mẹo vặt cho chủ đề \"%q\"."}
+  ];
 
-// Thêm phần GAME đơn giản để test chết/reset
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const wrap = document.getElementById('canvasWrap');
-const deathScreen = document.getElementById('deathScreen');
-const scoreEl = document.getElementById('score');
-let bird = {x:150,y:200,v:0};
-let pipes = [];
-let score = 0;
-let gameRunning = false;
-let dead = false;
-
-function startGame(){
-  document.getElementById('lobbyPanel').style.display='none';
-  wrap.style.display='block';
-  resetGame();
-  gameRunning = true;
-  requestAnimationFrame(loop);
-}
-
-function resetGame(){
-  bird = {x:150,y:200,v:0};
-  pipes = [];
-  score = 0;
-  dead = false;
-  deathScreen.style.display='none';
-  scoreEl.textContent = '0';
-  for(let i=0;i<3;i++){
-    pipes.push({x:600+i*300,y:Math.random()*300+150});
-  }
-}
-
-function loop(){
-  if(!gameRunning) return;
-  ctx.fillStyle='#70c5ce';
-  ctx.fillRect(0,0,800,600);
-
-  if(!dead){
-    bird.v += 0.4;
-    bird.y += bird.v;
-
-    if(bird.y>560||bird.y<0){
-      dead=true;
-      showDeath();
+  // Hàm hiển thị kết quả
+  function showResults(query){
+    const container = document.getElementById('results');
+    container.innerHTML = '';
+    if(!query || query.trim().length === 0){
+      container.innerHTML = '<div style="text-align:center;color:var(--muted);padding:30px 10px">Nhập từ khóa để xem kết quả giả lập.</div>';
       return;
     }
 
-    for(const p of pipes){
-      p.x -= 2;
-      if(p.x<-50){p.x=850;p.y=Math.random()*300+150;score++;scoreEl.textContent=score;}
-      if(p.x<bird.x+20&&p.x+50>bird.x-20){
-        if(bird.y<p.y-60||bird.y>p.y+60){
-          dead=true;
-          showDeath();
-          return;
-        }
-      }
+    // Một số "kịch bản" nhanh (ví dụ: thời tiết / nghĩa)
+    const q = query.trim();
+    if(/thời tiết|weather/i.test(q)){
+      container.innerHTML = renderWeather(q);
+      return;
+    }
+    if(/định nghĩa|nghĩa của|define/i.test(q)){
+      container.innerHTML = renderDefinition(q);
+      return;
+    }
+
+    // Hiển thị các sampleResults với highlight
+    sampleResults.slice(0,6).forEach(r=>{
+      const title = r.title.replace(/%q/g, escapeHtml(q));
+      const snippet = r.snippet.replace(/%q/g, escapeHtml(q));
+      const url = r.url;
+      const el = document.createElement('div');
+      el.className = 'result';
+      el.innerHTML = `<a class="title" href="#" onclick="openMock('${escapeJs(url)}');return false;">${highlight(title,q)}</a>
+                      <span class="url">${escapeHtml(url)}</span>
+                      <div class="snippet">${highlight(snippet,q)}</div>`;
+      container.appendChild(el);
+    });
+
+    // Mẹo: nếu kết quả ít, cho thêm gợi ý
+    const more = document.createElement('div');
+    more.style.textAlign = 'center';
+    more.style.padding = '10px';
+    more.style.color = 'var(--muted)';
+    more.innerText = `Hiển thị ${Math.min(6, sampleResults.length)} kết quả (giả lập) cho "${q}"`;
+    container.appendChild(more);
+  }
+
+  // Xử lý form
+  function doSearch(){
+    const q = document.getElementById('q').value;
+    showResults(q);
+    return false; // ngăn submit thực sự
+  }
+
+  // "I'm feeling lucky" — mở kết quả đầu (giả lập)
+  function lucky(){
+    const q = document.getElementById('q').value || 'random';
+    const url = sampleResults[0].url + '?q=' + encodeURIComponent(q);
+    openMock(url);
+  }
+
+  // Mở đường link mô phỏng (thực ra mở trong tab mới tới URL thật hoặc giả lập)
+  function openMock(url){
+    // Nếu là domain example -> mở thật (hoặc bạn có thể cho mở trang real google)
+    try {
+      if(url.startsWith('http')) window.open(url, '_blank');
+      else console.log('open', url);
+    } catch(e){
+      console.log(e);
     }
   }
 
-  ctx.fillStyle='yellow';
-  ctx.beginPath();
-  ctx.arc(bird.x,bird.y,15,0,Math.PI*2);
-  ctx.fill();
-
-  ctx.fillStyle='green';
-  for(const p of pipes){
-    ctx.fillRect(p.x,0,50,p.y-60);
-    ctx.fillRect(p.x,p.y+60,50,600-(p.y+60));
+  // Một vài render cụ thể: thời tiết
+  function renderWeather(q){
+    const city = (q.match(/ở (.+)/i) || [null, 'Hồ Chí Minh'])[1] || 'Hồ Chí Minh';
+    return `<div class="result">
+      <div style="display:flex;align-items:center;gap:18px">
+        <div style="font-size:48px">☀️</div>
+        <div>
+          <div style="font-size:18px;font-weight:700">${escapeHtml(city)} — Thời tiết hôm nay</div>
+          <div style="color:var(--muted);margin-top:6px">Nhiệt độ: 28°C · Trạng thái: Nắng nhẹ · Độ ẩm: 67%</div>
+        </div>
+      </div>
+    </div>`;
   }
 
-  if(!dead) requestAnimationFrame(loop);
-}
+  function renderDefinition(q){
+    const term = (q.match(/(?:định nghĩa|nghĩa của)\s+(.+)/i) || [null, q])[1] || q;
+    return `<div class="result">
+      <div class="title">Định nghĩa: ${escapeHtml(term)}</div>
+      <div class="snippet">Đây là mô tả giả lập về <strong>${escapeHtml(term)}</strong>. (Nội dung demo — không phải nguồn chính thức.)</div>
+    </div>`;
+  }
 
-function showDeath(){
-  deathScreen.style.display='flex';
-  gameRunning=true;
-}
+  // Utils: escape và highlight
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+  function escapeJs(s){
+    return String(s).replace(/'/g,"\\'");
+  }
+  function highlight(text, term){
+    if(!term) return escapeHtml(text);
+    const re = new RegExp('('+escapeReg(term)+')','ig');
+    return escapeHtml(text).replace(re,'<mark style="background:rgba(255,215,0,0.25);padding:0 2px;border-radius:3px;">$1</mark>');
+  }
+  function escapeReg(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
 
-document.addEventListener('keydown',e=>{
-  if(e.code==='Space' && !dead){bird.v=-7;}
-});
-document.getElementById('btnReset').addEventListener('click',()=>{
-  resetGame();
-  requestAnimationFrame(loop);
-});
-
-// Khi host bấm Start (giữ nguyên logic, chỉ gắn vào startGame)
-document.getElementById('btnStart').addEventListener('click',startGame);
+  // Hiển thị hướng dẫn ban đầu
+  document.addEventListener('DOMContentLoaded',()=>{
+    showResults('');
+    // nếu URL có tham số q=... thì tự fill
+    const params = new URLSearchParams(location.search);
+    if(params.has('q')){
+      document.getElementById('q').value = params.get('q');
+      showResults(params.get('q'));
+    }
+  });
 </script>
 </body>
 </html>
