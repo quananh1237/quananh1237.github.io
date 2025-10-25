@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>Flappy Birch Multiplayer — Fix Join + Score</title>
+<title>Flappy Birch Multiplayer — Fixed Jump</title>
 <style>
   html,body{height:100%;margin:0;background:#87ceeb;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;}
   #container{display:flex;flex-direction:column;height:100%;}
-  header{padding:12px;background:#046; color:#fff; display:flex;align-items:center;justify-content:space-between;}
+  header{padding:12px;background:#046;color:#fff;display:flex;align-items:center;justify-content:space-between;}
   header h1{font-size:16px;margin:0;}
   main{flex:1;display:flex;align-items:center;justify-content:center;position:relative;padding:12px;}
   .panel{width:420px;max-width:100%;background:rgba(255,255,255,0.98);border-radius:10px;padding:14px;box-shadow:0 6px 20px rgba(0,0,0,0.15);}
@@ -19,299 +19,160 @@
   #lobbyPlayers{margin-top:10px;font-size:13px;}
   #canvasWrap{width:100%;height:520px;max-height:70vh;background:linear-gradient(#87ceeb,#5cc1ff);border-radius:10px;overflow:hidden;position:relative;}
   canvas{display:block;width:100%;height:100%;}
-  #overlay{position:absolute;left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;pointer-events:none;}
   #deathScreen{position:absolute;left:0;top:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;z-index:30;background:rgba(0,0,0,0.5);}
-  body,html,canvas{touch-action:manipulation; -webkit-user-select:none; user-select:none;}
-  footer{padding:8px;text-align:center;font-size:12px;color:#fff;background:#034;}
-  .infoSmall{font-size:12px;color:#333;margin-top:8px;}
-  .fullIdBox{margin-top:8px;background:#eef;padding:8px;border-radius:8px;font-size:12px;word-break:break-all;}
   #score{position:absolute;top:10px;left:50%;transform:translateX(-50%);font-size:22px;color:#fff;font-weight:bold;text-shadow:1px 1px 2px #000;}
+  footer{padding:8px;text-align:center;font-size:12px;color:#fff;background:#034;}
 </style>
 </head>
 <body>
 <div id="container">
   <header>
-    <h1>Flappy Birch — Multiplayer (Fix Join)</h1>
+    <h1>Flappy Birch — Multiplayer</h1>
     <div id="statusSmall">Disconnected</div>
   </header>
 
   <main>
     <div class="panel" id="lobbyPanel">
       <div style="display:flex;gap:8px;align-items:center;">
-        <input id="playerName" type="text" placeholder="Tên bạn (ví dụ: Quân)" />
+        <input id="playerName" type="text" placeholder="Tên bạn (ví dụ: Bindz)" />
         <button id="btnCreate">Create code</button>
       </div>
-
-      <label>Hoặc nhập mã phòng / Full Peer ID để Join</label>
+      <label>Hoặc nhập mã phòng để Join</label>
       <div class="row">
-        <input id="roomInput" type="text" placeholder="Nhập mã phòng (6 ký tự) hoặc Full PeerID" />
+        <input id="roomInput" type="text" placeholder="Nhập mã phòng (6 ký tự)" />
         <button id="btnJoin" class="secondary">Join</button>
       </div>
-
       <div id="lobbyInfo" class="infoSmall">
         <div id="myRoomArea" style="display:none;margin-top:8px;">
-          <div>Mã phòng (ngắn): <strong id="myRoomCode"></strong></div>
-          <div class="fullIdBox">Full Peer ID: <span id="myFullPeerId" style="font-weight:700"></span></div>
+          <div>Mã phòng: <strong id="myRoomCode"></strong></div>
           <div style="margin-top:8px;">
-            <button id="btnCopyFull" class="secondary">Copy Full ID</button>
             <button id="btnStart">Start</button>
             <button id="btnCloseRoom" class="secondary">Close Room</button>
           </div>
-          <div style="margin-top:8px;color:#555">Click "Copy Full ID" và gửi full id này cho người join nếu mã ngắn bị lỗi.</div>
         </div>
-
         <div id="joinedRoomArea" style="display:none;margin-top:8px;">
           <div>Bạn đã gia nhập phòng: <strong id="joinedRoomCode"></strong></div>
           <div class="small">Chờ host bấm Start...</div>
-          <div style="margin-top:6px;">
-            <button id="btnRetryJoin" class="secondary">Retry Join</button>
-          </div>
         </div>
-
         <div id="lobbyPlayers" style="display:none;">
           <div>Người trong phòng:</div>
           <div id="playersList"></div>
         </div>
-
-        <div id="joinError" style="display:none;margin-top:8px;color:#b00;"></div>
-      </div>
-
-      <div class="infoSmall" style="margin-top:10px;">
-        Lưu ý: nếu bạn thấy lỗi khi nhập mã ngắn, yêu cầu host gửi <strong>Full Peer ID</strong> bằng cách bấm "Copy Full ID" rồi paste vào ô Join.
       </div>
     </div>
 
     <div id="canvasWrap" style="display:none;">
       <div id="score">0</div>
-      <div id="overlay"></div>
       <canvas id="gameCanvas" width="800" height="600"></canvas>
-
       <div id="deathScreen">
-        <div class="modal">
-          <h2 style="margin:0 0 10px 0;color:#fff">Bạn đã chết</h2>
+        <div>
+          <h2 style="color:#fff;text-align:center">Bạn đã chết</h2>
           <button id="btnReset">Reset & Chơi lại</button>
         </div>
       </div>
     </div>
   </main>
 
-  <footer>Debug build — mở Console (F12) để xem log chi tiết.</footer>
+  <footer>Debug build — Flappy Birch Multiplayer</footer>
 </div>
 
 <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
 <script>
-const $ = id => document.getElementById(id);
-const btnCreate = $('btnCreate'), btnJoin = $('btnJoin'), btnStart = $('btnStart'),
-      btnCloseRoom = $('btnCloseRoom'), btnCopyFull = $('btnCopyFull'), btnRetryJoin = $('btnRetryJoin'),
-      btnReset = $('btnReset');
-const roomInput = $('roomInput'), playerNameInput = $('playerName');
-const myRoomArea = $('myRoomArea'), joinedRoomArea = $('joinedRoomArea'), myRoomCodeEl = $('myRoomCode'),
-      myFullPeerIdEl = $('myFullPeerId'), joinedRoomCodeEl = $('joinedRoomCode'),
-      playersListEl = $('playersList'), lobbyPlayers = $('lobbyPlayers'),
-      joinErrorEl = $('joinError'), statusSmall = $('statusSmall');
-let peer = null, isHost = false, myPeerId = null, roomCode = null;
-let connections = {}, players = {}, connectionsReverse = {};
-playerNameInput.value = 'Player' + Math.floor(Math.random()*99);
-
-/* helpers */
-function short(id){ return id ? id.slice(0,6).toUpperCase() : ''; }
-function log(...a){ console.log('[APP]', ...a); }
-function showError(msg){ joinErrorEl.style.display='block'; joinErrorEl.textContent = msg; }
-
-/* Create room (host) */
-btnCreate.addEventListener('click', async () => {
-  const name = (playerNameInput.value||'Player').trim();
-  if(peer) { try{ peer.destroy(); }catch(e){} }
-  isHost = true;
-  peer = new Peer(undefined, {secure:true, debug:2});
-  peer.on('open', (id) => {
-    myPeerId = id;
-    roomCode = short(id);
-    myRoomCodeEl.textContent = roomCode;
-    myFullPeerIdEl.textContent = id;
-    myRoomArea.style.display = 'block';
-    lobbyPlayers.style.display = 'block';
-    players = {};
-    players[myPeerId] = {id: myPeerId, name: name};
-    renderLobbyList();
-    statusSmall.textContent = 'Hosting: ' + roomCode;
-    log('Host open, id=', id);
-  });
-  peer.on('connection', (conn) => {
-    const remote = conn.peer;
-    log('Incoming conn from', remote);
-    connections[remote] = conn;
-    conn.on('open', () => {
-      conn.on('data', (d)=> handleHostMessage(remote,d,conn));
-      // send back lobby list so new client can build UI
-      sendToConn(conn, {type:'lobby-list', players: Object.values(players)});
-    });
-    conn.on('close', ()=> {
-      delete connections[remote];
-      delete players[remote];
-      renderLobbyList();
-    });
-  });
-  peer.on('error', (err)=> { console.error(err); alert('Peer error: ' + err); });
-});
-
-/* Copy full id */
-btnCopyFull.addEventListener('click', () => {
-  const full = myFullPeerIdEl.textContent;
-  if(!full) return alert('Full ID chưa sẵn sàng.');
-  navigator.clipboard?.writeText(full).then(()=> alert('Full Peer ID đã copy!'), ()=> alert('Không thể copy, hãy nhấn giữ để chọn và copy thủ công.'));
-});
-
-/* Join room */
-async function tryJoin(target){
-  joinErrorEl.style.display = 'none';
-  const name = (playerNameInput.value||'Player').trim();
-  if(peer){ try{ peer.destroy(); }catch(e){} }
-  isHost = false;
-  peer = new Peer(undefined, {secure:true, debug:2});
-  peer.on('open', () => {
-    myPeerId = peer.id;
-    statusSmall.textContent = 'Client ready: ' + short(myPeerId);
-    attemptConnect(target, name);
-  });
-  peer.on('error', (err)=> {
-    console.error('Peer error (client):', err);
-    showError('Lỗi Peer client: ' + err);
-  });
-}
-
-function attemptConnect(target, name, attempt=1){
-  log('Attempt connect to', target, 'attempt', attempt);
-  const conn = peer.connect(target, {metadata:{name:name}, reliable:false});
-  let settled = false;
-  const cleanup = ()=> {
-    try{ conn.off && conn.off('error'); }catch(e){}
-  };
-  conn.on('open', () => {
-    settled = true;
-    connectionsReverse.host = conn;
-    conn.on('data', (d)=> handleClientMessage(d));
-    // send join request
-    conn.send({type:'join-request', name: name, peerId: myPeerId});
-    joinedRoomArea.style.display='block';
-    joinedRoomCodeEl.textContent = target;
-    renderLobbyList();
-    log('Connected to host', target);
-  });
-  conn.on('error', (err) => {
-    console.warn('Conn error to',target, err);
-    if(settled) return;
-    if(attempt===1){
-      const alt = (target === target.toUpperCase()) ? target.toLowerCase() : target.toUpperCase();
-      showError('Kết nối thất bại với mã ngắn. Đang thử biến thể mã... Nếu vẫn lỗi, yêu cầu host gửi Full Peer ID.');
-      setTimeout(()=> attemptConnect(alt, name, 2), 400);
-    } else {
-      showError('Không thể kết nối tới host bằng mã này. Hãy yêu cầu host gửi Full Peer ID.');
-    }
-  });
-  setTimeout(()=> {
-    if(!settled){
-      try { conn.close(); } catch(e){}
-      if(attempt===1){
-        const alt = (target === target.toUpperCase()) ? target.toLowerCase() : target.toUpperCase();
-        attemptConnect(alt, name, 2);
-      } else {
-        showError('Timeout khi cố gắng kết nối. Hãy thử dùng Full Peer ID.');
-      }
-    }
-  }, 6000);
-}
-
-btnJoin.addEventListener('click', ()=> {
-  const code = (roomInput.value||'').trim();
-  if(!code) return alert('Nhập mã phòng hoặc Full Peer ID để join.');
-  tryJoin(code);
-});
-btnRetryJoin.addEventListener('click', ()=> {
-  const code = (roomInput.value||'').trim();
-  if(!code) return alert('Nhập mã phòng hoặc Full Peer ID để join.');
-  tryJoin(code);
-});
-
-function handleHostMessage(from, data, conn){
-  if(!data || !data.type) return;
-  if(data.type === 'join-request'){
-    players[from] = {id: from, name: data.name || ('P_'+short(from))};
-    log('Player join-request from', from, data.name);
-    renderLobbyList();
-    broadcast({type:'player-joined', id: from, name: players[from].name});
-  } else if(data.type === 'sync'){ }
-}
-
-function handleClientMessage(data){
-  if(!data || !data.type) return;
-  if(data.type === 'lobby-list'){
-    players = {};
-    for(const p of data.players) players[p.id] = {id:p.id, name:p.name};
-    renderLobbyList();
-  } else if(data.type === 'player-joined'){
-    players[data.id] = {id:data.id, name:data.name};
-    renderLobbyList();
-  } else if(data.type === 'start'){
-    startGame();
-  }
-}
-
-function sendToConn(conn, msg){ try{ conn.send(msg); }catch(e){ console.warn('sendToConn failed', e); } }
-function broadcast(msg){ for(const id in connections){ try{ connections[id].send(msg); } catch(e){ } } }
-
-function renderLobbyList(){
-  playersListEl.innerHTML='';
-  for(const id in players){
-    const p=players[id];
-    const d=document.createElement('div');
-    d.textContent=(p.name||'Player')+(id===myPeerId?' (You)':'');
-    d.style.padding='6px';d.style.background='#eef';d.style.margin='6px 0';d.style.borderRadius='6px';
-    playersListEl.appendChild(d);
-  }
-  lobbyPlayers.style.display=Object.keys(players).length?'block':'none';
-}
-
-btnStart.addEventListener('click', ()=> {
-  if(!isHost) return;
-  broadcast({type:'start'});
-  startGame();
-});
-btnCloseRoom.addEventListener('click', ()=> { if(peer){ try{ peer.destroy(); }catch(e){} } location.reload(); });
-btnReset.addEventListener('click', ()=> { resetGame(); requestAnimationFrame(loop); });
-window.addEventListener('beforeunload', ()=> { try{ if(peer) peer.destroy(); }catch(e){} });
-
-/* --- PHẦN GAME FLAPPY --- */
-const canvas=$('gameCanvas');const ctx=canvas.getContext('2d');const wrap=$('canvasWrap');const deathScreen=$('deathScreen');const scoreEl=$('score');
-let bird={x:150,y:200,v:0};let pipes=[];let score=0;let dead=false;let gameRunning=false;
+/* --- PHẦN GAMEPLAY FLAPPY BIRD --- */
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const wrap = document.getElementById('canvasWrap');
+const deathScreen = document.getElementById('deathScreen');
+const scoreEl = document.getElementById('score');
+let bird = {x:150,y:200,v:0};
+let pipes = [];
+let score = 0;
+let gameRunning = false;
+let dead = false;
 
 function startGame(){
-  $('lobbyPanel').style.display='none';wrap.style.display='block';
-  resetGame();gameRunning=true;requestAnimationFrame(loop);
+  document.getElementById('lobbyPanel').style.display='none';
+  wrap.style.display='block';
+  resetGame();
+  gameRunning = true;
+  requestAnimationFrame(loop);
 }
+
 function resetGame(){
-  bird={x:150,y:200,v:0};pipes=[];score=0;dead=false;deathScreen.style.display='none';scoreEl.textContent='0';
-  for(let i=0;i<3;i++) pipes.push({x:600+i*300,y:Math.random()*300+150});
+  bird = {x:150,y:200,v:0};
+  pipes = [];
+  score = 0;
+  dead = false;
+  deathScreen.style.display='none';
+  scoreEl.textContent = '0';
+  for(let i=0;i<3;i++){
+    pipes.push({x:600+i*300,y:Math.random()*300+150});
+  }
 }
+
+function flap(){
+  if(!dead){ bird.v = -7; }
+}
+
 function loop(){
   if(!gameRunning) return;
-  ctx.fillStyle='#70c5ce';ctx.fillRect(0,0,800,600);
+  ctx.fillStyle='#70c5ce';
+  ctx.fillRect(0,0,800,600);
+
   if(!dead){
-    bird.v+=0.4;bird.y+=bird.v;
-    if(bird.y>560||bird.y<0){dead=true;showDeath();return;}
+    bird.v += 0.4;
+    bird.y += bird.v;
+
+    if(bird.y>560||bird.y<0){
+      dead=true;
+      showDeath();
+      return;
+    }
+
     for(const p of pipes){
-      p.x-=2;
+      p.x -= 2;
       if(p.x<-50){p.x=850;p.y=Math.random()*300+150;score++;scoreEl.textContent=score;}
-      if(p.x<bird.x+20&&p.x+50>bird.x-20){if(bird.y<p.y-60||bird.y>p.y+60){dead=true;showDeath();return;}}
+      if(p.x<bird.x+20&&p.x+50>bird.x-20){
+        if(bird.y<p.y-60||bird.y>p.y+60){
+          dead=true;
+          showDeath();
+          return;
+        }
+      }
     }
   }
-  ctx.fillStyle='yellow';ctx.beginPath();ctx.arc(bird.x,bird.y,15,0,Math.PI*2);ctx.fill();
+
+  ctx.fillStyle='yellow';
+  ctx.beginPath();
+  ctx.arc(bird.x,bird.y,15,0,Math.PI*2);
+  ctx.fill();
+
   ctx.fillStyle='green';
-  for(const p of pipes){ctx.fillRect(p.x,0,50,p.y-60);ctx.fillRect(p.x,p.y+60,50,600-(p.y+60));}
+  for(const p of pipes){
+    ctx.fillRect(p.x,0,50,p.y-60);
+    ctx.fillRect(p.x,p.y+60,50,600-(p.y+60));
+  }
+
   if(!dead) requestAnimationFrame(loop);
 }
-function showDeath(){deathScreen.style.display='flex';}
-document.addEventListener('keydown',e=>{if(e.code==='Space'&&!dead){bird.v=-7;}});
+
+function showDeath(){
+  deathScreen.style.display='flex';
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'){flap();}
+});
+canvas.addEventListener('click',flap);
+canvas.addEventListener('touchstart',flap);
+
+document.getElementById('btnReset').addEventListener('click',()=>{
+  resetGame();
+  requestAnimationFrame(loop);
+});
+
+/* --- GIỮ NGUYÊN LOBBY --- */
+document.getElementById('btnStart').addEventListener('click',startGame);
 </script>
 </body>
 </html>
