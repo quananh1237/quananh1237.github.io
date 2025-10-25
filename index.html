@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>Flappy Birch Multiplayer — Fixed Jump</title>
+<title>Flappy Birch Multiplayer — Full Stable</title>
 <style>
-  html,body{height:100%;margin:0;background:#87ceeb;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;}
+  html,body{height:100%;margin:0;background:#87ceeb;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;overflow:hidden;}
   #container{display:flex;flex-direction:column;height:100%;}
   header{padding:12px;background:#046;color:#fff;display:flex;align-items:center;justify-content:space-between;}
   header h1{font-size:16px;margin:0;}
@@ -17,7 +17,7 @@
   button{flex:1;padding:10px;border-radius:8px;border:0;background:#046;color:#fff;font-weight:600;}
   button.secondary{background:#888;}
   #lobbyPlayers{margin-top:10px;font-size:13px;}
-  #canvasWrap{width:100%;height:520px;max-height:70vh;background:linear-gradient(#87ceeb,#5cc1ff);border-radius:10px;overflow:hidden;position:relative;}
+  #canvasWrap{width:100%;height:520px;max-height:70vh;background:linear-gradient(#87ceeb,#5cc1ff);border-radius:10px;overflow:hidden;position:relative;display:none;}
   canvas{display:block;width:100%;height:100%;}
   #deathScreen{position:absolute;left:0;top:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;z-index:30;background:rgba(0,0,0,0.5);}
   #score{position:absolute;top:10px;left:50%;transform:translateX(-50%);font-size:22px;color:#fff;font-weight:bold;text-shadow:1px 1px 2px #000;}
@@ -27,7 +27,7 @@
 <body>
 <div id="container">
   <header>
-    <h1>Flappy Birch — Multiplayer</h1>
+    <h1>Flappy Birch Multiplayer</h1>
     <div id="statusSmall">Disconnected</div>
   </header>
 
@@ -35,25 +35,28 @@
     <div class="panel" id="lobbyPanel">
       <div style="display:flex;gap:8px;align-items:center;">
         <input id="playerName" type="text" placeholder="Tên bạn (ví dụ: Bindz)" />
-        <button id="btnCreate">Create code</button>
+        <button id="btnCreate">Create</button>
       </div>
+
       <label>Hoặc nhập mã phòng để Join</label>
       <div class="row">
         <input id="roomInput" type="text" placeholder="Nhập mã phòng (6 ký tự)" />
         <button id="btnJoin" class="secondary">Join</button>
       </div>
+
       <div id="lobbyInfo" class="infoSmall">
         <div id="myRoomArea" style="display:none;margin-top:8px;">
           <div>Mã phòng: <strong id="myRoomCode"></strong></div>
           <div style="margin-top:8px;">
             <button id="btnStart">Start</button>
-            <button id="btnCloseRoom" class="secondary">Close Room</button>
           </div>
         </div>
+
         <div id="joinedRoomArea" style="display:none;margin-top:8px;">
-          <div>Bạn đã gia nhập phòng: <strong id="joinedRoomCode"></strong></div>
+          <div>Bạn đã vào phòng: <strong id="joinedRoomCode"></strong></div>
           <div class="small">Chờ host bấm Start...</div>
         </div>
+
         <div id="lobbyPlayers" style="display:none;">
           <div>Người trong phòng:</div>
           <div id="playersList"></div>
@@ -61,118 +64,145 @@
       </div>
     </div>
 
-    <div id="canvasWrap" style="display:none;">
-      <div id="score">0</div>
+    <div id="canvasWrap">
       <canvas id="gameCanvas" width="800" height="600"></canvas>
+      <div id="score">0</div>
       <div id="deathScreen">
         <div>
-          <h2 style="color:#fff;text-align:center">Bạn đã chết</h2>
-          <button id="btnReset">Reset & Chơi lại</button>
+          <h2 style="color:white;">Bạn đã chết</h2>
+          <button id="btnReset">Chơi lại</button>
         </div>
       </div>
     </div>
   </main>
 
-  <footer>Debug build — Flappy Birch Multiplayer</footer>
+  <footer>Flappy Birch — Multiplayer Test</footer>
 </div>
 
 <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
 <script>
-/* --- PHẦN GAMEPLAY FLAPPY BIRD --- */
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const wrap = document.getElementById('canvasWrap');
-const deathScreen = document.getElementById('deathScreen');
-const scoreEl = document.getElementById('score');
-let bird = {x:150,y:200,v:0};
-let pipes = [];
-let score = 0;
-let gameRunning = false;
-let dead = false;
+const $ = id=>document.getElementById(id);
+let peer, conn, isHost=false, players={}, roomCode=null;
+let myId=null, myName=null;
+const canvas=$("gameCanvas"), ctx=canvas.getContext("2d");
+let gravity=0.5, flap=-8;
+let birds={}, pipes=[], score=0, gameOver=false;
+let lastPipe=0;
 
-function startGame(){
-  document.getElementById('lobbyPanel').style.display='none';
-  wrap.style.display='block';
-  resetGame();
-  gameRunning = true;
-  requestAnimationFrame(loop);
-}
-
-function resetGame(){
-  bird = {x:150,y:200,v:0};
-  pipes = [];
-  score = 0;
-  dead = false;
-  deathScreen.style.display='none';
-  scoreEl.textContent = '0';
-  for(let i=0;i<3;i++){
-    pipes.push({x:600+i*300,y:Math.random()*300+150});
+// ======= LOBBY =========
+$("btnCreate").onclick=()=>{
+  myName=$("playerName").value||"Bindz";
+  isHost=true;
+  peer=new Peer(undefined,{secure:true,debug:2});
+  peer.on("open",id=>{
+    myId=id; roomCode=id.slice(0,6).toUpperCase();
+    $("myRoomCode").textContent=roomCode;
+    $("myRoomArea").style.display="block";
+    $("lobbyPlayers").style.display="block";
+    $("statusSmall").textContent="Hosting "+roomCode;
+    players[myId]={name:myName};
+    renderPlayers();
+  });
+  peer.on("connection",c=>{
+    conn=c;
+    c.on("open",()=>{
+      c.on("data",d=>{
+        if(d.type=="join"){players[d.id]={name:d.name}; renderPlayers();}
+      });
+      c.send({type:"joined",host:true});
+    });
+  });
+};
+$("btnJoin").onclick=()=>{
+  const code=$("roomInput").value.trim();
+  myName=$("playerName").value||"Player";
+  peer=new Peer(undefined,{secure:true,debug:2});
+  peer.on("open",id=>{
+    myId=id;
+    conn=peer.connect(code.toLowerCase());
+    conn.on("open",()=>{conn.send({type:"join",id:myId,name:myName});});
+    conn.on("data",d=>{
+      if(d.type=="start") startGame();
+    });
+  });
+};
+$("btnStart").onclick=()=>{
+  $("lobbyPanel").style.display="none";
+  $("canvasWrap").style.display="block";
+  if(isHost && conn) conn.send({type:"start"});
+  startGame();
+};
+function renderPlayers(){
+  const p=$("playersList"); p.innerHTML="";
+  for(const id in players){
+    const d=document.createElement("div");
+    d.textContent=players[id].name+(id==myId?" (You)":"");
+    p.appendChild(d);
   }
 }
 
-function flap(){
-  if(!dead){ bird.v = -7; }
+// ======= GAME =========
+function startGame(){
+  $("lobbyPanel").style.display="none";
+  $("canvasWrap").style.display="block";
+  score=0; gameOver=false;
+  pipes=[]; lastPipe=0;
+  birds[myId]={x:150,y:250,vy:0,name:myName,score:0};
+  canvas.onclick=()=>{ if(!gameOver) birds[myId].vy=flap; };
+  requestAnimationFrame(loop);
 }
+function resetGame(){
+  $("deathScreen").style.display="none";
+  score=0; gameOver=false; birds[myId].y=250; birds[myId].vy=0; pipes=[];
+  requestAnimationFrame(loop);
+}
+$("btnReset").onclick=resetGame;
 
-function loop(){
-  if(!gameRunning) return;
-  ctx.fillStyle='#70c5ce';
+function loop(ts){
+  ctx.fillStyle="#70c5ce";
   ctx.fillRect(0,0,800,600);
 
-  if(!dead){
-    bird.v += 0.4;
-    bird.y += bird.v;
+  // pipes spawn
+  if(ts-lastPipe>2000){
+    let top=Math.random()*200+50;
+    pipes.push({x:800,top:top,gap:150});
+    lastPipe=ts;
+  }
 
-    if(bird.y>560||bird.y<0){
-      dead=true;
-      showDeath();
-      return;
-    }
+  // move pipes
+  for(let i=pipes.length-1;i>=0;i--){
+    const p=pipes[i];
+    p.x-=2;
+    ctx.fillStyle="#0a0";
+    ctx.fillRect(p.x,0,50,p.top);
+    ctx.fillRect(p.x,p.top+p.gap,50,600);
+    if(p.x+50<0) pipes.splice(i,1);
+    if(p.x+50==150) score++;
+  }
 
-    for(const p of pipes){
-      p.x -= 2;
-      if(p.x<-50){p.x=850;p.y=Math.random()*300+150;score++;scoreEl.textContent=score;}
-      if(p.x<bird.x+20&&p.x+50>bird.x-20){
-        if(bird.y<p.y-60||bird.y>p.y+60){
-          dead=true;
-          showDeath();
-          return;
-        }
+  // bird
+  const b=birds[myId];
+  b.vy+=gravity;
+  b.y+=b.vy;
+  ctx.fillStyle="yellow";
+  ctx.beginPath(); ctx.arc(b.x,b.y,15,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="#000";
+  ctx.font="14px Arial"; ctx.fillText(`${b.name} (${score})`,b.x-30,b.y-25);
+
+  // collisions
+  for(const p of pipes){
+    if(b.x+15>p.x && b.x-15<p.x+50){
+      if(b.y-15<p.top || b.y+15>p.top+p.gap){
+        gameOver=true;
       }
     }
   }
+  if(b.y>600 || b.y<0) gameOver=true;
 
-  ctx.fillStyle='yellow';
-  ctx.beginPath();
-  ctx.arc(bird.x,bird.y,15,0,Math.PI*2);
-  ctx.fill();
-
-  ctx.fillStyle='green';
-  for(const p of pipes){
-    ctx.fillRect(p.x,0,50,p.y-60);
-    ctx.fillRect(p.x,p.y+60,50,600-(p.y+60));
-  }
-
-  if(!dead) requestAnimationFrame(loop);
+  $("score").textContent=score;
+  if(!gameOver) requestAnimationFrame(loop);
+  else $("deathScreen").style.display="flex";
 }
-
-function showDeath(){
-  deathScreen.style.display='flex';
-}
-
-document.addEventListener('keydown',e=>{
-  if(e.code==='Space'){flap();}
-});
-canvas.addEventListener('click',flap);
-canvas.addEventListener('touchstart',flap);
-
-document.getElementById('btnReset').addEventListener('click',()=>{
-  resetGame();
-  requestAnimationFrame(loop);
-});
-
-/* --- GIỮ NGUYÊN LOBBY --- */
-document.getElementById('btnStart').addEventListener('click',startGame);
 </script>
 </body>
 </html>
