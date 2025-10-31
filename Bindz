@@ -1,0 +1,267 @@
+-- ESP + Scan Hack nâng cao (scan player: flying, speed, noclip)
+-- by GPT-5 Thinking mini
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local workspace = workspace
+local LocalPlayer = Players.LocalPlayer
+
+-- remove old gui
+local CoreGui = game:GetService("CoreGui")
+if CoreGui:FindFirstChild("GPT_ESPPanel") then
+    CoreGui:FindFirstChild("GPT_ESPPanel"):Destroy()
+end
+
+-- GUI (bo tròn)
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "GPT_ESPPanel"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = CoreGui
+
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.new(0, 320, 0, 220)
+Frame.Position = UDim2.new(0.06, 0, 0.16, 0)
+Frame.BackgroundColor3 = Color3.fromRGB(28,28,28)
+Frame.Active = true
+Frame.Draggable = true
+Frame.BorderSizePixel = 0
+local UICorner = Instance.new("UICorner", Frame); UICorner.CornerRadius = UDim.new(0, 18)
+
+local Title = Instance.new("TextLabel", Frame)
+Title.Size = UDim2.new(1, -24, 0, 40)
+Title.Position = UDim2.new(0, 12, 0, 8)
+Title.BackgroundTransparency = 1
+Title.Text = "ESP Panel — Scan Player Hacks"
+Title.TextColor3 = Color3.fromRGB(240,240,240)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 15
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+local TextBox = Instance.new("TextBox", Frame)
+TextBox.PlaceholderText = "Nhập tên part/model để ESP..."
+TextBox.Size = UDim2.new(0.92, 0, 0, 36)
+TextBox.Position = UDim2.new(0.04, 0, 0, 56)
+TextBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+TextBox.TextColor3 = Color3.fromRGB(255,255,255)
+TextBox.ClearTextOnFocus = false
+TextBox.Font = Enum.Font.Gotham
+TextBox.TextSize = 14
+local UICornerTB = Instance.new("UICorner", TextBox); UICornerTB.CornerRadius = UDim.new(0,10)
+
+local ToggleBtn = Instance.new("TextButton", Frame)
+ToggleBtn.Size = UDim2.new(0.46, 0, 0, 42)
+ToggleBtn.Position = UDim2.new(0.04, 0, 0, 104)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(0,170,255)
+ToggleBtn.Text = "ESP ON"
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.TextSize = 14
+local UICornerT = Instance.new("UICorner", ToggleBtn); UICornerT.CornerRadius = UDim.new(0,10)
+
+local ScanBtn = Instance.new("TextButton", Frame)
+ScanBtn.Size = UDim2.new(0.46, 0, 0, 42)
+ScanBtn.Position = UDim2.new(0.5, 0, 0, 104)
+ScanBtn.BackgroundColor3 = Color3.fromRGB(255,170,0)
+ScanBtn.Text = "Scan Hack"
+ScanBtn.Font = Enum.Font.GothamBold
+ScanBtn.TextSize = 14
+local UICornerS = Instance.new("UICorner", ScanBtn); UICornerS.CornerRadius = UDim.new(0,10)
+
+local ResultLabel = Instance.new("TextLabel", Frame)
+ResultLabel.Size = UDim2.new(0.92, 0, 0, 64)
+ResultLabel.Position = UDim2.new(0.04, 0, 0, 156)
+ResultLabel.BackgroundColor3 = Color3.fromRGB(36,36,36)
+ResultLabel.TextColor3 = Color3.fromRGB(220,220,220)
+ResultLabel.Font = Enum.Font.Gotham
+ResultLabel.TextSize = 13
+ResultLabel.TextWrapped = true
+ResultLabel.Text = "Trạng thái: sẵn sàng."
+local UICornerR = Instance.new("UICorner", ResultLabel); UICornerR.CornerRadius = UDim.new(0,10)
+
+-- (Giữ phần ESP cũ, minimal) ----------------
+local espEnabled = false
+local targetName = ""
+local espObjects = {}
+local function safeLower(s) if typeof(s) ~= "string" then return "" end; return string.lower(s) end
+local function isMatch(obj, lowerTarget)
+    if lowerTarget == "" then return false end
+    local name = safeLower(tostring(obj.Name))
+    return string.find(name, lowerTarget, 1, true) and true or false
+end
+local function addHighlight(obj)
+    if not obj or not obj.Parent then return end
+    if espObjects[obj] then return end
+    if obj:IsA("BasePart") or obj:IsA("Model") then
+        local hl = Instance.new("Highlight")
+        pcall(function() hl.Adornee = obj end)
+        hl.FillTransparency = 0.55
+        hl.FillColor = Color3.fromRGB(0,200,120)
+        hl.OutlineColor = Color3.fromRGB(255,255,255)
+        hl.Name = "GPT_ESP_Highlight"
+        hl.Parent = workspace
+        espObjects[obj] = hl
+        local ancConn
+        ancConn = obj.AncestryChanged:Connect(function(_, parent)
+            if not parent then
+                if espObjects[obj] then pcall(function() espObjects[obj]:Destroy() end) espObjects[obj] = nil end
+                if ancConn then ancConn:Disconnect() end
+            end
+        end)
+    end
+end
+local function removeHighlight(obj) if espObjects[obj] then pcall(function() espObjects[obj]:Destroy() end) espObjects[obj] = nil end end
+local function clearAllHighlights() for obj, hl in pairs(espObjects) do pcall(function() hl:Destroy() end) end espObjects = {} end
+local function updateAllMatches()
+    if targetName == "" then return end
+    local lowerTarget = safeLower(targetName)
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if (obj:IsA("BasePart") or obj:IsA("Model")) and isMatch(obj, lowerTarget) then
+            addHighlight(obj)
+        end
+    end
+    for obj, _ in pairs(espObjects) do
+        if obj and obj.Parent and not isMatch(obj, lowerTarget) then
+            removeHighlight(obj)
+        end
+    end
+end
+local descendantAddedConn = nil
+local function onDescendantAdded(desc)
+    if not espEnabled then return end
+    local lowerTarget = safeLower(targetName)
+    if lowerTarget == "" then return end
+    if (desc:IsA("BasePart") or desc:IsA("Model")) and isMatch(desc, lowerTarget) then
+        addHighlight(desc)
+    end
+end
+local function startAutoUpdate() if descendantAddedConn then descendantAddedConn:Disconnect() end; descendantAddedConn = workspace.DescendantAdded:Connect(onDescendantAdded) end
+local function stopAutoUpdate() if descendantAddedConn then descendantAddedConn:Disconnect(); descendantAddedConn = nil end end
+ToggleBtn.MouseButton1Click:Connect(function()
+    if not espEnabled then
+        local nameText = tostring(TextBox.Text or ""):gsub("^%s*(.-)%s*$", "%1")
+        if nameText == "" then ResultLabel.Text = "Trạng thái: Bạn chưa nhập tên. Nhập tên rồi nhấn ESP ON."; return end
+        targetName = nameText; espEnabled = true; ToggleBtn.Text = "ESP OFF"; ToggleBtn.BackgroundColor3 = Color3.fromRGB(255,70,70)
+        ResultLabel.Text = "Trạng thái: ESP ON (tìm: " .. targetName .. ")."
+        updateAllMatches(); startAutoUpdate()
+    else
+        espEnabled = false; ToggleBtn.Text = "ESP ON"; ToggleBtn.BackgroundColor3 = Color3.fromRGB(0,170,255)
+        ResultLabel.Text = "Trạng thái: ESP tắt."; stopAutoUpdate(); clearAllHighlights()
+    end
+end)
+TextBox.FocusLost:Connect(function() if espEnabled then targetName = tostring(TextBox.Text or ""):gsub("^%s*(.-)%s*$", "%1"); updateAllMatches(); end end)
+
+-- ========== Scan Player Hacks logic ==========
+-- Config (có thể chỉnh)
+local FLY_RAY_DOWN_MAX = 8          -- nếu không tìm thấy mặt đất trong khoảng này => ở trên không
+local FLY_SUSTAIN_SAMPLES = 4       -- số mẫu liên tiếp để xác nhận "bay"
+local SAMPLE_DELAY = 0.35           -- giãn cách giữa mẫu (s)
+local SPEED_THRESHOLD = 24          -- WalkSpeed > threshold => nghi ngờ speed
+local NOCLIP_FALSE_COUNT = 3        -- nếu >= count part cốt lõi CanCollide == false => nghi ngờ noclip
+local CORE_PART_NAMES = {"HumanoidRootPart","Torso","UpperTorso","LowerTorso","Head","LeftLeg","RightLeg","LeftUpperArm","RightUpperArm"}
+
+local RaycastParams = RaycastParams.new()
+RaycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+
+local function raycastDownFrom(pos, ignoreList, maxDist)
+    RaycastParams.FilterDescendantsInstances = ignoreList or {}
+    RaycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+    local result = workspace:Raycast(pos, Vector3.new(0, -maxDist, 0), RaycastParams)
+    return result
+end
+
+-- Detect single player suspicious flags (runs short sampling, non-blocking)
+local function detectPlayer(player)
+    local flags = { flying = false, speed = false, noclip = false }
+    if not player or not player.Character then return flags end
+    local char = player.Character
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not root then return flags end
+
+    -- Speed check
+    local ok, ws = pcall(function() return humanoid.WalkSpeed end)
+    if ok and ws and ws > SPEED_THRESHOLD then
+        flags.speed = true
+    end
+
+    -- Noclip check: count core parts with CanCollide == false
+    local falseCount = 0
+    for _, name in ipairs(CORE_PART_NAMES) do
+        local p = char:FindFirstChild(name)
+        if p and p:IsA("BasePart") then
+            if p.CanCollide == false then
+                falseCount = falseCount + 1
+            end
+        end
+    end
+    if falseCount >= NOCLIP_FALSE_COUNT then
+        flags.noclip = true
+    end
+
+    -- Flying check: sample multiple times
+    local samplesOk = 0
+    local samplesTotal = FLY_SUSTAIN_SAMPLES
+    for i = 1, samplesTotal do
+        if not root.Parent then break end
+        -- raycast down from a point slightly above root to avoid hitting self
+        local origin = root.Position + Vector3.new(0, 1, 0)
+        -- ignore the player's character when raycasting
+        local ignoreList = {char}
+        local res = raycastDownFrom(origin, ignoreList, FLY_RAY_DOWN_MAX)
+        -- If no hit => likely airborne
+        if not res then
+            -- also ensure humanoid state isn't jumping or climbing or swimming (allow those)
+            local st = humanoid:GetState()
+            if st ~= Enum.HumanoidStateType.Jumping and st ~= Enum.HumanoidStateType.Freefall and st ~= Enum.HumanoidStateType.Seated and st ~= Enum.HumanoidStateType.Swimming then
+                samplesOk = samplesOk + 1
+            end
+        end
+        wait(SAMPLE_DELAY)
+    end
+    if samplesOk >= math.max(1, math.floor(samplesTotal*0.6)) then
+        flags.flying = true
+    end
+
+    return flags
+end
+
+-- Run scan across players (non-blocking, show counts)
+local function scanPlayersForHacks()
+    ResultLabel.Text = "Scan: Đang quét player..."
+    spawn(function()
+        local totalSusp = 0
+        local flyingCount, speedCount, noclipCount = 0,0,0
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer then
+                local char = p.Character
+                if char and char.Parent then
+                    local f = detectPlayer(p)
+                    if f.flying then flyingCount = flyingCount + 1 end
+                    if f.speed then speedCount = speedCount + 1 end
+                    if f.noclip then noclipCount = noclipCount + 1 end
+                end
+            end
+        end
+        totalSusp = (flyingCount + speedCount + noclipCount)
+        -- Compose short message — chỉ hiển thị counts
+        local msg
+        if totalSusp == 0 then
+            msg = "Scan: Không phát hiện player khả nghi."
+        else
+            msg = ("Scan: Tổng %d dấu nghi (Flying:%d  Speed:%d  Noclip:%d)"):format(totalSusp, flyingCount, speedCount, noclipCount)
+        end
+        ResultLabel.Text = msg
+    end)
+end
+
+ScanBtn.MouseButton1Click:Connect(function()
+    -- if local player not loaded yet, abort
+    if not LocalPlayer or not LocalPlayer.Character then
+        ResultLabel.Text = "Scan: Chưa sẵn sàng (chưa load character)."
+        return
+    end
+    scanPlayersForHacks()
+end)
+
+-- Cleanup on GUI destroy
+ScreenGui.Destroying:Connect(function()
+    clearAllHighlights()
+end)
