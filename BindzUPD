@@ -1,0 +1,208 @@
+--// ⚡ Slap Tool Configurator v2 — by GPT-5
+--// Có nút bật/tắt panel kéo được, fix lỗi sau khi hồi sinh
+
+if game.CoreGui:FindFirstChild("SlapConfigGUI") then
+	game.CoreGui.SlapConfigGUI:Destroy()
+end
+
+local plr = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "SlapConfigGUI"
+gui.ResetOnSpawn = false
+
+-- BUTTON ẨN/HIỆN GUI
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 40, 0, 40)
+toggleBtn.Position = UDim2.new(0, 10, 0, 10)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+toggleBtn.Text = "+"
+toggleBtn.TextColor3 = Color3.new(1,1,1)
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextSize = 20
+toggleBtn.Draggable = true
+toggleBtn.Active = true
+toggleBtn.Parent = gui
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0, 10)
+
+-- FRAME CHÍNH
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 280, 0, 310)
+frame.Position = UDim2.new(0.35, 0, 0.3, 0)
+frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.Parent = gui
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+
+-- TITLE
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundTransparency = 1
+title.Text = "🧤 Slap Tool Configurator"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 16
+title.Parent = frame
+
+-- DROPDOWN TOOL
+local dropdown = Instance.new("TextButton")
+dropdown.Size = UDim2.new(0, 240, 0, 30)
+dropdown.Position = UDim2.new(0, 20, 0, 40)
+dropdown.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+dropdown.TextColor3 = Color3.new(1,1,1)
+dropdown.Text = "Chọn Slap Tool ▼"
+dropdown.Font = Enum.Font.GothamBold
+dropdown.TextSize = 14
+dropdown.Parent = frame
+Instance.new("UICorner", dropdown).CornerRadius = UDim.new(0, 6)
+
+local listFrame = Instance.new("Frame")
+listFrame.Size = UDim2.new(0, 240, 0, 100)
+listFrame.Position = UDim2.new(0, 20, 0, 70)
+listFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+listFrame.Visible = false
+listFrame.Parent = frame
+Instance.new("UICorner", listFrame).CornerRadius = UDim.new(0, 6)
+local layout = Instance.new("UIListLayout", listFrame)
+layout.Padding = UDim.new(0, 2)
+
+-- TEXTBOXES
+local powerBox = Instance.new("TextBox")
+powerBox.PlaceholderText = "Nhập Power"
+powerBox.Size = UDim2.new(0, 240, 0, 30)
+powerBox.Position = UDim2.new(0, 20, 0, 180)
+powerBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+powerBox.TextColor3 = Color3.new(1,1,1)
+powerBox.Font = Enum.Font.Gotham
+powerBox.TextSize = 14
+powerBox.Parent = frame
+Instance.new("UICorner", powerBox).CornerRadius = UDim.new(0,6)
+
+local speedBox = Instance.new("TextBox")
+speedBox.PlaceholderText = "Nhập Speed (thời gian hồi)"
+speedBox.Size = UDim2.new(0, 240, 0, 30)
+speedBox.Position = UDim2.new(0, 20, 0, 215)
+speedBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+speedBox.TextColor3 = Color3.new(1,1,1)
+speedBox.Font = Enum.Font.Gotham
+speedBox.TextSize = 14
+speedBox.Parent = frame
+Instance.new("UICorner", speedBox).CornerRadius = UDim.new(0,6)
+
+-- NÚT APPLY
+local applyBtn = Instance.new("TextButton")
+applyBtn.Size = UDim2.new(0, 240, 0, 35)
+applyBtn.Position = UDim2.new(0, 20, 0, 255)
+applyBtn.BackgroundColor3 = Color3.fromRGB(70, 130, 255)
+applyBtn.TextColor3 = Color3.new(1,1,1)
+applyBtn.Text = "✅ Apply Settings"
+applyBtn.Font = Enum.Font.GothamBold
+applyBtn.TextSize = 15
+applyBtn.Parent = frame
+Instance.new("UICorner", applyBtn).CornerRadius = UDim.new(0,6)
+
+-- LOGIC
+local selectedTool = nil
+
+local function notify(title, text)
+	pcall(function()
+		game.StarterGui:SetCore("SendNotification", {
+			Title = title; Text = text; Duration = 2
+		})
+	end)
+end
+
+local function updateList()
+	for _, c in ipairs(listFrame:GetChildren()) do
+		if c:IsA("TextButton") then c:Destroy() end
+	end
+	local backpack = plr:FindFirstChild("Backpack")
+	if not backpack then return end
+
+	for _, tool in ipairs(backpack:GetChildren()) do
+		if tool:IsA("Tool") then
+			local btn = Instance.new("TextButton")
+			btn.Size = UDim2.new(1, 0, 0, 25)
+			btn.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+			btn.TextColor3 = Color3.new(1,1,1)
+			btn.Text = tool.Name
+			btn.Font = Enum.Font.Gotham
+			btn.TextSize = 13
+			btn.Parent = listFrame
+			Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+			btn.MouseButton1Click:Connect(function()
+				selectedTool = tool
+				dropdown.Text = "Đang chọn: "..tool.Name.." ✅"
+				listFrame.Visible = false
+			end)
+		end
+	end
+end
+
+dropdown.MouseButton1Click:Connect(function()
+	updateList()
+	listFrame.Visible = not listFrame.Visible
+end)
+
+applyBtn.MouseButton1Click:Connect(function()
+	if not selectedTool then
+		notify("⚠️ Lỗi", "Chưa chọn Slap tool!")
+		return
+	end
+	local p = tonumber(powerBox.Text)
+	local s = tonumber(speedBox.Text)
+	if not p and not s then
+		notify("⚠️", "Nhập ít nhất 1 giá trị hợp lệ!")
+		return
+	end
+
+	local function trySet(prop, val)
+		local obj = selectedTool:FindFirstChild(prop)
+		if obj and obj:IsA("NumberValue") then
+			obj.Value = val
+			return true
+		end
+		return false
+	end
+
+	local count = 0
+	if p then
+		if trySet("Power", p) or trySet("power", p) or trySet("FlightSpeed", p) then count += 1 end
+	end
+	if s then
+		if trySet("Speed", s) or trySet("speed", s) or trySet("Cooldown", s) then count += 1 end
+	end
+
+	if count > 0 then
+		notify("✅ Thành công", "Cập nhật thành công cho "..selectedTool.Name)
+	else
+		notify("⚠️ Lỗi", "Không tìm thấy Power/Speed/FlightSpeed")
+	end
+end)
+
+-- Khi player hồi sinh, chờ backpack load rồi cập nhật lại
+plr.CharacterAdded:Connect(function()
+	repeat task.wait() until plr:FindFirstChild("Backpack")
+	task.wait(1)
+	updateList()
+end)
+
+-- Theo dõi backpack thay đổi
+task.spawn(function()
+	while task.wait(2) do
+		if plr:FindFirstChild("Backpack") then
+			updateList()
+		end
+	end
+end)
+
+-- Nút toggle panel
+local visible = true
+toggleBtn.MouseButton1Click:Connect(function()
+	visible = not visible
+	frame.Visible = visible
+	toggleBtn.Text = visible and "-" or "+"
+end)
+
+updateList()
