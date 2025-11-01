@@ -1,0 +1,317 @@
+-- LocalScript: Auto Drag Player + Toggle + All Player + 2-click Position + Highlight Size Input + Notification
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+local Workspace = game:GetService("Workspace")
+local StarterGui = game:GetService("StarterGui")
+
+-- Gửi notification khi script chạy
+StarterGui:SetCore("SendNotification", {
+	Title = "Bindz Script";
+	Text = "Script Bindz Running";
+	Duration = 5;
+})
+
+-- Biến
+local selectedTarget = nil
+local AutoMoveTargetPos = nil
+local StopHighlight = nil
+local autoMoveLoop = nil
+local autoEnabled = false
+local highlightSize = 4
+local allPlayersMode = false
+
+local clickStage = 0 -- để đếm click chọn vị trí
+local tempClickPos = nil -- lưu click đầu tiên
+
+-- GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AutoPullGUI"
+screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Toggle button
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(0,50,0,50)
+toggleButton.Position = UDim2.new(0.9,0,0.8,0)
+toggleButton.Text = "▶️"
+toggleButton.Font = Enum.Font.GothamBold
+toggleButton.TextSize = 24
+toggleButton.BackgroundColor3 = Color3.fromRGB(30,30,30)
+toggleButton.TextColor3 = Color3.fromRGB(255,255,255)
+toggleButton.AnchorPoint = Vector2.new(0.5,0.5)
+toggleButton.AutoButtonColor = true
+toggleButton.ClipsDescendants = true
+toggleButton.Parent = screenGui
+toggleButton.Draggable = true
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0.5,0)
+corner.Parent = toggleButton
+
+-- All Player button
+local allPlayerButton = Instance.new("TextButton")
+allPlayerButton.Size = UDim2.new(0,50,0,50)
+allPlayerButton.Position = UDim2.new(0.9,0,0.7,0)
+allPlayerButton.Text = "AP"
+allPlayerButton.Font = Enum.Font.GothamBold
+allPlayerButton.TextSize = 18
+allPlayerButton.BackgroundColor3 = Color3.fromRGB(30,30,30)
+allPlayerButton.TextColor3 = Color3.fromRGB(255,255,255)
+allPlayerButton.AnchorPoint = Vector2.new(0.5,0.5)
+allPlayerButton.Parent = screenGui
+allPlayerButton.Draggable = true
+local corner2 = Instance.new("UICorner")
+corner2.CornerRadius = UDim.new(0.5,0)
+corner2.Parent = allPlayerButton
+
+-- TextBox + Apply
+local sizeBox = Instance.new("TextBox")
+sizeBox.Size = UDim2.new(0,150,0,50)
+sizeBox.Position = UDim2.new(0.5,-75,0.5,-25)
+sizeBox.PlaceholderText = tostring(highlightSize)
+sizeBox.Visible = false
+sizeBox.Text = ""
+sizeBox.Font = Enum.Font.GothamBold
+sizeBox.TextSize = 24
+sizeBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+sizeBox.TextColor3 = Color3.fromRGB(255,255,255)
+sizeBox.TextScaled = true
+sizeBox.Parent = screenGui
+
+local applyButton = Instance.new("TextButton")
+applyButton.Size = UDim2.new(0,100,0,50)
+applyButton.Position = UDim2.new(0.5,-50,0.5,40)
+applyButton.Text = "Apply"
+applyButton.Font = Enum.Font.GothamBold
+applyButton.TextSize = 24
+applyButton.BackgroundColor3 = Color3.fromRGB(30,30,30)
+applyButton.TextColor3 = Color3.fromRGB(255,255,255)
+applyButton.Visible = false
+applyButton.TextScaled = true
+applyButton.Parent = screenGui
+
+-- Tìm RemoteEvent
+local function findRemoteEvent()
+	for _, container in ipairs({LocalPlayer.Backpack, LocalPlayer.Character}) do
+		for _, tool in ipairs(container:GetChildren()) do
+			if tool:IsA("Tool") then
+				local ev = tool:FindFirstChild("Event")
+				if ev and ev:IsA("RemoteEvent") then
+					return ev
+				end
+			end
+		end
+	end
+end
+
+-- Highlight player
+local function applyHighlight(character)
+	if character and not character:FindFirstChild("ClickHighlight") then
+		local h = Instance.new("Highlight")
+		h.Name = "ClickHighlight"
+		h.Adornee = character
+		h.FillTransparency = 1
+		h.OutlineColor = Color3.fromRGB(0,170,255)
+		h.OutlineTransparency = 0
+		h.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+		h.Parent = character
+	end
+end
+
+-- Xóa highlight (cập nhật xóa tất cả player khi tắt All Player)
+local function clearHighlight(excludeAllPlayer)
+	-- Xóa highlight player riêng lẻ
+	if selectedTarget and selectedTarget:FindFirstChild("ClickHighlight") then
+		selectedTarget.ClickHighlight:Destroy()
+	end
+	selectedTarget = nil
+	AutoMoveTargetPos = nil
+	clickStage = 0
+	tempClickPos = nil
+	if StopHighlight then
+		StopHighlight:Destroy()
+		StopHighlight = nil
+	end
+	if autoMoveLoop then
+		autoMoveLoop:Disconnect()
+		autoMoveLoop = nil
+	end
+
+	-- Xóa highlight tất cả player khi excludeAllPlayer = false hoặc khi tắt All Player
+	if not excludeAllPlayer then
+		for _, plr in pairs(Players:GetPlayers()) do
+			if plr.Character and plr.Character:FindFirstChild("ClickHighlight") then
+				plr.Character.ClickHighlight:Destroy()
+			end
+		end
+		allPlayersMode = false
+		allPlayerButton.BackgroundColor3 = Color3.fromRGB(30,30,30)
+	end
+end
+
+-- Auto kéo player
+local function startAutoMove()
+	local remote = findRemoteEvent()
+	if not remote then return end
+	if autoMoveLoop then autoMoveLoop:Disconnect() end
+
+	autoMoveLoop = RunService.Heartbeat:Connect(function()
+		if not autoEnabled or not AutoMoveTargetPos then return end
+		local targets = {}
+		if allPlayersMode then
+			for _, plr in pairs(Players:GetPlayers()) do
+				if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+					table.insert(targets, plr.Character)
+				end
+			end
+		elseif selectedTarget and selectedTarget:FindFirstChild("HumanoidRootPart") then
+			table.insert(targets, selectedTarget)
+		end
+
+		if allPlayersMode then
+			local allArrived = true
+			for _, t in ipairs(targets) do
+				local hrp = t.HumanoidRootPart
+				local dir = AutoMoveTargetPos - hrp.Position
+				if hrp.Position.Y > AutoMoveTargetPos.Y + 2 then
+					dir = Vector3.new(dir.X, dir.Y - 10, dir.Z)
+				end
+				if dir.Magnitude > 0.5 then
+					remote:FireServer("slash", t, dir.Unit * 8)
+					allArrived = false
+				end
+			end
+			if allArrived then
+				AutoMoveTargetPos = nil
+				autoEnabled = false
+				toggleButton.Text = "▶️"
+				clearHighlight(true)
+			end
+		else
+			for _, t in ipairs(targets) do
+				local hrp = t.HumanoidRootPart
+				if StopHighlight then
+					local stopPos = StopHighlight.Adornee.Position
+					if (hrp.Position - stopPos).Magnitude <= highlightSize/2 then
+						AutoMoveTargetPos = nil
+						autoEnabled = false
+						toggleButton.Text = "▶️"
+						clearHighlight()
+						return
+					end
+				end
+				local dir = AutoMoveTargetPos - hrp.Position
+				if hrp.Position.Y > AutoMoveTargetPos.Y + 2 then
+					dir = Vector3.new(dir.X, dir.Y - 10, dir.Z)
+				end
+				if dir.Magnitude > 0.5 then
+					remote:FireServer("slash", t, dir.Unit * 8)
+				end
+			end
+		end
+	end)
+end
+
+-- Toggle button
+local holdStart = 0
+toggleButton.MouseButton1Down:Connect(function()
+	holdStart = tick()
+end)
+toggleButton.MouseButton1Up:Connect(function()
+	local heldTime = tick() - holdStart
+	if heldTime >= 3 then
+		sizeBox.Visible = true
+		applyButton.Visible = true
+	else
+		if autoEnabled then
+			autoEnabled = false
+			toggleButton.Text = "▶️"
+			clearHighlight()
+		else
+			autoEnabled = true
+			toggleButton.Text = "⏹️"
+			clearHighlight()
+		end
+	end
+end)
+
+-- All Player On/Off
+allPlayerButton.MouseButton1Click:Connect(function()
+	allPlayersMode = not allPlayersMode
+	allPlayerButton.BackgroundColor3 = allPlayersMode and Color3.fromRGB(0,170,255) or Color3.fromRGB(30,30,30)
+	if not allPlayersMode then
+		clearHighlight(false) -- xóa highlight tất cả khi tắt All Player
+	end
+end)
+
+-- Nhấn Apply
+applyButton.MouseButton1Click:Connect(function()
+	local num = tonumber(sizeBox.Text)
+	if num and num > 0 then
+		highlightSize = num
+	end
+	sizeBox.Visible = false
+	applyButton.Visible = false
+	sizeBox.Text = ""
+end)
+
+-- Click chuột chọn player hoặc vị trí (phải click 2 lần)
+Mouse.Button1Down:Connect(function()
+	if not autoEnabled then return end
+	local target = Mouse.Target
+	if not target then return end
+
+	if clickStage == 0 then
+		tempClickPos = Mouse.Hit.Position
+		clickStage = 1
+	else
+		local clickPos = Mouse.Hit.Position
+		if allPlayersMode then
+			clearHighlight(true)
+			for _, plr in pairs(Players:GetPlayers()) do
+				if plr ~= LocalPlayer and plr.Character then
+					applyHighlight(plr.Character)
+				end
+			end
+			AutoMoveTargetPos = clickPos
+		else
+			local model = target:FindFirstAncestorOfClass("Model")
+			local player = Players:GetPlayerFromCharacter(model)
+			if player and player ~= LocalPlayer then
+				clearHighlight()
+				selectedTarget = model
+				applyHighlight(model)
+			else
+				if selectedTarget then
+					AutoMoveTargetPos = clickPos
+				end
+			end
+		end
+
+		-- Highlight đỏ dừng
+		if StopHighlight then StopHighlight:Destroy() end
+		local part = Instance.new("Part")
+		part.Size = Vector3.new(highlightSize, highlightSize, highlightSize)
+		part.Anchored = true
+		part.CanCollide = false
+		part.Transparency = 1
+		part.Position = clickPos
+		part.Parent = Workspace
+
+		StopHighlight = Instance.new("SelectionBox")
+		StopHighlight.Adornee = part
+		StopHighlight.LineThickness = 0.05
+		StopHighlight.Color3 = Color3.fromRGB(255,0,0)
+		StopHighlight.SurfaceTransparency = 1
+		StopHighlight.Parent = Workspace
+
+		startAutoMove()
+		clickStage = 0
+		tempClickPos = nil
+	end
+end)
+
+-- Xóa highlight khi đổi character
+LocalPlayer.CharacterAdded:Connect(function()
+	clearHighlight()
+end)
