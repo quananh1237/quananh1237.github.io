@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Key System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    body {
+        margin: 0;
+        background: linear-gradient(135deg, #1a1a1a, #232323, #0f0f0f);
+        font-family: "Poppins", sans-serif;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        overflow: hidden;
+    }
+
+    .box {
+        width: 90%;
+        max-width: 400px;
+        background: rgba(255,255,255,0.05);
+        backdrop-filter: blur(12px);
+        border-radius: 20px;
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 0 25px rgba(0,0,0,0.4);
+        animation: fadeIn 0.8s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    .title {
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        text-shadow: 0 0 10px #0ff;
+    }
+
+    .progress-container {
+        width: 100%;
+        height: 12px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+
+    .progress {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #00d9ff, #00ffaa);
+        transition: width 0.2s;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(90deg, #00d9ff, #0088ff);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: 0.2s;
+        box-shadow: 0 0 10px rgba(0,200,255,0.4);
+    }
+
+    button:hover {
+        transform: scale(1.03);
+        box-shadow: 0 0 15px rgba(0,255,255,0.6);
+    }
+
+    .key-box {
+        display: none;
+        margin-top: 20px;
+        padding: 12px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 12px;
+        word-break: break-all;
+        font-size: 18px;
+        box-shadow: 0 0 10px rgba(0,255,255,0.3);
+    }
+
+    #copyBtn {
+        display: none;
+        background: linear-gradient(90deg, #00ffaa, #00ff77);
+        box-shadow: 0 0 10px rgba(0,255,150,0.4);
+    }
+</style>
+</head>
+<body>
+
+<div class="box">
+    <div class="title">🔑 Key System</div>
+
+    <div class="progress-container">
+        <div class="progress" id="progressBar"></div>
+    </div>
+
+    <button id="waitBtn">Wait</button>
+
+    <div class="key-box" id="keyBox">Your Key: <span id="keyText"></span></div>
+    <button id="copyBtn">Copy Key</button>
+</div>
+
+<script>
+    const progressBar = document.getElementById("progressBar");
+    const waitBtn = document.getElementById("waitBtn");
+    const keyBox = document.getElementById("keyBox");
+    const keyText = document.getElementById("keyText");
+    const copyBtn = document.getElementById("copyBtn");
+
+    let isCounting = false;
+
+    function generateKey() {
+        let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        let key = "";
+        for (let i = 0; i < 16; i++) {
+            key += chars[Math.floor(Math.random() * chars.length)];
+        }
+        return key;
+    }
+
+    waitBtn.onclick = function () {
+        if (isCounting) return;
+        isCounting = true;
+
+        let time = 15; 
+        let maxTime = 15;
+
+        let interval = setInterval(() => {
+            time--;
+            let percent = ((maxTime - time) / maxTime) * 100;
+            progressBar.style.width = percent + "%";
+
+            waitBtn.innerText = `Wait (${time}s)`;
+
+            if (time <= 0) {
+                clearInterval(interval);
+                waitBtn.style.display = "none";
+
+                let key = generateKey();
+                keyText.innerText = key;
+
+                keyBox.style.display = "block";
+                copyBtn.style.display = "block";
+            }
+        }, 1000);
+    };
+
+    copyBtn.onclick = function () {
+        navigator.clipboard.writeText(keyText.innerText);
+        copyBtn.innerText = "Copied!";
+        setTimeout(() => {
+            copyBtn.innerText = "Copy Key";
+        }, 1200);
+    };
+</script>
+
+</body>
+</html>
