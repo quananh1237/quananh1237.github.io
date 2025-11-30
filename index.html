@@ -129,11 +129,43 @@
         return key;
     }
 
+    // 🚀 UPLOAD KEY TO GITHUB
+    async function uploadKeyToGitHub(key) {
+        const token = "YOUR_GITHUB_TOKEN";  // ⚠ Sửa vào đây
+        const owner = "YOUR_GITHUB_USERNAME";  // ⚠ Sửa vào đây
+        const repo = "YOUR_REPO_NAME";  // ⚠ Sửa vào đây
+        const filePath = "key.txt";
+
+        const url = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
+        const content = btoa(key);
+
+        let sha = null;
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+            sha = data.sha;
+        } catch {}
+
+        await fetch(url, {
+            method: "PUT",
+            headers: {
+                "Authorization": `token ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                message: "Update Key",
+                content: content,
+                sha: sha
+            })
+        });
+    }
+
+    // ⏳ Countdown
     waitBtn.onclick = function () {
         if (isCounting) return;
         isCounting = true;
 
-        let time = 15; 
+        let time = 15;
         let maxTime = 15;
 
         let interval = setInterval(() => {
@@ -149,19 +181,19 @@
 
                 let key = generateKey();
                 keyText.innerText = key;
-
                 keyBox.style.display = "block";
                 copyBtn.style.display = "block";
+
+                uploadKeyToGitHub(key); // 🚀 Lưu lên GitHub
             }
         }, 1000);
     };
 
+    // 📋 Copy key
     copyBtn.onclick = function () {
         navigator.clipboard.writeText(keyText.innerText);
         copyBtn.innerText = "Copied!";
-        setTimeout(() => {
-            copyBtn.innerText = "Copy Key";
-        }, 1200);
+        setTimeout(() => copyBtn.innerText = "Copy Key", 1200);
     };
 </script>
 
