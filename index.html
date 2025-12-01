@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flappy Birch Key</title>
+<title>Flappy Birch VIP</title>
 <style>
   body {
     margin:0; padding:0;
@@ -15,70 +15,13 @@
   }
   @keyframes gradientBG {0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
   
-  #main {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-  }
-
-  /* Ô textbox chính ở giữa */
-  #keyInput {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%,-50%);
-    padding: 15px 20px;
-    font-size: 20px;
-    border-radius: 15px;
-    border: 2px solid #fff;
-    outline: none;
-    text-align: center;
-    width: 300px;
-    background: rgba(255,255,255,0.2);
-    color: #fff;
-  }
-
-  /* Nút vượt link / Check Key */
-  .btnMain {
-    position: absolute;
-    top: calc(50% + 80px);
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 12px 25px;
-    font-size: 18px;
-    border-radius: 15px;
-    border: none;
-    background: linear-gradient(45deg,#ff6ec4,#7873f5);
-    color: #fff;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  .btnMain:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 15px rgba(255,255,255,0.7);
-  }
-
-  /* Nút trở ra */
-  #backBtn {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    padding: 10px 15px;
-    border-radius: 12px;
-    border: none;
-    background: #ff6ec4;
-    color: #fff;
-    cursor: pointer;
-    display: none;
-  }
-
-  /* Game canvas */
   #gameCanvas {
-    display: none;
+    display: block;
     width: 100vw;
     height: 100vh;
     background: #87ceeb;
   }
-
+  
   #scoreDisplay {
     position: absolute;
     top: 10px;
@@ -88,83 +31,37 @@
     font-weight: bold;
     color: #fff;
     text-shadow: 0 0 5px #000;
-    display: none;
   }
 </style>
 </head>
 <body>
-<div id="main">
-  <input type="text" id="keyInput" placeholder="Nhập key vào đây">
-  <button id="goBtn" class="btnMain">Vượt Link</button>
-  <button id="checkKeyBtn" class="btnMain" style="display:none;">Check Key</button>
-  <button id="backBtn">Trở ra</button>
-
-  <canvas id="gameCanvas"></canvas>
-  <div id="scoreDisplay">Score: 0</div>
-</div>
+<canvas id="gameCanvas"></canvas>
+<div id="scoreDisplay">Score: 0</div>
 
 <script>
-const keyInput = document.getElementById('keyInput');
-const goBtn = document.getElementById('goBtn');
-const checkKeyBtn = document.getElementById('checkKeyBtn');
-const backBtn = document.getElementById('backBtn');
-
 const gameCanvas = document.getElementById('gameCanvas');
 const scoreDisplay = document.getElementById('scoreDisplay');
 
-let correctKey = "FLAPPY123"; // key đúng để vượt
-
-// Vượt link
-goBtn.addEventListener('click', ()=>{
-  keyInput.style.display='none';
-  goBtn.style.display='none';
-  backBtn.style.display='block';
-  checkKeyBtn.style.display='block';
-});
-
-// Trở ra
-backBtn.addEventListener('click', ()=>{
-  keyInput.style.display='block';
-  goBtn.style.display='block';
-  backBtn.style.display='none';
-  checkKeyBtn.style.display='none';
-});
-
-// Check key
-checkKeyBtn.addEventListener('click', ()=>{
-  if(keyInput.value.trim()===correctKey){
-    alert('Key đúng! Vào game Flappy Birch...');
-    startGame();
-    // Ẩn UI nhập key
-    keyInput.style.display='none';
-    goBtn.style.display='none';
-    checkKeyBtn.style.display='none';
-    backBtn.style.display='none';
-  } else {
-    alert('Key sai, thử lại!');
-  }
-});
-
-// --- Flappy Birch Game ---
-let gameInterval, score =0;
+let gameInterval, score=0;
 let flappyBirdY=200, gravity=2, speed=2;
 let pipeX=500, pipeGapY=Math.random()*200+50;
 
+// Canvas setup
+const ctx = gameCanvas.getContext('2d');
+gameCanvas.width = window.innerWidth;
+gameCanvas.height = window.innerHeight;
+
+// Control bird jump
+document.addEventListener('keydown', e=>{
+  if(e.code==='Space') flappyBirdY -= 50;
+});
+
+// --- Game Loop ---
 function startGame(){
   score =0;
   flappyBirdY =200;
-  pipeX=500;
+  pipeX=gameCanvas.width;
   pipeGapY = Math.random()*200+50;
-  gameCanvas.style.display='block';
-  scoreDisplay.style.display='block';
-
-  const ctx = gameCanvas.getContext('2d');
-  gameCanvas.width = window.innerWidth;
-  gameCanvas.height = window.innerHeight;
-
-  document.addEventListener('keydown', e=>{
-    if(e.code==='Space') flappyBirdY -= 50;
-  });
 
   gameInterval = setInterval(()=>{
     ctx.clearRect(0,0,gameCanvas.width, gameCanvas.height);
@@ -222,6 +119,9 @@ function gameOver(){
     location.reload();
   });
 }
+
+// Start game immediately
+startGame();
 </script>
 </body>
 </html>
