@@ -2,144 +2,357 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Get Key</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flappy Birch Key & Game</title>
 <style>
-    body {
-        margin: 0;
-        background: #0c0c0c;
-        font-family: Arial, sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        color: white;
-        overflow: hidden;
-    }
+  /* --- Nền đẹp lộng lẫy với gradient animation --- */
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+    background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #fbc2eb, #a1c4fd);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+  }
 
-    .box {
-        width: 350px;
-        padding: 30px;
-        background: #141414;
-        border-radius: 15px;
-        box-shadow: 0 0 25px rgba(0,255,255,0.4);
-        text-align: center;
-        animation: fadein 0.6s ease;
-    }
+  @keyframes gradientBG {
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+  }
 
-    @keyframes fadein {
-        from { opacity: 0; transform: scale(0.8); }
-        to { opacity: 1; transform: scale(1); }
-    }
+  /* --- Giao diện chính --- */
+  #main {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+  }
 
-    .progress-container {
-        width: 100%;
-        height: 12px;
-        background: #333;
-        border-radius: 6px;
-        overflow: hidden;
-        margin-top: 20px;
-        display: none;
-    }
+  /* Ô textbox */
+  #keyInput {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 10px;
+    border: 2px solid #fff;
+    outline: none;
+  }
 
-    .progress-bar {
-        width: 0%;
-        height: 100%;
-        background: cyan;
-        box-shadow: 0 0 10px cyan;
-        transition: 0.3s;
-    }
+  /* Nút Checkey */
+  #checkKeyBtn {
+    position: absolute;
+    top: 50px;
+    left: calc(50% + 200px);
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 15px;
+    border: none;
+    background: linear-gradient(45deg, #ff6ec4, #7873f5);
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
 
-    button {
-        width: 100%;
-        padding: 12px;
-        background: cyan;
-        color: black;
-        border: none;
-        border-radius: 8px;
-        font-size: 18px;
-        margin-top: 20px;
-        cursor: pointer;
-        font-weight: bold;
-        transition: 0.2s;
-        box-shadow: 0 0 10px cyan;
-    }
+  #checkKeyBtn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(255,255,255,0.7);
+  }
 
-    button:hover {
-        filter: brightness(1.2);
-    }
+  /* Góc phải trên hình VL */
+  #vlBtn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: url('https://i.imgur.com/3M5F8tZ.png') no-repeat center/cover;
+    cursor: pointer;
+    box-shadow: 0 0 15px #fff;
+  }
 
-    #keyBox {
-        margin-top: 25px;
-        padding: 15px;
-        border: 1px solid cyan;
-        border-radius: 10px;
-        display: none;
-        background: rgba(0,255,255,0.1);
-        font-size: 20px;
-        font-weight: bold;
-        word-wrap: break-word;
-    }
+  /* Nút chờ */
+  #waitBtn {
+    position: absolute;
+    top: 80px;
+    right: 20px;
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 12px;
+    border: none;
+    background-color: #ff9a9e;
+    color: #fff;
+    display: none;
+    cursor: pointer;
+  }
+
+  /* Hiển thị key random */
+  #showKey {
+    position: absolute;
+    top: 140px;
+    right: 20px;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 10px;
+    color: #000;
+    display: none;
+  }
+
+  #copyBtn {
+    margin-left: 10px;
+    padding: 4px 8px;
+    border: none;
+    border-radius: 8px;
+    background-color: #7873f5;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  /* Nút trở ra */
+  #backBtn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: none;
+    background: #ff6ec4;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  /* Loading */
+  #loadingContainer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    width: 300px;
+    height: 30px;
+    border-radius: 15px;
+    background: rgba(255,255,255,0.2);
+    overflow: hidden;
+    display: none;
+  }
+
+  #loadingBar {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #ff6ec4, #7873f5);
+    border-radius: 15px;
+  }
+
+  /* Flappy Birch canvas */
+  #gameCanvas {
+    display: none;
+    background: #87ceeb;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  /* Score */
+  #scoreDisplay {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 24px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 5px #000;
+    display: none;
+  }
+
+  /* Cheat bookmark speed */
+  #cheatSpeed {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: none;
+    background: #ff9a9e;
+    color: #fff;
+    display: none;
+  }
 </style>
 </head>
 <body>
+<div id="main">
+  <input type="text" id="keyInput" placeholder="Nhập key vào đây">
+  <button id="checkKeyBtn">Checkey</button>
+  <div id="vlBtn"></div>
+  <button id="waitBtn">Chờ</button>
+  <div id="showKey">KEY: <span id="randomKey"></span> <button id="copyBtn">Copy</button></div>
+  <button id="backBtn">Trở ra</button>
 
-<div class="box">
-    <h2>Get Your Key</h2>
+  <div id="loadingContainer"><div id="loadingBar"></div></div>
 
-    <div class="progress-container" id="loader">
-        <div class="progress-bar" id="bar"></div>
-    </div>
+  <canvas id="gameCanvas"></canvas>
+  <div id="scoreDisplay">Score: 0</div>
 
-    <button id="waitBtn">WAIT</button>
-
-    <div id="keyBox"></div>
-
-    <button id="copyBtn" style="display:none;">COPY KEY</button>
+  <input type="number" id="cheatSpeed" placeholder="Enter speed 1~10">
 </div>
 
 <script>
-    const waitBtn = document.getElementById("waitBtn");
-    const loader = document.getElementById("loader");
-    const bar = document.getElementById("bar");
-    const keyBox = document.getElementById("keyBox");
-    const copyBtn = document.getElementById("copyBtn");
+  const vlBtn = document.getElementById('vlBtn');
+  const waitBtn = document.getElementById('waitBtn');
+  const showKeyDiv = document.getElementById('showKey');
+  const randomKeySpan = document.getElementById('randomKey');
+  const copyBtn = document.getElementById('copyBtn');
+  const checkKeyBtn = document.getElementById('checkKeyBtn');
+  const keyInput = document.getElementById('keyInput');
+  const backBtn = document.getElementById('backBtn');
+  const loadingContainer = document.getElementById('loadingContainer');
+  const loadingBar = document.getElementById('loadingBar');
+  const gameCanvas = document.getElementById('gameCanvas');
+  const scoreDisplay = document.getElementById('scoreDisplay');
+  const cheatSpeed = document.getElementById('cheatSpeed');
 
-    waitBtn.onclick = () => {
-        waitBtn.style.display = "none";
-        loader.style.display = "block";
+  let gameInterval, score = 0;
+  let flappyBirdY = 200;
+  let gravity = 2;
+  let speed = 2;
+  let pipeX = 500;
+  let pipeGapY = Math.random() * 200 + 50;
 
-        let seconds = 15;
-        let progress = 0;
+  // VL click
+  vlBtn.addEventListener('click', ()=>{ waitBtn.style.display='block'; });
 
-        let timer = setInterval(() => {
-            progress += (100 / 15);
-            bar.style.width = progress + "%";
+  // Wait button => countdown 20s
+  waitBtn.addEventListener('click', ()=>{
+    let countdown = 20;
+    waitBtn.disabled = true;
+    waitBtn.textContent = countdown + 's';
+    const interval = setInterval(()=>{
+      countdown--;
+      waitBtn.textContent = countdown + 's';
+      if(countdown <= 0){
+        clearInterval(interval);
+        waitBtn.style.display='none';
+        const key = Math.random().toString(36).substring(2,10).toUpperCase();
+        randomKeySpan.textContent = key;
+        showKeyDiv.style.display='block';
+      }
+    },1000);
+  });
 
-            seconds--;
-            if (seconds <= 0) {
-                clearInterval(timer);
-                showKey();
-            }
-        }, 1000);
+  // Copy key
+  copyBtn.addEventListener('click', ()=>{
+    navigator.clipboard.writeText(randomKeySpan.textContent);
+    alert('Copied key: '+randomKeySpan.textContent);
+  });
+
+  // Check key => loading 5s
+  checkKeyBtn.addEventListener('click', ()=>{
+    const inputKey = keyInput.value.trim();
+    if(!inputKey){
+      alert('Nhập key trước đã');
+      return;
     }
+    showKeyDiv.style.display='none';
+    loadingContainer.style.display='block';
+    loadingBar.style.width='0%';
+    let progress = 0;
+    const loadInterval = setInterval(()=>{
+      progress += 1;
+      loadingBar.style.width = progress + '%';
+      if(progress>=100){
+        clearInterval(loadInterval);
+        loadingContainer.style.display='none';
+        startGame();
+      }
+    },50); // 5 giây
+  });
 
-    function showKey() {
-        // Load KEY từ key.txt
-        fetch("key.txt")
-            .then(res => res.text())
-            .then(key => {
-                keyBox.innerText = key.trim();
-                keyBox.style.display = "block";
-                copyBtn.style.display = "block";
-            });
-    }
+  backBtn.addEventListener('click', ()=>{
+    location.reload();
+  });
 
-    copyBtn.onclick = () => {
-        navigator.clipboard.writeText(keyBox.innerText);
-        copyBtn.innerText = "COPIED!";
-        setTimeout(() => copyBtn.innerText = "COPY KEY", 1500);
-    }
+  // --- Flappy Birch Game ---
+  function startGame(){
+    score = 0;
+    flappyBirdY = 200;
+    pipeX = 500;
+    pipeGapY = Math.random()*200 +50;
+    gameCanvas.style.display='block';
+    scoreDisplay.style.display='block';
+    cheatSpeed.style.display='block';
+
+    const ctx = gameCanvas.getContext('2d');
+    gameCanvas.width = window.innerWidth;
+    gameCanvas.height = window.innerHeight;
+
+    document.addEventListener('keydown', e=>{
+      if(e.code==='Space') flappyBirdY -= 50;
+      if(e.target===cheatSpeed && e.code==='Enter'){
+        const val = parseInt(cheatSpeed.value);
+        if(val>=1 && val<=10) speed = val*2;
+      }
+    });
+
+    gameInterval = setInterval(()=>{
+      // Clear
+      ctx.clearRect(0,0,gameCanvas.width, gameCanvas.height);
+      // Bird
+      flappyBirdY += gravity;
+      ctx.fillStyle = 'yellow';
+      ctx.fillRect(100, flappyBirdY, 30, 30);
+
+      // Pipe
+      pipeX -= speed;
+      ctx.fillStyle = 'green';
+      ctx.fillRect(pipeX,0,50,pipeGapY);
+      ctx.fillRect(pipeX,pipeGapY+150,50,gameCanvas.height-pipeGapY-150);
+
+      // Collision
+      if(flappyBirdY < 0 || flappyBirdY > gameCanvas.height ||
+         (100+30>pipeX && 100<pipeX+50 && (flappyBirdY<pipeGapY || flappyBirdY>pipeGapY+150))){
+        gameOver();
+      }
+
+      // Score
+      if(pipeX +50 <100 && !window.passed){
+        score++;
+        window.passed = true;
+      }
+      if(pipeX+50<0){
+        pipeX = gameCanvas.width;
+        pipeGapY = Math.random()*200 +50;
+        window.passed = false;
+      }
+
+      ctx.fillStyle = '#fff';
+      ctx.font = '30px Arial';
+      scoreDisplay.textContent = 'Score: '+score;
+    },20);
+  }
+
+  function gameOver(){
+    clearInterval(gameInterval);
+    alert('Game Over! Score: '+score);
+    const resetBtn = document.createElement('button');
+    resetBtn.textContent='Reset';
+    resetBtn.style.position='absolute';
+    resetBtn.style.top='50%';
+    resetBtn.style.left='50%';
+    resetBtn.style.transform='translate(-50%,-50%)';
+    resetBtn.style.padding='10px 20px';
+    resetBtn.style.border='none';
+    resetBtn.style.borderRadius='10px';
+    resetBtn.style.background='#ff6ec4';
+    resetBtn.style.color='#fff';
+    resetBtn.style.cursor='pointer';
+    document.body.appendChild(resetBtn);
+    resetBtn.addEventListener('click', ()=>{
+      location.reload();
+    });
+  }
 </script>
-
 </body>
 </html>
