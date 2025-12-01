@@ -3,113 +3,58 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flappy Birch Key & Game</title>
+<title>Flappy Birch Key</title>
 <style>
-  /* --- Nền đẹp lộng lẫy với gradient animation --- */
   body {
-    margin: 0;
-    padding: 0;
+    margin:0; padding:0;
     font-family: Arial, sans-serif;
-    overflow: hidden;
-    background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #fbc2eb, #a1c4fd);
+    overflow:hidden;
+    background: linear-gradient(-45deg,#ff9a9e,#fad0c4,#fbc2eb,#a1c4fd);
     background-size: 400% 400%;
     animation: gradientBG 15s ease infinite;
   }
-
-  @keyframes gradientBG {
-    0%{background-position:0% 50%}
-    50%{background-position:100% 50%}
-    100%{background-position:0% 50%}
-  }
-
-  /* --- Giao diện chính --- */
+  @keyframes gradientBG {0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  
   #main {
     position: relative;
     width: 100vw;
     height: 100vh;
   }
 
-  /* Ô textbox */
+  /* Ô textbox chính ở giữa */
   #keyInput {
     position: absolute;
-    top: 50px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 10px 15px;
-    font-size: 16px;
-    border-radius: 10px;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    padding: 15px 20px;
+    font-size: 20px;
+    border-radius: 15px;
     border: 2px solid #fff;
     outline: none;
+    text-align: center;
+    width: 300px;
+    background: rgba(255,255,255,0.2);
+    color: #fff;
   }
 
-  /* Nút Checkey */
-  #checkKeyBtn {
+  /* Nút vượt link / Check Key */
+  .btnMain {
     position: absolute;
-    top: 50px;
-    left: calc(50% + 200px);
-    padding: 10px 20px;
-    font-size: 16px;
+    top: calc(50% + 80px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 25px;
+    font-size: 18px;
     border-radius: 15px;
     border: none;
-    background: linear-gradient(45deg, #ff6ec4, #7873f5);
+    background: linear-gradient(45deg,#ff6ec4,#7873f5);
     color: #fff;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
   }
-
-  #checkKeyBtn:hover {
+  .btnMain:hover {
     transform: scale(1.1);
     box-shadow: 0 0 15px rgba(255,255,255,0.7);
-  }
-
-  /* Góc phải trên hình VL */
-  #vlBtn {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: url('https://i.imgur.com/3M5F8tZ.png') no-repeat center/cover;
-    cursor: pointer;
-    box-shadow: 0 0 15px #fff;
-  }
-
-  /* Nút chờ */
-  #waitBtn {
-    position: absolute;
-    top: 80px;
-    right: 20px;
-    padding: 8px 12px;
-    font-size: 14px;
-    border-radius: 12px;
-    border: none;
-    background-color: #ff9a9e;
-    color: #fff;
-    display: none;
-    cursor: pointer;
-  }
-
-  /* Hiển thị key random */
-  #showKey {
-    position: absolute;
-    top: 140px;
-    right: 20px;
-    padding: 8px 12px;
-    background: rgba(255,255,255,0.3);
-    border-radius: 10px;
-    color: #000;
-    display: none;
-  }
-
-  #copyBtn {
-    margin-left: 10px;
-    padding: 4px 8px;
-    border: none;
-    border-radius: 8px;
-    background-color: #7873f5;
-    color: #fff;
-    cursor: pointer;
   }
 
   /* Nút trở ra */
@@ -118,43 +63,22 @@
     top: 20px;
     left: 20px;
     padding: 10px 15px;
-    border-radius: 10px;
+    border-radius: 12px;
     border: none;
     background: #ff6ec4;
     color: #fff;
     cursor: pointer;
-  }
-
-  /* Loading */
-  #loadingContainer {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%,-50%);
-    width: 300px;
-    height: 30px;
-    border-radius: 15px;
-    background: rgba(255,255,255,0.2);
-    overflow: hidden;
     display: none;
   }
 
-  #loadingBar {
-    height: 100%;
-    width: 0;
-    background: linear-gradient(90deg, #ff6ec4, #7873f5);
-    border-radius: 15px;
-  }
-
-  /* Flappy Birch canvas */
+  /* Game canvas */
   #gameCanvas {
     display: none;
-    background: #87ceeb;
     width: 100vw;
     height: 100vh;
+    background: #87ceeb;
   }
 
-  /* Score */
   #scoreDisplay {
     position: absolute;
     top: 10px;
@@ -166,193 +90,138 @@
     text-shadow: 0 0 5px #000;
     display: none;
   }
-
-  /* Cheat bookmark speed */
-  #cheatSpeed {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 5px 10px;
-    border-radius: 8px;
-    border: none;
-    background: #ff9a9e;
-    color: #fff;
-    display: none;
-  }
 </style>
 </head>
 <body>
 <div id="main">
   <input type="text" id="keyInput" placeholder="Nhập key vào đây">
-  <button id="checkKeyBtn">Checkey</button>
-  <div id="vlBtn"></div>
-  <button id="waitBtn">Chờ</button>
-  <div id="showKey">KEY: <span id="randomKey"></span> <button id="copyBtn">Copy</button></div>
+  <button id="goBtn" class="btnMain">Vượt Link</button>
+  <button id="checkKeyBtn" class="btnMain" style="display:none;">Check Key</button>
   <button id="backBtn">Trở ra</button>
-
-  <div id="loadingContainer"><div id="loadingBar"></div></div>
 
   <canvas id="gameCanvas"></canvas>
   <div id="scoreDisplay">Score: 0</div>
-
-  <input type="number" id="cheatSpeed" placeholder="Enter speed 1~10">
 </div>
 
 <script>
-  const vlBtn = document.getElementById('vlBtn');
-  const waitBtn = document.getElementById('waitBtn');
-  const showKeyDiv = document.getElementById('showKey');
-  const randomKeySpan = document.getElementById('randomKey');
-  const copyBtn = document.getElementById('copyBtn');
-  const checkKeyBtn = document.getElementById('checkKeyBtn');
-  const keyInput = document.getElementById('keyInput');
-  const backBtn = document.getElementById('backBtn');
-  const loadingContainer = document.getElementById('loadingContainer');
-  const loadingBar = document.getElementById('loadingBar');
-  const gameCanvas = document.getElementById('gameCanvas');
-  const scoreDisplay = document.getElementById('scoreDisplay');
-  const cheatSpeed = document.getElementById('cheatSpeed');
+const keyInput = document.getElementById('keyInput');
+const goBtn = document.getElementById('goBtn');
+const checkKeyBtn = document.getElementById('checkKeyBtn');
+const backBtn = document.getElementById('backBtn');
 
-  let gameInterval, score = 0;
-  let flappyBirdY = 200;
-  let gravity = 2;
-  let speed = 2;
-  let pipeX = 500;
-  let pipeGapY = Math.random() * 200 + 50;
+const gameCanvas = document.getElementById('gameCanvas');
+const scoreDisplay = document.getElementById('scoreDisplay');
 
-  // VL click
-  vlBtn.addEventListener('click', ()=>{ waitBtn.style.display='block'; });
+let correctKey = "FLAPPY123"; // key đúng để vượt
 
-  // Wait button => countdown 20s
-  waitBtn.addEventListener('click', ()=>{
-    let countdown = 20;
-    waitBtn.disabled = true;
-    waitBtn.textContent = countdown + 's';
-    const interval = setInterval(()=>{
-      countdown--;
-      waitBtn.textContent = countdown + 's';
-      if(countdown <= 0){
-        clearInterval(interval);
-        waitBtn.style.display='none';
-        const key = Math.random().toString(36).substring(2,10).toUpperCase();
-        randomKeySpan.textContent = key;
-        showKeyDiv.style.display='block';
-      }
-    },1000);
+// Vượt link
+goBtn.addEventListener('click', ()=>{
+  keyInput.style.display='none';
+  goBtn.style.display='none';
+  backBtn.style.display='block';
+  checkKeyBtn.style.display='block';
+});
+
+// Trở ra
+backBtn.addEventListener('click', ()=>{
+  keyInput.style.display='block';
+  goBtn.style.display='block';
+  backBtn.style.display='none';
+  checkKeyBtn.style.display='none';
+});
+
+// Check key
+checkKeyBtn.addEventListener('click', ()=>{
+  if(keyInput.value.trim()===correctKey){
+    alert('Key đúng! Vào game Flappy Birch...');
+    startGame();
+    // Ẩn UI nhập key
+    keyInput.style.display='none';
+    goBtn.style.display='none';
+    checkKeyBtn.style.display='none';
+    backBtn.style.display='none';
+  } else {
+    alert('Key sai, thử lại!');
+  }
+});
+
+// --- Flappy Birch Game ---
+let gameInterval, score =0;
+let flappyBirdY=200, gravity=2, speed=2;
+let pipeX=500, pipeGapY=Math.random()*200+50;
+
+function startGame(){
+  score =0;
+  flappyBirdY =200;
+  pipeX=500;
+  pipeGapY = Math.random()*200+50;
+  gameCanvas.style.display='block';
+  scoreDisplay.style.display='block';
+
+  const ctx = gameCanvas.getContext('2d');
+  gameCanvas.width = window.innerWidth;
+  gameCanvas.height = window.innerHeight;
+
+  document.addEventListener('keydown', e=>{
+    if(e.code==='Space') flappyBirdY -= 50;
   });
 
-  // Copy key
-  copyBtn.addEventListener('click', ()=>{
-    navigator.clipboard.writeText(randomKeySpan.textContent);
-    alert('Copied key: '+randomKeySpan.textContent);
-  });
+  gameInterval = setInterval(()=>{
+    ctx.clearRect(0,0,gameCanvas.width, gameCanvas.height);
 
-  // Check key => loading 5s
-  checkKeyBtn.addEventListener('click', ()=>{
-    const inputKey = keyInput.value.trim();
-    if(!inputKey){
-      alert('Nhập key trước đã');
-      return;
+    // Bird
+    flappyBirdY += gravity;
+    ctx.fillStyle='yellow';
+    ctx.fillRect(100, flappyBirdY,30,30);
+
+    // Pipe
+    pipeX -= speed;
+    ctx.fillStyle='green';
+    ctx.fillRect(pipeX,0,50,pipeGapY);
+    ctx.fillRect(pipeX,pipeGapY+150,50,gameCanvas.height-pipeGapY-150);
+
+    // Collision
+    if(flappyBirdY<0 || flappyBirdY>gameCanvas.height ||
+      (100+30>pipeX && 100<pipeX+50 && (flappyBirdY<pipeGapY || flappyBirdY>pipeGapY+150))){
+        gameOver();
     }
-    showKeyDiv.style.display='none';
-    loadingContainer.style.display='block';
-    loadingBar.style.width='0%';
-    let progress = 0;
-    const loadInterval = setInterval(()=>{
-      progress += 1;
-      loadingBar.style.width = progress + '%';
-      if(progress>=100){
-        clearInterval(loadInterval);
-        loadingContainer.style.display='none';
-        startGame();
-      }
-    },50); // 5 giây
-  });
 
-  backBtn.addEventListener('click', ()=>{
+    // Score
+    if(pipeX +50 <100 && !window.passed){
+      score++;
+      window.passed=true;
+    }
+    if(pipeX+50<0){
+      pipeX=gameCanvas.width;
+      pipeGapY=Math.random()*200+50;
+      window.passed=false;
+    }
+
+    scoreDisplay.textContent = 'Score: '+score;
+
+  },20);
+}
+
+function gameOver(){
+  clearInterval(gameInterval);
+  alert('Game Over! Score: '+score);
+  const resetBtn = document.createElement('button');
+  resetBtn.textContent='Reset';
+  resetBtn.style.position='absolute';
+  resetBtn.style.top='50%';
+  resetBtn.style.left='50%';
+  resetBtn.style.transform='translate(-50%,-50%)';
+  resetBtn.style.padding='10px 20px';
+  resetBtn.style.border='none';
+  resetBtn.style.borderRadius='10px';
+  resetBtn.style.background='#ff6ec4';
+  resetBtn.style.color='#fff';
+  resetBtn.style.cursor='pointer';
+  document.body.appendChild(resetBtn);
+  resetBtn.addEventListener('click', ()=>{
     location.reload();
   });
-
-  // --- Flappy Birch Game ---
-  function startGame(){
-    score = 0;
-    flappyBirdY = 200;
-    pipeX = 500;
-    pipeGapY = Math.random()*200 +50;
-    gameCanvas.style.display='block';
-    scoreDisplay.style.display='block';
-    cheatSpeed.style.display='block';
-
-    const ctx = gameCanvas.getContext('2d');
-    gameCanvas.width = window.innerWidth;
-    gameCanvas.height = window.innerHeight;
-
-    document.addEventListener('keydown', e=>{
-      if(e.code==='Space') flappyBirdY -= 50;
-      if(e.target===cheatSpeed && e.code==='Enter'){
-        const val = parseInt(cheatSpeed.value);
-        if(val>=1 && val<=10) speed = val*2;
-      }
-    });
-
-    gameInterval = setInterval(()=>{
-      // Clear
-      ctx.clearRect(0,0,gameCanvas.width, gameCanvas.height);
-      // Bird
-      flappyBirdY += gravity;
-      ctx.fillStyle = 'yellow';
-      ctx.fillRect(100, flappyBirdY, 30, 30);
-
-      // Pipe
-      pipeX -= speed;
-      ctx.fillStyle = 'green';
-      ctx.fillRect(pipeX,0,50,pipeGapY);
-      ctx.fillRect(pipeX,pipeGapY+150,50,gameCanvas.height-pipeGapY-150);
-
-      // Collision
-      if(flappyBirdY < 0 || flappyBirdY > gameCanvas.height ||
-         (100+30>pipeX && 100<pipeX+50 && (flappyBirdY<pipeGapY || flappyBirdY>pipeGapY+150))){
-        gameOver();
-      }
-
-      // Score
-      if(pipeX +50 <100 && !window.passed){
-        score++;
-        window.passed = true;
-      }
-      if(pipeX+50<0){
-        pipeX = gameCanvas.width;
-        pipeGapY = Math.random()*200 +50;
-        window.passed = false;
-      }
-
-      ctx.fillStyle = '#fff';
-      ctx.font = '30px Arial';
-      scoreDisplay.textContent = 'Score: '+score;
-    },20);
-  }
-
-  function gameOver(){
-    clearInterval(gameInterval);
-    alert('Game Over! Score: '+score);
-    const resetBtn = document.createElement('button');
-    resetBtn.textContent='Reset';
-    resetBtn.style.position='absolute';
-    resetBtn.style.top='50%';
-    resetBtn.style.left='50%';
-    resetBtn.style.transform='translate(-50%,-50%)';
-    resetBtn.style.padding='10px 20px';
-    resetBtn.style.border='none';
-    resetBtn.style.borderRadius='10px';
-    resetBtn.style.background='#ff6ec4';
-    resetBtn.style.color='#fff';
-    resetBtn.style.cursor='pointer';
-    document.body.appendChild(resetBtn);
-    resetBtn.addEventListener('click', ()=>{
-      location.reload();
-    });
-  }
+}
 </script>
 </body>
 </html>
