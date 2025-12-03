@@ -2,126 +2,50 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flappy Birch VIP</title>
-<style>
-  body {
-    margin:0; padding:0;
-    font-family: Arial, sans-serif;
-    overflow:hidden;
-    background: linear-gradient(-45deg,#ff9a9e,#fad0c4,#fbc2eb,#a1c4fd);
-    background-size: 400% 400%;
-    animation: gradientBG 15s ease infinite;
-  }
-  @keyframes gradientBG {0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-  
-  #gameCanvas {
-    display: block;
-    width: 100vw;
-    height: 100vh;
-    background: #87ceeb;
-  }
-  
-  #scoreDisplay {
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 24px;
-    font-weight: bold;
-    color: #fff;
-    text-shadow: 0 0 5px #000;
-  }
-</style>
+<title>16D Audio Demo</title>
 </head>
 <body>
-<canvas id="gameCanvas"></canvas>
-<div id="scoreDisplay">Score: 0</div>
+<h2>16D Audio Demo</h2>
+<button id="play">Play</button>
+
+<!-- Dùng file nhạc cục bộ -->
+<audio id="audio" src="Sao.wav" crossorigin="anonymous"></audio>
 
 <script>
-const gameCanvas = document.getElementById('gameCanvas');
-const scoreDisplay = document.getElementById('scoreDisplay');
+const audio = document.getElementById('audio');
+const playBtn = document.getElementById('play');
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const track = audioCtx.createMediaElementSource(audio);
 
-let gameInterval, score=0;
-let flappyBirdY=200, gravity=2, speed=2;
-let pipeX=500, pipeGapY=Math.random()*200+50;
+// Tạo PannerNode để xoay âm thanh quanh đầu
+const panner = audioCtx.createPanner();
+panner.panningModel = 'HRTF';  // hiệu ứng 3D
+panner.distanceModel = 'inverse';
+panner.setPosition(1,0,0);
 
-// Canvas setup
-const ctx = gameCanvas.getContext('2d');
-gameCanvas.width = window.innerWidth;
-gameCanvas.height = window.innerHeight;
+// Nối audio qua PannerNode
+track.connect(panner).connect(audioCtx.destination);
 
-// Control bird jump
-document.addEventListener('keydown', e=>{
-  if(e.code==='Space') flappyBirdY -= 50;
+let angle = 0;
+const points = 16; // 16D
+const step = (2 * Math.PI) / points;
+
+// Hàm xoay âm thanh quanh đầu
+function rotateSound() {
+    angle += 0.05; // tốc độ xoay
+    const x = Math.sin(angle);
+    const z = Math.cos(angle);
+    panner.setPosition(x, 0, z);
+    requestAnimationFrame(rotateSound);
+}
+
+// Khi nhấn Play
+playBtn.addEventListener('click', () => {
+    audioCtx.resume().then(() => {
+        audio.play();
+        rotateSound();
+    });
 });
-
-// --- Game Loop ---
-function startGame(){
-  score =0;
-  flappyBirdY =200;
-  pipeX=gameCanvas.width;
-  pipeGapY = Math.random()*200+50;
-
-  gameInterval = setInterval(()=>{
-    ctx.clearRect(0,0,gameCanvas.width, gameCanvas.height);
-
-    // Bird
-    flappyBirdY += gravity;
-    ctx.fillStyle='yellow';
-    ctx.fillRect(100, flappyBirdY,30,30);
-
-    // Pipe
-    pipeX -= speed;
-    ctx.fillStyle='green';
-    ctx.fillRect(pipeX,0,50,pipeGapY);
-    ctx.fillRect(pipeX,pipeGapY+150,50,gameCanvas.height-pipeGapY-150);
-
-    // Collision
-    if(flappyBirdY<0 || flappyBirdY>gameCanvas.height ||
-      (100+30>pipeX && 100<pipeX+50 && (flappyBirdY<pipeGapY || flappyBirdY>pipeGapY+150))){
-        gameOver();
-    }
-
-    // Score
-    if(pipeX +50 <100 && !window.passed){
-      score++;
-      window.passed=true;
-    }
-    if(pipeX+50<0){
-      pipeX=gameCanvas.width;
-      pipeGapY=Math.random()*200+50;
-      window.passed=false;
-    }
-
-    scoreDisplay.textContent = 'Score: '+score;
-
-  },20);
-}
-
-function gameOver(){
-  clearInterval(gameInterval);
-  alert('Game Over! Score: '+score);
-  const resetBtn = document.createElement('button');
-  resetBtn.textContent='Reset';
-  resetBtn.style.position='absolute';
-  resetBtn.style.top='50%';
-  resetBtn.style.left='50%';
-  resetBtn.style.transform='translate(-50%,-50%)';
-  resetBtn.style.padding='10px 20px';
-  resetBtn.style.border='none';
-  resetBtn.style.borderRadius='10px';
-  resetBtn.style.background='#ff6ec4';
-  resetBtn.style.color='#fff';
-  resetBtn.style.cursor='pointer';
-  document.body.appendChild(resetBtn);
-  resetBtn.addEventListener('click', ()=>{
-    location.reload();
-  });
-}
-
-// Start game immediately
-startGame();
 </script>
 </body>
 </html>
