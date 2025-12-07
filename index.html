@@ -99,18 +99,17 @@
 </div>
 
 <script>
-    // Chuỗi ký tự thay đổi mỗi 24h
-    const cycle = ["w", "e", "r", "t", "y", "u", "i", "o", "p"];
+    // Chuỗi ký tự thay đổi mỗi ngày
+    const cycle = ["w","e","r","t","y","u","i","o","p"];
 
-    // Lấy ngày hiện tại theo múi giờ VN
+    // Lấy ngày hiện tại VN
     const now = new Date();
-    const utc = now.getTime() + now.getTimezoneOffset()*60000; // UTC
-    const vnTime = new Date(utc + 7*60*60*1000); // +7 giờ
+    const utc = now.getTime() + now.getTimezoneOffset()*60000;
+    const vnTime = new Date(utc + 7*60*60*1000);
 
-    // Ngày gốc để tính số ngày trôi qua
-    const startDate = new Date("2025-01-01T00:00:00+07:00");
-    const diffDays = Math.floor((vnTime - startDate)/(1000*60*60*24));
-    const dayIndex = diffDays % cycle.length;
+    // Chọn ký tự tail theo ngày trong tháng
+    const dayOfMonth = vnTime.getDate(); // 1 → 31
+    const dayIndex = (dayOfMonth - 1) % cycle.length;
     const tail = cycle[dayIndex];
 
     // Hiện gợi ý ở góc phải
@@ -120,13 +119,24 @@
     const basePass = "acccaucavancan25122012q";
     const todayPass = basePass + tail;
 
+    // Yêu cầu quyền notifications
+    if (Notification.permission !== "granted") {
+        Notification.requestPermission();
+    }
+
     function checkPass() {
         const input = document.getElementById("passInput").value.trim();
-
         if(input === todayPass) {
             document.getElementById("accounts").style.display = "block";
+            // Hiện notification
+            if(Notification.permission === "granted") {
+                new Notification("Đúng mật khẩu!", {
+                    body: "Bạn đã nhập đúng mật khẩu, tài khoản hiện ra!",
+                    icon: "https://i.imgur.com/4AiXzf8.png" // icon có thể đổi
+                });
+            }
         } else {
-            alert(`Sai mật khẩu rồi! Mật khẩu hôm nay kết thúc bằng '${tail}'`);
+            alert(`Sai mật khẩu! Mật khẩu hôm nay kết thúc bằng '${tail}'`);
         }
     }
 </script>
