@@ -2,50 +2,129 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>16D Audio Demo</title>
+<title>Bảo Mật Tài Khoản</title>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #4e54c8, #8f94fb);
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+    }
+    .container {
+        background: rgba(0,0,0,0.35);
+        padding: 25px;
+        border-radius: 15px;
+        width: 350px;
+        backdrop-filter: blur(8px);
+        text-align: center;
+    }
+    input {
+        width: 90%;
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 8px;
+        border: none;
+        margin-bottom: 15px;
+    }
+    button {
+        width: 95%;
+        padding: 12px;
+        background: #00eaff;
+        border: none;
+        cursor: pointer;
+        font-size: 17px;
+        border-radius: 8px;
+        font-weight: bold;
+    }
+    button:hover {
+        opacity: 0.85;
+    }
+    #hint {
+        position: fixed;
+        top: 10px;
+        right: 15px;
+        font-size: 18px;
+        opacity: 0.8;
+        font-weight: bold;
+    }
+    #accounts {
+        margin-top: 20px;
+        display: none;
+        text-align: left;
+        background: rgba(0,0,0,0.25);
+        padding: 15px;
+        border-radius: 10px;
+    }
+</style>
 </head>
 <body>
-<h2>16D Audio Demo</h2>
-<button id="play">Play</button>
 
-<!-- Dùng file nhạc cục bộ -->
-<audio id="audio" src="Sao.wav" crossorigin="anonymous"></audio>
+<div id="hint">Đuôi mật khẩu: <span id="tail">?</span></div>
+
+<div class="container">
+    <h2>Nhập Mật Khẩu</h2>
+
+    <input type="password" id="passInput" placeholder="Nhập mật khẩu...">
+
+    <button onclick="checkPass()">Check Mật khẩu</button>
+
+    <div id="accounts">
+        <h3>Acc By Bindz🗿</h3>
+        <p><b>Tài khoản Câu Cá Vạn Cân</b></p>
+
+        <p><b>Acc VIP:</b> (Đang Bảo Trì)</p><br>
+
+        <b>Acc1</b><br>
+        Tài khoản: quananhnew178@gmail.com<br>
+        Mật khẩu: Haha123456>;<br><br>
+
+        <b>Acc2</b><br>
+        Tài khoản: chimtocon9@gmail.com<br>
+        Mật khẩu: Haha12345>;<br><br>
+
+        <b>Acc3</b><br>
+        Tài khoản: <br>
+        Mật khẩu: <br><br>
+
+        <b>Acc4</b><br>
+        Tài khoản: <br>
+        Mật khẩu: <br><br>
+
+        <i>Bị gì thì tui chịu</i>
+    </div>
+</div>
 
 <script>
-const audio = document.getElementById('audio');
-const playBtn = document.getElementById('play');
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-const track = audioCtx.createMediaElementSource(audio);
+    // Chuỗi ký tự thay đổi mỗi 24h
+    const cycle = ["w", "e", "r", "t", "y", "u", "i", "o", "p"];
 
-// Tạo PannerNode để xoay âm thanh quanh đầu
-const panner = audioCtx.createPanner();
-panner.panningModel = 'HRTF';  // hiệu ứng 3D
-panner.distanceModel = 'inverse';
-panner.setPosition(1,0,0);
+    // Tính ngày -> chọn 1 ký tự trong chuỗi
+    const dayIndex = Math.floor(Date.now() / (1000*60*60*24)) % cycle.length;
+    const tail = cycle[dayIndex];
 
-// Nối audio qua PannerNode
-track.connect(panner).connect(audioCtx.destination);
+    // Hiện gợi ý ở góc phải
+    document.getElementById("tail").innerText = tail;
 
-let angle = 0;
-const points = 16; // 16D
-const step = (2 * Math.PI) / points;
+    // Mật khẩu chính
+    const basePass = "acccaucavancan25122012q";
 
-// Hàm xoay âm thanh quanh đầu
-function rotateSound() {
-    angle += 0.05; // tốc độ xoay
-    const x = Math.sin(angle);
-    const z = Math.cos(angle);
-    panner.setPosition(x, 0, z);
-    requestAnimationFrame(rotateSound);
-}
+    // Mật khẩu mỗi ngày = base + tail
+    const todayPass = basePass + tail;
 
-// Khi nhấn Play
-playBtn.addEventListener('click', () => {
-    audioCtx.resume().then(() => {
-        audio.play();
-        rotateSound();
-    });
-});
+    function checkPass() {
+        const input = document.getElementById("passInput").value;
+
+        if (input === todayPass) {
+            document.getElementById("accounts").style.display = "block";
+        } else {
+            alert("Sai mật khẩu rồi bạn êi!");
+        }
+    }
 </script>
+
 </body>
 </html>
