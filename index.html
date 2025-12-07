@@ -73,18 +73,18 @@
     <button onclick="checkPass()">Check Mật khẩu</button>
 
     <div id="accounts">
-        <h3>Acc By Bindz🗿</h3>
+        <h3>Đây là tài khoản của tui (tui bán lấy tiền ạ)</h3>
         <p><b>Tài khoản Câu Cá Vạn Cân</b></p>
 
         <p><b>Acc VIP:</b> (Đang Bảo Trì)</p><br>
 
         <b>Acc1</b><br>
         Tài khoản: quananhnew178@gmail.com<br>
-        Mật khẩu: Haha123456>;<br><br>
+        Mật khẩu: Haha123456&gt;<br><br>
 
         <b>Acc2</b><br>
         Tài khoản: chimtocon9@gmail.com<br>
-        Mật khẩu: Haha12345>;<br><br>
+        Mật khẩu: Haha12345&gt;<br><br>
 
         <b>Acc3</b><br>
         Tài khoản: <br>
@@ -102,26 +102,31 @@
     // Chuỗi ký tự thay đổi mỗi 24h
     const cycle = ["w", "e", "r", "t", "y", "u", "i", "o", "p"];
 
-    // Tính ngày -> chọn 1 ký tự trong chuỗi
-    const dayIndex = Math.floor(Date.now() / (1000*60*60*24)) % cycle.length;
+    // Lấy ngày hiện tại theo múi giờ VN
+    const now = new Date();
+    const utc = now.getTime() + now.getTimezoneOffset()*60000; // UTC
+    const vnTime = new Date(utc + 7*60*60*1000); // +7 giờ
+
+    // Ngày gốc để tính số ngày trôi qua
+    const startDate = new Date("2025-01-01T00:00:00+07:00");
+    const diffDays = Math.floor((vnTime - startDate)/(1000*60*60*24));
+    const dayIndex = diffDays % cycle.length;
     const tail = cycle[dayIndex];
 
     // Hiện gợi ý ở góc phải
     document.getElementById("tail").innerText = tail;
 
-    // Mật khẩu chính
+    // Mật khẩu cơ bản
     const basePass = "acccaucavancan25122012q";
-
-    // Mật khẩu mỗi ngày = base + tail
     const todayPass = basePass + tail;
 
     function checkPass() {
-        const input = document.getElementById("passInput").value;
+        const input = document.getElementById("passInput").value.trim();
 
-        if (input === todayPass) {
+        if(input === todayPass) {
             document.getElementById("accounts").style.display = "block";
         } else {
-            alert("Sai mật khẩu rồi bạn êi!");
+            alert(`Sai mật khẩu rồi! Mật khẩu hôm nay kết thúc bằng '${tail}'`);
         }
     }
 </script>
