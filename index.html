@@ -3,26 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giao Diện Hoành Tráng - Future Tech</title>
+    <title>Welcome to Bindz</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
     <style>
-        /* Reset CSS */
-        * {
+        :root {
+            --primary: #00f2ff;
+            --secondary: #7000ff;
+            --bg: #050505;
+        }
+
+        body, html {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background: #0f0c29;
-            background: linear-gradient(to right, #24243e, #302b63, #0f0c29);
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg);
             color: white;
-            overflow-x: hidden;
-            height: 100vh;
+            font-family: 'Orbitron', sans-serif; /* Font kiểu tương lai */
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        /* Particle Background */
         #particles-js {
             position: absolute;
             width: 100%;
@@ -30,111 +33,159 @@
             z-index: 1;
         }
 
-        /* Glassmorphism Container */
-        .container {
+        .main-box {
             position: relative;
-            z-index: 2;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            z-index: 10;
             text-align: center;
-        }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.03);
             border-radius: 20px;
-            padding: 50px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            max-width: 800px;
-            animation: fadeIn 1.5s ease-out;
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 242, 255, 0.1);
+            width: 90%;
+            max-width: 500px;
         }
 
         h1 {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            background: linear-gradient(90deg, #00dbde, #fc00ff);
+            font-size: 3rem;
+            letter-spacing: 8px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-transform: uppercase;
-            letter-spacing: 5px;
+            text-shadow: 0 0 30px rgba(0, 242, 255, 0.5);
         }
 
-        p {
-            font-size: 1.2rem;
-            line-height: 1.6;
-            margin-bottom: 30px;
-            color: #d1d1d1;
-        }
-
-        /* Button Hoành Tráng */
-        .btn {
+        /* Nút Start xịn xò */
+        .start-btn {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
             padding: 15px 40px;
-            font-size: 1rem;
+            font-size: 1.2rem;
             font-weight: bold;
-            color: white;
-            text-decoration: none;
-            text-transform: uppercase;
-            background: linear-gradient(45deg, #ff00cc, #3333ff);
-            border-radius: 50px;
-            transition: 0.5s;
-            border: none;
             cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            display: inline-block;
+            border-radius: 5px;
+            position: relative;
+            transition: 0.4s;
+            overflow: hidden;
+            letter-spacing: 3px;
         }
 
-        .btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 20px #ff00cc, 0 0 40px #3333ff;
+        .start-btn:hover {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 0 30px var(--primary);
+        }
+
+        /* Thanh Loading ẩn lúc đầu */
+        .loading-container {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            box-shadow: 0 0 15px var(--primary);
+            transition: width 0.1s linear;
+        }
+
+        .status-text {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--primary);
+            text-transform: uppercase;
             letter-spacing: 2px;
         }
 
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            h1 { font-size: 2.5rem; }
-            .glass-card { margin: 20px; padding: 30px; }
+        /* Hiệu ứng mờ dần khi hoàn tất */
+        .fade-out {
+            opacity: 0;
+            transition: 1s ease;
+            pointer-events: none;
         }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
     <div id="particles-js"></div>
 
-    <div class="container">
-        <div class="glass-card">
-            <h1>Future Tech</h1>
-            <p>Chào mừng bạn đến với kỷ nguyên công nghệ mới. Trải nghiệm giao diện đỉnh cao với hiệu ứng thị giác mạnh mẽ và tốc độ xử lý vượt trội.</p>
-            <a href="#" class="btn">Khám Phá Ngay</a>
+    <div class="main-box" id="mainBox">
+        <h1>BINDZ</h1>
+        <button class="start-btn" id="startBtn" onclick="startLoading()">START</button>
+
+        <div class="loading-container" id="loadingArea">
+            <div class="progress-bar">
+                <div class="progress-fill" id="fill"></div>
+            </div>
+            <div class="status-text" id="status">System Initializing...</div>
         </div>
     </div>
 
     <script>
-        /* Khởi tạo hiệu ứng hạt */
+        function startLoading() {
+            const btn = document.getElementById('startBtn');
+            const loadingArea = document.getElementById('loadingArea');
+            const fill = document.getElementById('fill');
+            const status = document.getElementById('status');
+            const mainBox = document.getElementById('mainBox');
+
+            // Ẩn nút Start, hiện thanh loading
+            btn.style.display = 'none';
+            loadingArea.style.display = 'block';
+
+            let width = 0;
+            const interval = setInterval(() => {
+                if (width >= 100) {
+                    clearInterval(interval);
+                    status.innerText = "ACCESS GRANTED";
+                    status.style.color = "#00ff00";
+                    
+                    // Hiệu ứng hoành tráng khi xong
+                    setTimeout(() => {
+                        mainBox.classList.add('fade-out');
+                        alert("Chào mừng Bindz vào hệ thống!");
+                    }, 1000);
+                } else {
+                    width += Math.random() * 3; // Chạy ngẫu nhiên cho thật
+                    if (width > 100) width = 100;
+                    fill.style.width = width + '%';
+                    
+                    // Đổi text theo %
+                    if(width > 30) status.innerText = "Loading Modules...";
+                    if(width > 70) status.innerText = "Bypassing Firewall...";
+                }
+            }, 80);
+        }
+
+        /* Background hạt bay */
         particlesJS("particles-js", {
             "particles": {
-                "number": { "value": 80, "density": { "enable": true, "value_area": 800 } },
-                "color": { "value": "#ffffff" },
+                "number": { "value": 100 },
+                "color": { "value": "#00f2ff" },
                 "shape": { "type": "circle" },
-                "opacity": { "value": 0.5, "random": false },
-                "size": { "value": 3, "random": true },
-                "line_linked": { "enable": true, "distance": 150, "color": "#ffffff", "opacity": 0.4, "width": 1 },
-                "move": { "enable": true, "speed": 6, "direction": "none", "random": false, "straight": false, "out_mode": "out", "bounce": false }
+                "opacity": { "value": 0.3 },
+                "size": { "value": 2 },
+                "line_linked": { "enable": true, "distance": 150, "color": "#00f2ff", "opacity": 0.2, "width": 1 },
+                "move": { "enable": true, "speed": 2 }
             },
             "interactivity": {
-                "detect_on": "canvas",
-                "events": { "onhover": { "enable": true, "mode": "repulse" }, "onclick": { "enable": true, "mode": "push" } }
-            },
-            "retina_detect": true
+                "events": { "onhover": { "enable": true, "mode": "grab" } }
+            }
         });
     </script>
 </body>
