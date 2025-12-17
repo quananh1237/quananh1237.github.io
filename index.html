@@ -3,219 +3,237 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bindz Ultra Pro - Cinematic Intro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
-    
+    <title>Bindz Pro Ultra - Intro</title>
     <style>
-        :root {
-            --primary: #00f2fe;
-            --accent: #7000ff;
-            --glitch-speed: 0.2s;
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap'); /* Thêm font Orbitron cho hiệu ứng tương lai */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
-            background: #000;
-            height: 100vh;
-            overflow: hidden;
+            background: #0f0c29;
+            background: linear-gradient(to right, #24243e, #302b63, #0f0c29);
+            color: #fff;
             display: flex;
             justify-content: center;
             align-items: center;
-            perspective: 1000px;
+            min-height: 100vh;
+            overflow: hidden;
         }
 
-        /* --- LAYER 1: CHUYỂN ĐỘNG NỀN (Z-INDEX 1) --- */
-        .stars-container {
+        /* --- Intro Animation --- */
+        .intro-overlay {
             position: fixed;
-            width: 200%; height: 200%;
-            background: radial-gradient(circle at center, #111 0%, #000 100%);
-            z-index: 1;
-            animation: rotateBg 100s linear infinite;
-        }
-
-        /* --- LAYER 2: LOADING SCREEN (Z-INDEX 999) --- */
-        #loading-overlay {
-            position: fixed;
-            inset: 0;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: #000;
-            z-index: 999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            animation: fadeOutIntro 2s forwards 3s; /* Chạy animation 3 giây sau đó biến mất */
+        }
+
+        .intro-logo {
+            width: 200px; /* Kích thước logo lúc intro */
+            opacity: 0;
+            transform: scale(0.5);
+            animation: fadeInLogo 1.5s ease-out forwards 0.5s; /* Hiện logo */
+        }
+
+        @keyframes fadeInLogo {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeOutIntro {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        /* --- Main Content (Sau Intro) --- */
+        .main-content {
+            opacity: 0;
+            animation: fadeInContent 1s forwards 4.5s; /* Hiện nội dung sau khi intro biến mất */
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            transition: all 1s cubic-bezier(1, 0, 0, 1);
         }
 
-        .loader-card {
-            text-align: center;
+        @keyframes fadeInContent {
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Hiệu ứng nền chuyển động */
+        .circle {
+            position: absolute;
+            background: linear-gradient(45deg, #ff00cc, #3333ff);
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(80px);
+            animation: move 10s infinite alternate;
+        }
+
+        @keyframes move {
+            from { transform: translate(-50px, -50px); }
+            to { transform: translate(100px, 100px); }
+        }
+
+        /* Container chính - Glassmorphism */
+        .card {
+            width: 500px;
             padding: 40px;
-            border-radius: 30px;
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            transition: 0.5s ease;
+            position: relative;
+            overflow: hidden; /* Quan trọng để cắt các hiệu ứng */
         }
 
-        .btn-launch {
-            padding: 20px 50px;
-            font-family: 'Orbitron', sans-serif;
+        .card:hover {
+            transform: translateY(-10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .logo-main {
+            width: 250px; /* Kích thước logo chính */
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 25px #00d2ff); /* Hiệu ứng glow cho logo */
+            animation: logoPulse 2s infinite alternate; /* Hiệu ứng nhấp nháy */
+        }
+
+        @keyframes logoPulse {
+            from { filter: drop-shadow(0 0 15px #00d2ff); }
+            to { filter: drop-shadow(0 0 40px #00d2ff); }
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif; /* Font chữ tương lai */
+            font-size: 3em;
             font-weight: 900;
-            letter-spacing: 5px;
-            background: #fff;
+            background: linear-gradient(to right, #00d2ff, #3a7bd5, #ff00cc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        p {
+            font-size: 1.1em;
+            color: #ccc;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(to right, #00d2ff, #3a7bd5);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 700;
+            transition: 0.4s;
+            box-shadow: 0 10px 30px rgba(0, 210, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
             border: none;
             cursor: pointer;
-            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
-            transition: 0.3s;
         }
 
-        .btn-launch:hover {
-            background: var(--primary);
-            box-shadow: 0 0 50px var(--primary);
-            transform: scale(1.1);
+        .btn:hover {
+            background: linear-gradient(to right, #3a7bd5, #ff00cc);
+            box-shadow: 0 0 40px rgba(255, 0, 204, 0.6);
+            transform: translateY(-3px);
+            letter-spacing: 3px;
         }
 
-        /* --- LAYER 3: CINEMATIC INTRO (Z-INDEX 500) --- */
-        #intro-container {
-            position: fixed;
-            inset: 0;
-            z-index: 500;
-            display: none; /* Hiện sau khi load */
-            justify-content: center;
-            align-items: center;
-            background: #000;
-        }
-
-        .bindz-logo {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 8vw;
-            font-weight: 900;
-            color: #fff;
-            text-transform: uppercase;
-            letter-spacing: 20px;
-            position: relative;
-            animation: logoEntrance 3s ease-out forwards;
-            text-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
-        }
-
-        /* Hiệu ứng tia sáng quét ngang logo */
-        .bindz-logo::after {
-            content: "BINDZ";
+        /* Hiệu ứng đường kẻ xoay quanh logo */
+        .rotating-lines-container {
             position: absolute;
-            left: 0; top: 0;
             width: 100%;
             height: 100%;
-            color: var(--primary);
+            top: 0;
+            left: 0;
+            pointer-events: none;
             overflow: hidden;
-            animation: scan 3s infinite;
-            filter: blur(5px);
         }
 
-        /* Flare sáng bùng nổ */
-        .flare {
+        .line {
             position: absolute;
-            width: 100%;
-            height: 2px;
-            background: #fff;
-            box-shadow: 0 0 100px 10px var(--primary);
-            opacity: 0;
-            z-index: 501;
+            background: rgba(0, 210, 255, 0.3);
+            width: 2px;
+            height: 50%;
+            top: 25%;
+            left: 50%;
+            transform-origin: center center;
+            animation: rotateLine 10s linear infinite;
         }
 
-        /* --- ANIMATIONS --- */
-        @keyframes scan {
-            0% { width: 0%; opacity: 0; }
-            50% { width: 100%; opacity: 1; }
-            100% { width: 0%; opacity: 0; }
+        .line:nth-child(2) {
+            transform: rotate(90deg);
+            animation-delay: -2.5s;
+        }
+        .line:nth-child(3) {
+            transform: rotate(45deg);
+            animation-delay: -5s;
+        }
+        .line:nth-child(4) {
+            transform: rotate(135deg);
+            animation-delay: -7.5s;
+        }
+        /* Thêm nhiều lines nếu muốn */
+
+        @keyframes rotateLine {
+            from { transform: rotate(0deg) scale(0.8); opacity: 0.5; }
+            to { transform: rotate(360deg) scale(1.2); opacity: 0.8; }
         }
 
-        @keyframes logoEntrance {
-            0% { transform: scale(0.5) z(-500px); opacity: 0; letter-spacing: 50px; }
-            100% { transform: scale(1) z(0); opacity: 1; letter-spacing: 20px; }
-        }
-
-        @keyframes explode {
-            0% { transform: scale(1); opacity: 1; filter: brightness(1); }
-            100% { transform: scale(2); opacity: 0; filter: brightness(10); }
-        }
-
-        /* Progress Bar */
-        .progress-box { width: 300px; height: 4px; background: rgba(255,255,255,0.1); margin-top: 30px; position: relative; }
-        .progress-bar { height: 100%; width: 0; background: var(--primary); box-shadow: 0 0 20px var(--primary); }
     </style>
 </head>
 <body>
 
-    <div class="stars-container"></div>
+    <div class="intro-overlay">
+        <img src="https://i.imgur.com/kP1Kz8j.png" alt="Bindz Pro Ultra Logo Intro" class="intro-logo">
+    </div>
 
-    <div id="loading-overlay">
-        <div class="loader-card" id="card">
-            <h2 style="color: #fff; font-family: 'Orbitron'; margin-bottom: 20px; letter-spacing: 3px;">SYSTEM READY</h2>
-            <button class="btn-launch" onclick="startSequence()">INITIATE</button>
-            <div id="loading-ui" style="display: none;">
-                <div class="progress-box"><div class="progress-bar" id="bar"></div></div>
-                <p id="percent" style="color: var(--primary); font-family: monospace; margin-top: 10px;">00%</p>
+    <div class="circle" style="width: 350px; height: 350px; top: 5%; left: 15%;"></div>
+    <div class="circle" style="width: 250px; height: 250px; bottom: 8%; right: 18%; background: linear-gradient(45deg, #00d2ff, #ff00cc);"></div>
+
+    <div class="main-content">
+        <div class="card">
+            <div class="rotating-lines-container">
+                <div class="line"></div>
+                <div class="line"></div>
+                <div class="line"></div>
+                <div class="line"></div>
             </div>
+
+            <img src="https://i.imgur.com/kP1Kz8j.png" alt="Bindz Pro Ultra Logo" class="logo-main">
+            <h1>BINDZ PRO ULTRA</h1>
+            <p>Giải pháp tối ưu cho trải nghiệm đỉnh cao. Đột phá công nghệ, nâng tầm cuộc sống của bạn.</p>
+            
+            <a href="#" class="btn">KHÁM PHÁ NGAY</a>
         </div>
     </div>
 
-    <div id="intro-container">
-        <div class="flare" id="flare"></div>
-        <div class="bindz-logo">BINDZ</div>
-    </div>
-
-    <script>
-        // Sound Engine
-        const sfxClick = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
-        const sfxIntro = new Audio('https://assets.mixkit.co/active_storage/sfx/2771/2771-preview.mp3'); // Deep Whoosh/Epic
-        const sfxGlitch = new Audio('https://assets.mixkit.co/active_storage/sfx/2541/2541-preview.mp3');
-
-        function startSequence() {
-            sfxClick.play();
-            document.querySelector('.btn-launch').style.display = 'none';
-            document.getElementById('loading-ui').style.display = 'block';
-
-            let progress = 0;
-            const bar = document.getElementById('bar');
-            const percent = document.getElementById('percent');
-
-            const interval = setInterval(() => {
-                progress += Math.random() * 5;
-                if (progress >= 100) {
-                    progress = 100;
-                    clearInterval(interval);
-                    triggerIntro();
-                }
-                bar.style.width = progress + "%";
-                percent.innerText = Math.floor(progress).toString().padStart(2, '0') + "%";
-            }, 40);
-        }
-
-        function triggerIntro() {
-            // Hiệu ứng nổ màn hình loading
-            const overlay = document.getElementById('loading-overlay');
-            overlay.style.animation = "explode 1s forwards";
-            
-            setTimeout(() => {
-                overlay.style.display = 'none';
-                const intro = document.getElementById('intro-container');
-                intro.style.display = 'flex';
-                
-                // Phát âm thanh Cinematic
-                sfxIntro.play();
-                
-                // Kích hoạt Flare sáng bùng nổ
-                const flare = document.getElementById('flare');
-                flare.style.opacity = '1';
-                flare.style.transition = '2s';
-                flare.style.transform = 'translateY(100px)';
-
-                // Sau 4 giây Intro, có thể chuyển vào web chính
-                setTimeout(() => {
-                    document.body.style.background = "#050505";
-                    // Bạn có thể redirect hoặc hiện Dashboard ở đây
-                }, 4000);
-            }, 800);
-        }
-    </script>
 </body>
 </html>
