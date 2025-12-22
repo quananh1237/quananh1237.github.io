@@ -3,237 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bindz Pro Ultra - Intro</title>
+    <title>Bindz AI - Hỗ Trợ Bài Tập</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700;900&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap'); /* Thêm font Orbitron cho hiệu ứng tương lai */
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
+        :root {
+            --primary-color: #3b82f6;
+            --bg-dark: #1e293b;
+            --card-bg: #334155;
+            --text-light: #f8fafc;
         }
 
         body {
-            background: #0f0c29;
-            background: linear-gradient(to right, #24243e, #302b63, #0f0c29);
-            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
             display: flex;
             justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
+            padding: 20px;
+            margin: 0;
         }
 
-        /* --- Intro Animation --- */
-        .intro-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .container {
             width: 100%;
-            height: 100%;
-            background: #000;
+            max-width: 700px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        h1 { text-align: center; color: var(--primary-color); margin-bottom: 5px; }
+        p.subtitle { text-align: center; font-size: 0.9em; opacity: 0.7; margin-bottom: 25px; }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background: #1e293b;
+            color: white;
+            resize: none;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+
+        .upload-section {
             display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            animation: fadeOutIntro 2s forwards 3s; /* Chạy animation 3 giây sau đó biến mất */
-        }
-
-        .intro-logo {
-            width: 200px; /* Kích thước logo lúc intro */
-            opacity: 0;
-            transform: scale(0.5);
-            animation: fadeInLogo 1.5s ease-out forwards 0.5s; /* Hiện logo */
-        }
-
-        @keyframes fadeInLogo {
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        @keyframes fadeOutIntro {
-            to {
-                opacity: 0;
-                visibility: hidden;
-            }
-        }
-
-        /* --- Main Content (Sau Intro) --- */
-        .main-content {
-            opacity: 0;
-            animation: fadeInContent 1s forwards 4.5s; /* Hiện nội dung sau khi intro biến mất */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        @keyframes fadeInContent {
-            to {
-                opacity: 1;
-            }
-        }
-
-        /* Hiệu ứng nền chuyển động */
-        .circle {
-            position: absolute;
-            background: linear-gradient(45deg, #ff00cc, #3333ff);
-            border-radius: 50%;
-            z-index: -1;
-            filter: blur(80px);
-            animation: move 10s infinite alternate;
-        }
-
-        @keyframes move {
-            from { transform: translate(-50px, -50px); }
-            to { transform: translate(100px, 100px); }
-        }
-
-        /* Container chính - Glassmorphism */
-        .card {
-            width: 500px;
-            padding: 40px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 25px;
-            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5);
-            text-align: center;
-            transition: 0.5s ease;
-            position: relative;
-            overflow: hidden; /* Quan trọng để cắt các hiệu ứng */
-        }
-
-        .card:hover {
-            transform: translateY(-10px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-        }
-
-        .logo-main {
-            width: 250px; /* Kích thước logo chính */
+            gap: 10px;
             margin-bottom: 20px;
-            filter: drop-shadow(0 0 25px #00d2ff); /* Hiệu ứng glow cho logo */
-            animation: logoPulse 2s infinite alternate; /* Hiệu ứng nhấp nháy */
-        }
-
-        @keyframes logoPulse {
-            from { filter: drop-shadow(0 0 15px #00d2ff); }
-            to { filter: drop-shadow(0 0 40px #00d2ff); }
-        }
-
-        h1 {
-            font-family: 'Orbitron', sans-serif; /* Font chữ tương lai */
-            font-size: 3em;
-            font-weight: 900;
-            background: linear-gradient(to right, #00d2ff, #3a7bd5, #ff00cc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-        }
-
-        p {
-            font-size: 1.1em;
-            color: #ccc;
-            margin-bottom: 30px;
-            line-height: 1.6;
         }
 
         .btn {
-            display: inline-block;
-            padding: 15px 40px;
-            background: linear-gradient(to right, #00d2ff, #3a7bd5);
-            color: #fff;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: 700;
-            transition: 0.4s;
-            box-shadow: 0 10px 30px rgba(0, 210, 255, 0.4);
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            flex: 1;
+            padding: 12px;
             border: none;
+            border-radius: 8px;
             cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
         }
 
-        .btn:hover {
-            background: linear-gradient(to right, #3a7bd5, #ff00cc);
-            box-shadow: 0 0 40px rgba(255, 0, 204, 0.6);
-            transform: translateY(-3px);
-            letter-spacing: 3px;
+        .btn-blue { background: var(--primary-color); color: white; }
+        .btn-blue:hover { background: #2563eb; }
+        .btn-gray { background: #64748b; color: white; }
+
+        #preview-container {
+            display: none;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 2px dashed #475569;
+            padding: 10px;
+            border-radius: 10px;
         }
 
-        /* Hiệu ứng đường kẻ xoay quanh logo */
-        .rotating-lines-container {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-            overflow: hidden;
+        #preview-img { max-width: 100%; border-radius: 5px; max-height: 300px; }
+
+        .result-box {
+            background: #0f172a;
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 100px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            border-left: 4px solid var(--primary-color);
         }
 
-        .line {
-            position: absolute;
-            background: rgba(0, 210, 255, 0.3);
-            width: 2px;
-            height: 50%;
-            top: 25%;
-            left: 50%;
-            transform-origin: center center;
-            animation: rotateLine 10s linear infinite;
+        #print-section {
+            display: none;
+            margin-top: 20px;
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 5px;
         }
+        
+        #print-section h2 { border-bottom: 2px solid #000; padding-bottom: 5px; }
 
-        .line:nth-child(2) {
-            transform: rotate(90deg);
-            animation-delay: -2.5s;
-        }
-        .line:nth-child(3) {
-            transform: rotate(45deg);
-            animation-delay: -5s;
-        }
-        .line:nth-child(4) {
-            transform: rotate(135deg);
-            animation-delay: -7.5s;
-        }
-        /* Thêm nhiều lines nếu muốn */
-
-        @keyframes rotateLine {
-            from { transform: rotate(0deg) scale(0.8); opacity: 0.5; }
-            to { transform: rotate(360deg) scale(1.2); opacity: 0.8; }
-        }
-
+        .loading { font-style: italic; color: #94a3b8; }
     </style>
 </head>
 <body>
 
-    <div class="intro-overlay">
-        <img src="https://i.imgur.com/kP1Kz8j.png" alt="Bindz Pro Ultra Logo Intro" class="intro-logo">
+<div class="container">
+    <h1>Bindz AI 🤖</h1>
+    <p class="subtitle">Hệ thống giải bài tập thông minh</p>
+
+    <textarea id="userInput" placeholder="Nhập câu hỏi hoặc yêu cầu tại đây..."></textarea>
+
+    <div id="preview-container">
+        <p style="font-size: 0.8em;">Ảnh đã chọn:</p>
+        <img id="preview-img" src="" alt="Preview">
     </div>
 
-    <div class="circle" style="width: 350px; height: 350px; top: 5%; left: 15%;"></div>
-    <div class="circle" style="width: 250px; height: 250px; bottom: 8%; right: 18%; background: linear-gradient(45deg, #00d2ff, #ff00cc);"></div>
-
-    <div class="main-content">
-        <div class="card">
-            <div class="rotating-lines-container">
-                <div class="line"></div>
-                <div class="line"></div>
-                <div class="line"></div>
-                <div class="line"></div>
-            </div>
-
-            <img src="https://i.imgur.com/kP1Kz8j.png" alt="Bindz Pro Ultra Logo" class="logo-main">
-            <h1>BINDZ PRO ULTRA</h1>
-            <p>Giải pháp tối ưu cho trải nghiệm đỉnh cao. Đột phá công nghệ, nâng tầm cuộc sống của bạn.</p>
-            
-            <a href="#" class="btn">KHÁM PHÁ NGAY</a>
-        </div>
+    <div class="upload-section">
+        <input type="file" id="fileInput" hidden accept="image/*">
+        <button class="btn btn-gray" onclick="document.getElementById('fileInput').click()">📷 Chọn/Chụp ảnh</button>
+        <button class="btn btn-gray" onclick="printDe()">📄 In đề</button>
+        <button class="btn btn-blue" onclick="solve()">⚡ Giải bài</button>
     </div>
+
+    <div id="print-section">
+        <h2>ĐỀ BÀI CỦA BẠN</h2>
+        <img id="print-img" src="" style="width: 100%;">
+    </div>
+
+    <div id="result" class="result-box">Đáp án của Bindz AI sẽ hiện ở đây...</div>
+</div>
+
+<script>
+    const API_KEY = "AIzaSyAln3sQZpxAnwszrcVape8SnsK2ybUUTBc";
+    let base64Image = "";
+
+    // Xử lý khi chọn file
+    document.getElementById('fileInput').onchange = function(evt) {
+        const file = evt.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                base64Image = e.target.result.split(',')[1];
+                document.getElementById('preview-img').src = e.target.result;
+                document.getElementById('preview-container').style.display = 'block';
+                document.getElementById('print-img').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    // Hàm In đề
+    function printDe() {
+        if (!document.getElementById('print-img').src) {
+            alert("Vui lòng chọn ảnh trước khi in đề!");
+            return;
+        }
+        const printSection = document.getElementById('print-section');
+        printSection.style.display = 'block';
+        window.print();
+        printSection.style.display = 'none';
+    }
+
+    // Hàm gọi AI giải bài
+    async function solve() {
+        const text = document.getElementById('userInput').value;
+        const resultDiv = document.getElementById('result');
+
+        if (!text && !base64Image) {
+            alert("Vui lòng nhập đề bài hoặc gửi ảnh!");
+            return;
+        }
+
+        resultDiv.innerHTML = '<span class="loading">Bindz AI đang giải bài, vui lòng đợi...</span>';
+
+        const payload = {
+            contents: [{
+                parts: [
+                    { text: "Bạn là Bindz AI. Nhiệm vụ của bạn là GIẢI BÀI TẬP. QUY TẮC: Không giải thích dài dòng, không chào hỏi, vào thẳng đáp án và các bước giải. Nếu là ảnh, hãy đọc đề và giải ngay." },
+                    { text: text || "Giải bài tập trong ảnh này" }
+                ]
+            }]
+        };
+
+        if (base64Image) {
+            payload.contents[0].parts.push({
+                inline_data: { mime_type: "image/jpeg", data: base64Image }
+            });
+        }
+
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+            const output = data.candidates[0].content.parts[0].text;
+            resultDiv.innerText = output;
+        } catch (error) {
+            resultDiv.innerText = "Lỗi: Không thể kết nối với Bindz AI. Kiểm tra lại API Key hoặc mạng.";
+            console.error(error);
+        }
+    }
+</script>
 
 </body>
 </html>
