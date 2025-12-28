@@ -3,207 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bindz AI - Hỗ Trợ Bài Tập</title>
+    <title>Bindz Menu - Get Key</title>
     <style>
-        :root {
-            --primary-color: #3b82f6;
-            --bg-dark: #1e293b;
-            --card-bg: #334155;
-            --text-light: #f8fafc;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-light);
-            display: flex;
-            justify-content: center;
-            padding: 20px;
-            margin: 0;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 700px;
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-
-        h1 { text-align: center; color: var(--primary-color); margin-bottom: 5px; }
-        p.subtitle { text-align: center; font-size: 0.9em; opacity: 0.7; margin-bottom: 25px; }
-
-        textarea {
-            width: 100%;
-            height: 120px;
-            padding: 12px;
-            border-radius: 8px;
-            border: none;
-            background: #1e293b;
-            color: white;
-            resize: none;
-            box-sizing: border-box;
-            margin-bottom: 15px;
-        }
-
-        .upload-section {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-
-        .btn-blue { background: var(--primary-color); color: white; }
-        .btn-blue:hover { background: #2563eb; }
-        .btn-gray { background: #64748b; color: white; }
-
-        #preview-container {
-            display: none;
-            margin-bottom: 20px;
-            text-align: center;
-            border: 2px dashed #475569;
-            padding: 10px;
-            border-radius: 10px;
-        }
-
-        #preview-img { max-width: 100%; border-radius: 5px; max-height: 300px; }
-
-        .result-box {
-            background: #0f172a;
-            padding: 20px;
-            border-radius: 10px;
-            min-height: 100px;
-            white-space: pre-wrap;
-            line-height: 1.6;
-            border-left: 4px solid var(--primary-color);
-        }
-
-        #print-section {
-            display: none;
-            margin-top: 20px;
-            background: white;
-            color: black;
-            padding: 20px;
-            border-radius: 5px;
-        }
-        
-        #print-section h2 { border-bottom: 2px solid #000; padding-bottom: 5px; }
-
-        .loading { font-style: italic; color: #94a3b8; }
+        body { background: #0f0f0f; color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: #1a1a1a; padding: 30px; border-radius: 20px; border: 1px solid #ff0000; box-shadow: 0 0 20px rgba(255,0,0,0.2); text-align: center; width: 320px; }
+        h1 { color: #ff0000; font-size: 24px; margin-bottom: 20px; }
+        #timer-box { font-size: 18px; margin-bottom: 20px; color: #aaa; }
+        #key-display { display: none; background: #222; padding: 15px; border-radius: 10px; border: 1px dashed #ff0000; margin-top: 20px; word-break: break-all; }
+        button { background: #ff0000; color: #fff; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        button:disabled { background: #444; cursor: not-allowed; }
+        .key-text { color: #00ff00; font-family: monospace; font-size: 18px; }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h1>Bindz AI 🤖</h1>
-    <p class="subtitle">Hệ thống giải bài tập thông minh</p>
-
-    <textarea id="userInput" placeholder="Nhập câu hỏi hoặc yêu cầu tại đây..."></textarea>
-
-    <div id="preview-container">
-        <p style="font-size: 0.8em;">Ảnh đã chọn:</p>
-        <img id="preview-img" src="" alt="Preview">
+    <div class="container">
+        <h1>BINDZ MENU FF</h1>
+        <div id="timer-box">Vui lòng chờ <span id="sec">10</span> giây...</div>
+        <button id="btn" disabled onclick="showKey()">GET KEY</button>
+        
+        <div id="key-display">
+            <p>Key của bạn (Hết hạn sau 5p):</p>
+            <div class="key-text" id="key-value"></div>
+            <button onclick="copyKey()" style="margin-top:10px; scale:0.8;">Copy</button>
+        </div>
     </div>
 
-    <div class="upload-section">
-        <input type="file" id="fileInput" hidden accept="image/*">
-        <button class="btn btn-gray" onclick="document.getElementById('fileInput').click()">📷 Chọn/Chụp ảnh</button>
-        <button class="btn btn-gray" onclick="printDe()">📄 In đề</button>
-        <button class="btn btn-blue" onclick="solve()">⚡ Giải bài</button>
-    </div>
+    <script>
+        let timeLeft = 10;
+        const btn = document.getElementById('btn');
+        const sec = document.getElementById('sec');
 
-    <div id="print-section">
-        <h2>ĐỀ BÀI CỦA BẠN</h2>
-        <img id="print-img" src="" style="width: 100%;">
-    </div>
-
-    <div id="result" class="result-box">Đáp án của Bindz AI sẽ hiện ở đây...</div>
-</div>
-
-<script>
-    const API_KEY = "AIzaSyAln3sQZpxAnwszrcVape8SnsK2ybUUTBc";
-    let base64Image = "";
-
-    // Xử lý khi chọn file
-    document.getElementById('fileInput').onchange = function(evt) {
-        const file = evt.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                base64Image = e.target.result.split(',')[1];
-                document.getElementById('preview-img').src = e.target.result;
-                document.getElementById('preview-container').style.display = 'block';
-                document.getElementById('print-img').src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    // Hàm In đề
-    function printDe() {
-        if (!document.getElementById('print-img').src) {
-            alert("Vui lòng chọn ảnh trước khi in đề!");
-            return;
-        }
-        const printSection = document.getElementById('print-section');
-        printSection.style.display = 'block';
-        window.print();
-        printSection.style.display = 'none';
-    }
-
-    // Hàm gọi AI giải bài
-    async function solve() {
-        const text = document.getElementById('userInput').value;
-        const resultDiv = document.getElementById('result');
-
-        if (!text && !base64Image) {
-            alert("Vui lòng nhập đề bài hoặc gửi ảnh!");
-            return;
+        // Hàm tạo mã ngẫu nhiên cố định theo mỗi 5 phút
+        function generateTimeKey() {
+            const timeStep = Math.floor(Date.now() / 300000); // 300,000ms = 5 phút
+            // Thuật toán băm đơn giản để tạo ký tự random dựa trên timeStep
+            const seed = (timeStep * 16807) % 2147483647;
+            const randomStr = seed.toString(16).toUpperCase().substring(0, 6);
+            return "Bindz-Menu-" + randomStr;
         }
 
-        resultDiv.innerHTML = '<span class="loading">Bindz AI đang giải bài, vui lòng đợi...</span>';
+        const countdown = setInterval(() => {
+            timeLeft--;
+            sec.innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                document.getElementById('timer-box').innerText = "Bạn đã có thể lấy Key!";
+                btn.disabled = false;
+            }
+        }, 1000);
 
-        const payload = {
-            contents: [{
-                parts: [
-                    { text: "Bạn là Bindz AI. Nhiệm vụ của bạn là GIẢI BÀI TẬP. QUY TẮC: Không giải thích dài dòng, không chào hỏi, vào thẳng đáp án và các bước giải. Nếu là ảnh, hãy đọc đề và giải ngay." },
-                    { text: text || "Giải bài tập trong ảnh này" }
-                ]
-            }]
+        function showKey() {
+            const key = generateTimeKey();
+            document.getElementById('key-display').style.display = 'block';
+            document.getElementById('key-value').innerText = key;
+            btn.style.display = 'none';
+            localStorage.setItem('saved_key', key);
+            localStorage.setItem('expiry', Math.floor(Date.now() / 300000));
+        }
+
+        function copyKey() {
+            const text = document.getElementById('key-value').innerText;
+            navigator.clipboard.writeText(text);
+            alert("Đã copy key!");
+        }
+
+        // Chống mất key khi reset trang
+        window.onload = () => {
+            const savedKey = localStorage.getItem('saved_key');
+            const expiry = localStorage.getItem('expiry');
+            const currentStep = Math.floor(Date.now() / 300000);
+            
+            if (savedKey && expiry == currentStep) {
+                document.getElementById('key-display').style.display = 'block';
+                document.getElementById('key-value').innerText = savedKey;
+                document.getElementById('timer-box').innerText = "Key vẫn còn hiệu lực!";
+                btn.style.display = 'none';
+            }
         };
-
-        if (base64Image) {
-            payload.contents[0].parts.push({
-                inline_data: { mime_type: "image/jpeg", data: base64Image }
-            });
-        }
-
-        try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            const data = await response.json();
-            const output = data.candidates[0].content.parts[0].text;
-            resultDiv.innerText = output;
-        } catch (error) {
-            resultDiv.innerText = "Lỗi: Không thể kết nối với Bindz AI. Kiểm tra lại API Key hoặc mạng.";
-            console.error(error);
-        }
-    }
-</script>
-
+    </script>
 </body>
 </html>
