@@ -1,85 +1,67 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bindz Menu - Get Key</title>
+    <meta charset="UTF-8">
     <style>
-        body { background: #0f0f0f; color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: #1a1a1a; padding: 30px; border-radius: 20px; border: 1px solid #ff0000; box-shadow: 0 0 20px rgba(255,0,0,0.2); text-align: center; width: 320px; }
-        h1 { color: #ff0000; font-size: 24px; margin-bottom: 20px; }
-        #timer-box { font-size: 18px; margin-bottom: 20px; color: #aaa; }
-        #key-display { display: none; background: #222; padding: 15px; border-radius: 10px; border: 1px dashed #ff0000; margin-top: 20px; word-break: break-all; }
-        button { background: #ff0000; color: #fff; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        button:disabled { background: #444; cursor: not-allowed; }
-        .key-text { color: #00ff00; font-family: monospace; font-size: 18px; }
+        body { background: #000; color: #ff0000; font-family: 'Courier New', monospace; text-align: center; padding-top: 100px; }
+        .key-container { border: 2px solid #ff0000; display: inline-block; padding: 30px; border-radius: 15px; box-shadow: 0 0 20px #ff0000; }
+        #key-display { font-size: 25px; color: #00ff00; margin: 20px 0; font-weight: bold; letter-spacing: 2px; }
+        button { background: #ff0000; color: #fff; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 5px; }
+        button:disabled { background: #444; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>BINDZ MENU FF</h1>
-        <div id="timer-box">Vui lòng chờ <span id="sec">10</span> giây...</div>
-        <button id="btn" disabled onclick="showKey()">GET KEY</button>
-        
-        <div id="key-display">
-            <p>Key của bạn (Hết hạn sau 5p):</p>
-            <div class="key-text" id="key-value"></div>
-            <button onclick="copyKey()" style="margin-top:10px; scale:0.8;">Copy</button>
-        </div>
+    <div class="key-container">
+        <h1>BINDZ MENU FF KEY</h1>
+        <p id="timer-msg">Vui lòng chờ <span id="time">10</span>s...</p>
+        <button id="get-btn" disabled onclick="getKey()">LẤY KEY</button>
+        <div id="key-display"></div>
     </div>
 
     <script>
-        let timeLeft = 10;
-        const btn = document.getElementById('btn');
-        const sec = document.getElementById('sec');
-
-        // Hàm tạo mã ngẫu nhiên cố định theo mỗi 5 phút
-        function generateTimeKey() {
-            const timeStep = Math.floor(Date.now() / 300000); // 300,000ms = 5 phút
-            // Thuật toán băm đơn giản để tạo ký tự random dựa trên timeStep
-            const seed = (timeStep * 16807) % 2147483647;
-            const randomStr = seed.toString(16).toUpperCase().substring(0, 6);
-            return "Bindz-Menu-" + randomStr;
+        let count = 10;
+        // Thuật toán tạo ký tự ABCD ngẫu nhiên nhưng đồng bộ với Script
+        function generateRandomString() {
+            const step = Math.floor(Date.now() / 300000); // 5 phút
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            let result = "";
+            // Dùng step làm seed đơn giản
+            let seed = step * 12345;
+            for (let i = 0; i < 4; i++) {
+                seed = (seed * 9301 + 49297) % 233280;
+                result += chars.charAt(seed % chars.length);
+            }
+            return "Bindz-Menu-" + result;
         }
 
-        const countdown = setInterval(() => {
-            timeLeft--;
-            sec.innerText = timeLeft;
-            if (timeLeft <= 0) {
-                clearInterval(countdown);
-                document.getElementById('timer-box').innerText = "Bạn đã có thể lấy Key!";
-                btn.disabled = false;
+        const timer = setInterval(() => {
+            count--;
+            document.getElementById('time').innerText = count;
+            if (count <= 0) {
+                clearInterval(timer);
+                document.getElementById('timer-msg').innerText = "Sẵn sàng!";
+                document.getElementById('get-btn').disabled = false;
             }
         }, 1000);
 
-        function showKey() {
-            const key = generateTimeKey();
-            document.getElementById('key-display').style.display = 'block';
-            document.getElementById('key-value').innerText = key;
-            btn.style.display = 'none';
-            localStorage.setItem('saved_key', key);
-            localStorage.setItem('expiry', Math.floor(Date.now() / 300000));
+        function getKey() {
+            const key = generateRandomString();
+            document.getElementById('key-display').innerText = key;
+            localStorage.setItem("saved_key", key);
+            localStorage.setItem("saved_step", Math.floor(Date.now() / 300000));
         }
 
-        function copyKey() {
-            const text = document.getElementById('key-value').innerText;
-            navigator.clipboard.writeText(text);
-            alert("Đã copy key!");
-        }
-
-        // Chống mất key khi reset trang
+        // Reset trang không mất key
         window.onload = () => {
-            const savedKey = localStorage.getItem('saved_key');
-            const expiry = localStorage.getItem('expiry');
-            const currentStep = Math.floor(Date.now() / 300000);
-            
-            if (savedKey && expiry == currentStep) {
-                document.getElementById('key-display').style.display = 'block';
-                document.getElementById('key-value').innerText = savedKey;
-                document.getElementById('timer-box').innerText = "Key vẫn còn hiệu lực!";
-                btn.style.display = 'none';
+            const sk = localStorage.getItem("saved_key");
+            const ss = localStorage.getItem("saved_step");
+            if (sk && ss == Math.floor(Date.now() / 300000)) {
+                document.getElementById('key-display').innerText = sk;
+                document.getElementById('get-btn').style.display = "none";
+                document.getElementById('timer-msg').innerText = "Key còn hiệu lực!";
             }
-        };
+        }
     </script>
 </body>
 </html>
