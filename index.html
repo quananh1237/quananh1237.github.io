@@ -1,67 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Bindz Menu - Get Key</title>
-    <meta charset="UTF-8">
+    <title>Thí nghiệm Nhiệt năng iOS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { background: #000; color: #ff0000; font-family: 'Courier New', monospace; text-align: center; padding-top: 100px; }
-        .key-container { border: 2px solid #ff0000; display: inline-block; padding: 30px; border-radius: 15px; box-shadow: 0 0 20px #ff0000; }
-        #key-display { font-size: 25px; color: #00ff00; margin: 20px 0; font-weight: bold; letter-spacing: 2px; }
-        button { background: #ff0000; color: #fff; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 5px; }
-        button:disabled { background: #444; }
+        body { font-family: sans-serif; text-align: center; padding: 50px; }
+        #status { font-weight: bold; color: red; }
+        button { padding: 15px 30px; font-size: 18px; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="key-container">
-        <h1>BINDZ MENU FF KEY</h1>
-        <p id="timer-msg">Vui lòng chờ <span id="time">10</span>s...</p>
-        <button id="get-btn" disabled onclick="getKey()">LẤY KEY</button>
-        <div id="key-display"></div>
-    </div>
+    <h2>Thí nghiệm Stress Test CPU</h2>
+    <p>Trạng thái: <span id="status">Đang dừng</span></p>
+    <button id="startBtn">Bắt đầu làm nóng</button>
+    <button id="stopBtn">Dừng lại</button>
 
     <script>
-        let count = 10;
-        // Thuật toán tạo ký tự ABCD ngẫu nhiên nhưng đồng bộ với Script
-        function generateRandomString() {
-            const step = Math.floor(Date.now() / 300000); // 5 phút
-            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            let result = "";
-            // Dùng step làm seed đơn giản
-            let seed = step * 12345;
-            for (let i = 0; i < 4; i++) {
-                seed = (seed * 9301 + 49297) % 233280;
-                result += chars.charAt(seed % chars.length);
-            }
-            return "Bindz-Menu-" + result;
-        }
+        let workers = [];
 
-        const timer = setInterval(() => {
-            count--;
-            document.getElementById('time').innerText = count;
-            if (count <= 0) {
-                clearInterval(timer);
-                document.getElementById('timer-msg').innerText = "Sẵn sàng!";
-                document.getElementById('get-btn').disabled = false;
-            }
-        }, 1000);
+        document.getElementById('startBtn').onclick = function() {
+            document.getElementById('status').innerText = "Đang chạy (Cảnh báo: Máy sẽ nóng)";
+            
+            // Tạo nhiều Web Workers để tận dụng đa nhân CPU
+            const workerCode = `
+                while (true) {
+                    Math.sqrt(Math.random() * Math.random());
+                }
+            `;
+            const blob = new Blob([workerCode], { type: 'application/javascript' });
+            const workerUrl = URL.createObjectURL(blob);
 
-        function getKey() {
-            const key = generateRandomString();
-            document.getElementById('key-display').innerText = key;
-            localStorage.setItem("saved_key", key);
-            localStorage.setItem("saved_step", Math.floor(Date.now() / 300000));
-        }
-
-        // Reset trang không mất key
-        window.onload = () => {
-            const sk = localStorage.getItem("saved_key");
-            const ss = localStorage.getItem("saved_step");
-            if (sk && ss == Math.floor(Date.now() / 300000)) {
-                document.getElementById('key-display').innerText = sk;
-                document.getElementById('get-btn').style.display = "none";
-                document.getElementById('timer-msg').innerText = "Key còn hiệu lực!";
+            // Chạy khoảng 8-12 luồng cùng lúc
+            for (let i = 0; i < navigator.hardwareConcurrency || 8; i++) {
+                let w = new Worker(workerUrl);
+                workers.push(w);
             }
-        }
+        };
+
+        document.getElementById('stopBtn').onclick = function() {
+            workers.forEach(w => w.terminate());
+            workers = [];
+            document.getElementById('status').innerText = "Đang dừng";
+        };
     </script>
 </body>
 </html>
