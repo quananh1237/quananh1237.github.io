@@ -2,136 +2,83 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bindz Developer - Intro Sang Xịn</title>
+    <title>Ultimate Obfuscator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
-        /* CSS cho giao diện sang xịn mịn: Gradient background, font cao cấp, shadow tinh tế */
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Roboto:wght@400&display=swap');
-
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #1e3c72, #2a5298); /* Gradient sang trọng */
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .container {
-            text-align: center;
-            opacity: 0; /* Để animation fade-in */
-            transform: scale(0.9); /* Để scale up */
-            animation: introAnimation 1.5s ease-in-out forwards; /* Animation intro đẹp */
-        }
-
-        @keyframes introAnimation {
-            0% {
-                opacity: 0;
-                transform: scale(0.9) translateY(50px);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
-
-        h1 {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Shadow pro cho chữ */
-        }
-
-        p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            max-width: 600px;
-        }
-
-        .btn {
-            background: #ff7e5f; /* Màu nút sang trọng */
-            color: #fff;
-            border: none;
-            padding: 1rem 2rem;
-            font-size: 1rem;
-            border-radius: 50px; /* Bo tròn mịn */
-            cursor: pointer;
-            transition: all 0.3s ease; /* Mượt mà khi hover */
-            box-shadow: 0 4px 15px rgba(255, 126, 95, 0.5);
-        }
-
-        .btn:hover {
-            transform: translateY(-5px); /* Hover effect pro */
-            box-shadow: 0 6px 20px rgba(255, 126, 95, 0.7);
-        }
-
-        /* Nhạc nền: Icon toggle */
-        #music-toggle {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            padding: 10px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        #music-toggle:hover {
-            background: rgba(255, 255, 255, 0.4);
-        }
-
-        #music-toggle img {
-            width: 30px;
-            height: 30px;
-        }
-
-        /* Tối ưu mượt mà: No heavy JS, chỉ CSS animation */
+        body { font-family: sans-serif; background: #1a1a1a; color: #00ff00; padding: 20px; }
+        .container { display: flex; gap: 20px; justify-content: center; }
+        .box { background: #2a2a2a; padding: 20px; border-radius: 8px; width: 45%; }
+        textarea { width: 100%; height: 150px; background: #000; color: #00ff00; border: 1px solid #444; margin-bottom: 10px; }
+        button { width: 100%; padding: 10px; cursor: pointer; background: #008cba; border: none; color: white; font-weight: bold; }
+        button:hover { background: #005f7a; }
+        h2 { text-align: center; }
     </style>
 </head>
 <body>
+
+    <h2>🔐 ULTIMATE OBFUSCATOR 🔐</h2>
+
     <div class="container">
-        <h1>Xin Chào, Tôi Là Bindz Developer</h1>
-        <p>Chào mừng bạn đến với trang web sang xịn mịn của tôi. Animation intro đẹp, mượt mà và pro!</p>
-        <button class="btn">Khám Phá Thêm</button>
-    </div>
+        <div class="box">
+            <h3>Obfuscate</h3>
+            <textarea id="inputObfus" placeholder="Nhập nội dung cần làm rối..."></textarea>
+            <button onclick="obfuscate()">OBFUS</button>
+        </div>
 
-    <!-- Nhạc nền: HTML5 Audio -->
-    <audio id="background-music" loop>
-        <source src="https://quananh1237.github.io/Dynamic%20Beat%20Remix.mp3" type="audio/mpeg"> <!-- Thay bằng link MP3 của bạn -->
-        Trình duyệt của bạn không hỗ trợ audio.
-    </audio>
-
-    <!-- Nút toggle nhạc -->
-    <div id="music-toggle" onclick="toggleMusic()">
-        <img id="music-icon" src="https://img.icons8.com/ios/50/ffffff/speaker.png" alt="Play Music"> <!-- Icon từ icons8, bạn có thể thay -->
+        <div class="box">
+            <h3>Deobfuscate</h3>
+            <textarea id="inputDeob" placeholder="Dán mã đã bị obfuscate vào đây..."></textarea>
+            <button onclick="deobfuscate()" style="background: #f44336;">DEOBFUS</button>
+        </div>
     </div>
 
     <script>
-        const audio = document.getElementById('background-music');
-        const icon = document.getElementById('music-icon');
-        let isPlaying = false;
+        // Khóa bí mật (Bạn có thể đổi cái này để tăng độ bảo mật)
+        const SECRET_KEY = "Gemini_Super_Secret_Key_2026";
 
-        function toggleMusic() {
-            if (isPlaying) {
-                audio.pause();
-                icon.src = 'https://img.icons8.com/ios/50/ffffff/mute.png'; // Icon mute
-            } else {
-                audio.play().catch(error => console.log('Autoplay blocked:', error)); // Xử lý autoplay bị chặn
-                icon.src = 'https://img.icons8.com/ios/50/ffffff/speaker.png'; // Icon play
-            }
-            isPlaying = !isPlaying;
+        function obfuscate() {
+            let text = document.getElementById("inputObfus").value;
+            if (!text) return;
+
+            // Bước 1: Mã hóa AES
+            let encrypted = CryptoJS.AES.encrypt(text, SECRET_KEY).toString();
+
+            // Bước 2: Đảo ngược chuỗi (làm rối cấu trúc)
+            let reversed = encrypted.split("").reverse().join("");
+
+            // Bước 3: Chèn ký tự nhiễu vào giữa (làm các web khác ko nhận ra AES)
+            let obfuscated = "X-O-" + btoa(reversed) + "-O-X";
+
+            document.getElementById("inputDeob").value = obfuscated;
+            document.getElementById("inputObfus").value = "";
+            alert("Đã làm rối xong!");
         }
 
-        // Tự động play nếu có thể (nhưng nhiều trình duyệt chặn autoplay, nên dùng nút toggle)
-        window.addEventListener('load', () => {
-            audio.play().catch(() => {}); // Thử autoplay
-            isPlaying = true;
-        });
+        function deobfuscate() {
+            let text = document.getElementById("inputDeob").value;
+            if (!text) return;
+
+            try {
+                // Bước 1: Gỡ bỏ ký tự nhiễu
+                let clean = text.replace("X-O-", "").replace("-O-X", "");
+                
+                // Bước 2: Giải Base64 và đảo ngược lại
+                let reversed = atob(clean);
+                let originalEncrypted = reversed.split("").reverse().join("");
+
+                // Bước 3: Giải mã AES
+                let bytes = CryptoJS.AES.decrypt(originalEncrypted, SECRET_KEY);
+                let originalText = bytes.toString(CryptoJS.enc.Utf8);
+
+                if (originalText) {
+                    document.getElementById("inputObfus").value = originalText;
+                } else {
+                    alert("Mã sai hoặc không thể giải mã!");
+                }
+            } catch (e) {
+                alert("Lỗi: Mã này không phải do hệ thống tạo ra!");
+            }
+        }
     </script>
 </body>
 </html>
