@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Bindz Auth | Web App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container" id="mainContainer">
+    <!-- Server status -->
+    <div class="server-status" id="serverStatus">
+        🔄 Đang kiểm tra server...
+    </div>
+
+    <!-- Title -->
+    <h1 class="title">🔐 BINDZ AUTH</h1>
+
+    <!-- Key input -->
+    <input type="text" id="keyInput" class="key-input" placeholder="🔑 Nhập Key..." autocomplete="off">
+
+    <!-- Check button -->
+    <button id="checkBtn" class="check-btn">✅ CHECK KEY</button>
+
+    <!-- Result panel (ẩn ban đầu) -->
+    <div id="resultPanel" class="result-panel hidden">
+        <div class="bindz-text">✨ BINDZ ✨</div>
+        <div class="credit-text">@DeepSeek && @Bindz</div>
+    </div>
+</div>
+
+<!-- Snow effect canvas -->
+<canvas id="snowCanvas"></canvas>
+
+<script src="script.js"></script>
+</body>
+</html>
