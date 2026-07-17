@@ -61,7 +61,6 @@
             0% {
                 transform: translate(0, 0);
             }
-
             100% {
                 transform: translate(50px, 50px);
             }
@@ -79,15 +78,12 @@
                 transform: translateY(100vh) scale(0);
                 opacity: 0;
             }
-
             10% {
                 opacity: 1;
             }
-
             90% {
                 opacity: 1;
             }
-
             100% {
                 transform: translateY(-100px) scale(1.5);
                 opacity: 0;
@@ -165,9 +161,11 @@
             border-radius: 24px;
             padding: 40px;
             width: 100%;
-            max-width: 700px;
+            max-width: 750px;
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 212, 255, 0.08);
             animation: cardEntry 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         @keyframes cardEntry {
@@ -488,6 +486,7 @@
             align-items: center;
             gap: 14px;
             transition: all 0.3s;
+            flex-wrap: wrap;
         }
 
         .result-card:hover {
@@ -519,6 +518,10 @@
             color: var(--accent-red);
         }
 
+        .result-info {
+            flex: 1;
+            min-width: 200px;
+        }
         .result-info h4 {
             font-size: 14px;
             margin-bottom: 3px;
@@ -534,7 +537,7 @@
             font-size: 11px;
             font-weight: 700;
             letter-spacing: 1px;
-            margin-left: auto;
+            white-space: nowrap;
         }
 
         .status-badge.blocked {
@@ -561,28 +564,137 @@
             }
         }
 
+        /* Preview Section - Redesigned */
+        .preview-section {
+            margin-top: 20px;
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            display: none;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .preview-section.active {
+            display: block;
+        }
+
+        .preview-header {
+            background: var(--bg-card);
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .preview-url {
+            font-size: 13px;
+            color: var(--accent-cyan);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 60%;
+        }
+
+        .preview-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .preview-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .open-new-tab {
+            background: var(--accent-cyan);
+            color: #000;
+        }
+        .open-new-tab:hover {
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+            transform: scale(1.05);
+        }
+
+        .copy-url {
+            background: var(--border);
+            color: var(--text-primary);
+        }
+        .copy-url:hover {
+            background: #3a3a4a;
+        }
+
         /* Preview Frame */
         .preview-frame {
             width: 100%;
-            height: 300px;
-            border: 2px solid var(--border);
-            border-radius: 14px;
-            margin-top: 15px;
+            height: 350px;
             background: #000;
-            display: none;
-            overflow: hidden;
-        }
-
-        .preview-frame.active {
-            display: block;
-            animation: fadeInUp 0.5s ease;
+            position: relative;
         }
 
         .preview-frame iframe {
             width: 100%;
             height: 100%;
             border: none;
-            border-radius: 12px;
+        }
+
+        .iframe-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(10, 10, 15, 0.95);
+            z-index: 5;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .iframe-overlay .overlay-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .iframe-overlay h3 {
+            color: var(--accent-yellow);
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .iframe-overlay p {
+            color: var(--text-secondary);
+            font-size: 13px;
+            margin-bottom: 20px;
+            max-width: 400px;
+        }
+
+        .iframe-overlay .open-external {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .iframe-overlay .open-external:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
         }
 
         /* Notifications */
@@ -649,12 +761,15 @@
             .logo-text {
                 font-size: 22px;
             }
-            .result-card {
-                flex-wrap: wrap;
+            .preview-header {
+                flex-direction: column;
+                gap: 10px;
             }
-            .status-badge {
-                margin-left: 0;
-                margin-top: 8px;
+            .preview-url {
+                max-width: 100%;
+            }
+            .preview-frame {
+                height: 250px;
             }
         }
 
@@ -746,9 +861,30 @@
                 <!-- Results -->
                 <div class="results-container" id="resultsContainer"></div>
 
-                <!-- Preview Frame -->
-                <div class="preview-frame" id="previewFrame">
-                    <iframe id="previewIframe" sandbox="allow-scripts allow-same-origin"></iframe>
+                <!-- Preview Section -->
+                <div class="preview-section" id="previewSection">
+                    <div class="preview-header">
+                        <span class="preview-url" id="previewUrl">https://example.com</span>
+                        <div class="preview-actions">
+                            <button class="preview-btn copy-url" onclick="copyUrl()" title="Sao chép URL">
+                                📋 Copy
+                            </button>
+                            <button class="preview-btn open-new-tab" onclick="openInNewTab()" title="Mở trong tab mới">
+                                🔗 Mở Tab Mới
+                            </button>
+                        </div>
+                    </div>
+                    <div class="preview-frame" id="previewFrame">
+                        <iframe id="previewIframe" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+                        <div class="iframe-overlay" id="iframeOverlay" style="display:none;">
+                            <span class="overlay-icon">🔒</span>
+                            <h3>Không thể hiển thị trang này</h3>
+                            <p>Trang web này chặn hiển thị trong iframe (X-Frame-Options / CSP). Hãy mở trong tab mới để xem.</p>
+                            <button class="open-external" onclick="openInNewTab()">
+                                🚀 Mở trong Tab Mới
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Logout -->
@@ -760,6 +896,9 @@
     </div>
 
     <script>
+        // ============ GLOBAL STATE ============
+        let currentScannedUrl = '';
+
         // ============ PARTICLE SYSTEM ============
         function createParticles() {
             const container = document.querySelector('.bg-animation');
@@ -796,7 +935,6 @@
         }
 
         // ============ LOGIN SYSTEM ============
-        // Demo credentials
         const DEMO_CREDENTIALS = {
             username: 'admin',
             password: 'cybershield2024'
@@ -809,7 +947,6 @@
 
             if (!username || !password) {
                 showNotification('Vui lòng nhập đầy đủ thông tin!', 'warning');
-                // Shake animation
                 const card = document.querySelector('.cyber-card');
                 card.style.animation = 'none';
                 card.offsetHeight;
@@ -817,25 +954,20 @@
                 return;
             }
 
-            // Simulate loading
             btnText.innerHTML = '<span class="spinner"></span> Đang xác thực...';
             const loginBtn = document.querySelector('.login-btn');
             loginBtn.disabled = true;
 
             setTimeout(() => {
                 if (username === DEMO_CREDENTIALS.username && password === DEMO_CREDENTIALS.password) {
-                    // Success
                     document.getElementById('loginSection').style.display = 'none';
                     document.getElementById('scannerSection').style.display = 'block';
                     showNotification('Đăng nhập thành công! Hệ thống đã sẵn sàng.', 'success');
-
-                    // Store session
                     sessionStorage.setItem('cybershield_logged_in', 'true');
                     sessionStorage.setItem('cybershield_user', username);
                 } else {
                     showNotification('Sai tài khoản hoặc mật khẩu! (Demo: admin / cybershield2024)', 'error');
                 }
-
                 btnText.textContent = 'Đăng Nhập';
                 loginBtn.disabled = false;
             }, 1500);
@@ -849,13 +981,15 @@
             document.getElementById('urlInput').value = '';
             document.getElementById('resultsContainer').classList.remove('active');
             document.getElementById('resultsContainer').innerHTML = '';
-            document.getElementById('previewFrame').classList.remove('active');
+            document.getElementById('previewSection').classList.remove('active');
             document.getElementById('scanProgress').classList.remove('active');
+            document.getElementById('previewIframe').src = '';
+            document.getElementById('iframeOverlay').style.display = 'none';
+            currentScannedUrl = '';
             sessionStorage.clear();
             showNotification('Đã đăng xuất!', 'info');
         }
 
-        // Check session on load
         window.addEventListener('load', () => {
             if (sessionStorage.getItem('cybershield_logged_in') === 'true') {
                 document.getElementById('loginSection').style.display = 'none';
@@ -863,7 +997,6 @@
             }
         });
 
-        // Enter key for login
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && document.getElementById('loginSection').style.display !== 'none') {
                 handleLogin();
@@ -875,7 +1008,6 @@
         });
 
         // ============ ADVANCED SCANNER SYSTEM ============
-        // Simulated API endpoints
         const SCANNER_APIS = {
             adDetector: 'https://api.cybershield.io/v2/ad-detect',
             antiVpnBypass: 'https://api.cybershield.io/v2/vpn-bypass',
@@ -885,7 +1017,6 @@
             chromeExtension: 'chrome-extension://cybershield/scan'
         };
 
-        // Known ad domains for simulation
         const KNOWN_AD_DOMAINS = [
             'doubleclick.net', 'googlesyndication.com', 'googleadservices.com',
             'adservice.google.com', 'adnxs.com', 'rubiconproject.com',
@@ -894,11 +1025,28 @@
             'outbrain.com', 'revcontent.com', 'mgid.com'
         ];
 
-        // Known anti-VPN patterns
         const ANTI_VPN_PATTERNS = [
             'vpn-detection', 'proxy-check', 'geo-block', 'ip-verification',
             'datacenter-ip', 'hosting-ip', 'anonymous-proxy', 'tor-exit'
         ];
+
+        // Danh sách web phổ biến chặn iframe (để hiển thị overlay thân thiện)
+        const IFRAME_BLOCKED_SITES = [
+            'google.com', 'youtube.com', 'facebook.com', 'twitter.com', 'x.com',
+            'instagram.com', 'github.com', 'stackoverflow.com', 'reddit.com',
+            'linkedin.com', 'amazon.com', 'netflix.com', 'spotify.com',
+            'whatsapp.com', 'telegram.org', 'discord.com', 'twitch.tv',
+            'medium.com', 'quora.com', 'pinterest.com', 'tiktok.com'
+        ];
+
+        function isIframeLikelyBlocked(url) {
+            try {
+                const hostname = new URL(url).hostname.replace('www.', '');
+                return IFRAME_BLOCKED_SITES.some(site => hostname.includes(site));
+            } catch {
+                return false;
+            }
+        }
 
         async function startScan() {
             const urlInput = document.getElementById('urlInput');
@@ -906,7 +1054,7 @@
             const scanBtn = document.getElementById('scanBtn');
             const progressBar = document.getElementById('scanProgress');
             const resultsContainer = document.getElementById('resultsContainer');
-            const previewFrame = document.getElementById('previewFrame');
+            const previewSection = document.getElementById('previewSection');
 
             if (!url) {
                 showNotification('Vui lòng nhập URL!', 'warning');
@@ -914,7 +1062,6 @@
                 return;
             }
 
-            // Validate URL
             let targetUrl = url;
             if (!url.startsWith('http://') && !url.startsWith('https://')) {
                 targetUrl = 'https://' + url;
@@ -927,21 +1074,23 @@
                 return;
             }
 
+            currentScannedUrl = targetUrl;
+
             // Start scanning
             scanBtn.disabled = true;
             scanBtn.innerHTML = '<span class="spinner"></span> Đang quét...';
             progressBar.classList.add('active');
             resultsContainer.classList.remove('active');
             resultsContainer.innerHTML = '';
-            previewFrame.classList.remove('active');
+            previewSection.classList.remove('active');
+            document.getElementById('previewIframe').src = '';
+            document.getElementById('iframeOverlay').style.display = 'none';
 
-            // Reset progress animation
             const progressFill = progressBar.querySelector('.progress-fill');
             progressFill.style.animation = 'none';
             progressFill.offsetHeight;
             progressFill.style.animation = 'progressAnim 3s ease-in-out forwards';
 
-            // Show initial scanning status
             resultsContainer.classList.add('active');
             resultsContainer.innerHTML = `
                 <div class="result-card">
@@ -954,16 +1103,39 @@
                 </div>
             `;
 
-            // Simulate scanning process with multiple API calls
             await simulateScan(targetUrl, resultsContainer);
 
-            // Show preview
+            // Show preview section
             setTimeout(() => {
-                previewFrame.classList.add('active');
-                document.getElementById('previewIframe').src = targetUrl;
+                previewSection.classList.add('active');
+                document.getElementById('previewUrl').textContent = targetUrl;
+
+                // Check if site likely blocks iframe
+                if (isIframeLikelyBlocked(targetUrl)) {
+                    // Show overlay immediately for known blocking sites
+                    document.getElementById('iframeOverlay').style.display = 'flex';
+                    document.getElementById('previewIframe').style.display = 'none';
+                } else {
+                    // Try loading iframe
+                    document.getElementById('previewIframe').style.display = 'block';
+                    document.getElementById('previewIframe').src = targetUrl;
+
+                    // Set a timeout to check if iframe loaded
+                    setTimeout(() => {
+                        try {
+                            const iframe = document.getElementById('previewIframe');
+                            // If iframe is empty or cross-origin blocked, show overlay
+                            if (!iframe.contentDocument || iframe.contentDocument.body.innerHTML === '') {
+                                document.getElementById('iframeOverlay').style.display = 'flex';
+                            }
+                        } catch (e) {
+                            // Cross-origin access error = iframe is blocked
+                            document.getElementById('iframeOverlay').style.display = 'flex';
+                        }
+                    }, 3000);
+                }
             }, 500);
 
-            // Reset button
             setTimeout(() => {
                 scanBtn.disabled = false;
                 scanBtn.innerHTML = '🔍 Quét Ngay';
@@ -975,28 +1147,23 @@
         async function simulateScan(url, container) {
             const domain = new URL(url).hostname.replace('www.', '');
 
-            // Simulate API calls
             await sleep(800);
 
-            // AD Detection Result
             const adDetected = KNOWN_AD_DOMAINS.some(ad => domain.includes(ad) || url.includes(ad));
             const adCount = Math.floor(Math.random() * 15) + (adDetected ? 5 : 0);
             const adsBlocked = adCount;
 
-            // Anti-VPN Detection
             const hasAntiVpn = ANTI_VPN_PATTERNS.some(pattern =>
                 domain.includes(pattern) || Math.random() > 0.7
             );
             const vpnBypassed = hasAntiVpn;
 
-            // Deep Scan Results
             const trackers = Math.floor(Math.random() * 20) + 3;
             const scripts = Math.floor(Math.random() * 50) + 10;
             const cookies = Math.floor(Math.random() * 30) + 5;
 
             await sleep(1200);
 
-            // Update results
             container.innerHTML = `
                 <div class="result-card">
                     <div class="result-icon danger">🛑</div>
@@ -1040,6 +1207,24 @@
             `;
         }
 
+        // ============ PREVIEW ACTIONS ============
+        function openInNewTab() {
+            if (currentScannedUrl) {
+                window.open(currentScannedUrl, '_blank', 'noopener,noreferrer');
+                showNotification('Đã mở trong tab mới!', 'success');
+            }
+        }
+
+        function copyUrl() {
+            if (currentScannedUrl) {
+                navigator.clipboard.writeText(currentScannedUrl).then(() => {
+                    showNotification('Đã sao chép URL!', 'success');
+                }).catch(() => {
+                    showNotification('Không thể sao chép!', 'error');
+                });
+            }
+        }
+
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
@@ -1054,6 +1239,8 @@
             'color: #ffa502;', 'color: #e0e0e0;');
         console.log('%c📡 Connected APIs: %c' + Object.keys(SCANNER_APIS).length + ' endpoints',
             'color: #00d4ff;', 'color: #e0e0e0;');
+        console.log('%c💡 Mẹo: %cNếu web chặn iframe, hãy dùng nút "Mở Tab Mới" để xem!',
+            'color: #ffa502;', 'color: #e0e0e0;');
     </script>
 </body>
 </html>
