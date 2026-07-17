@@ -3,24 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bindz Login Account - Hệ Thống Bảo Mật Cao</title>
+    <title>CyberShield Pro - Advanced Web Scanner</title>
     <style>
         :root {
-            --bg: #0a0a0f;
-            --card-bg: #12121a;
-            --border: #1e1e2e;
-            --text: #e0e0e0;
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a2e;
+            --accent-cyan: #00d4ff;
+            --accent-purple: #b347ea;
+            --accent-green: #00ff88;
+            --accent-red: #ff4757;
+            --accent-yellow: #ffa502;
+            --text-primary: #e0e0e0;
             --text-secondary: #8888aa;
-            --primary: #6c5ce7;
-            --primary-glow: #a29bfe;
-            --danger: #e74c3c;
-            --danger-glow: #ff6b6b;
-            --success: #2ecc71;
-            --success-glow: #55efc4;
-            --warning: #f39c12;
-            --gold: #ffd700;
-            --radius: 16px;
-            --transition: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1.2);
+            --border: #2a2a3a;
+            --glass: rgba(18, 18, 30, 0.8);
         }
 
         * {
@@ -30,117 +27,106 @@
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             overflow-x: hidden;
             position: relative;
         }
 
-        /* Animated background particles */
-        .particles {
+        /* Animated Background */
+        .bg-animation {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none;
             z-index: 0;
+            pointer-events: none;
+        }
+
+        .grid-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            100% {
+                transform: translate(50px, 50px);
+            }
         }
 
         .particle {
             position: absolute;
-            width: 4px;
-            height: 4px;
-            background: var(--primary);
             border-radius: 50%;
-            animation: floatParticle 8s infinite ease-in-out;
+            animation: floatUp linear infinite;
             opacity: 0;
         }
 
-        @keyframes floatParticle {
+        @keyframes floatUp {
             0% {
+                transform: translateY(100vh) scale(0);
                 opacity: 0;
-                transform: translateY(100vh) scale(0) rotate(0deg);
             }
+
             10% {
-                opacity: 0.8;
+                opacity: 1;
             }
-            30% {
-                opacity: 0.3;
-            }
-            50% {
-                opacity: 0.7;
-                transform: translateY(40vh) scale(1.5) rotate(180deg);
-            }
-            70% {
-                opacity: 0.2;
-            }
+
             90% {
-                opacity: 0.6;
+                opacity: 1;
             }
+
             100% {
+                transform: translateY(-100px) scale(1.5);
                 opacity: 0;
-                transform: translateY(-20vh) scale(0) rotate(360deg);
             }
         }
 
-        /* Grid background */
-        .grid-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image:
-                linear-gradient(rgba(108, 92, 231, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(108, 92, 231, 0.03) 1px, transparent 1px);
-            background-size: 60px 60px;
-            pointer-events: none;
-            z-index: 0;
-            animation: gridShift 20s infinite linear;
-        }
-
-        @keyframes gridShift {
-            0%,
-            100% {
-                background-position: 0 0;
-            }
-            50% {
-                background-position: 30px 30px;
-            }
-        }
-
-        /* Glow orbs */
-        .glow-orb {
-            position: fixed;
+        .orb {
+            position: absolute;
             border-radius: 50%;
-            filter: blur(120px);
-            pointer-events: none;
-            z-index: 0;
-            animation: orbFloat 10s infinite ease-in-out;
+            filter: blur(80px);
+            animation: orbFloat 15s ease-in-out infinite;
+            opacity: 0.3;
         }
 
-        .glow-orb.orb1 {
+        .orb:nth-child(1) {
             width: 400px;
             height: 400px;
-            background: rgba(108, 92, 231, 0.12);
-            top: -100px;
-            left: -100px;
+            background: var(--accent-purple);
+            top: 10%;
+            left: 5%;
             animation-delay: 0s;
         }
 
-        .glow-orb.orb2 {
+        .orb:nth-child(2) {
+            width: 300px;
+            height: 300px;
+            background: var(--accent-cyan);
+            top: 50%;
+            right: 10%;
+            animation-delay: -5s;
+        }
+
+        .orb:nth-child(3) {
             width: 350px;
             height: 350px;
-            background: rgba(255, 107, 107, 0.08);
-            bottom: -100px;
-            right: -100px;
-            animation-delay: -5s;
+            background: #1a3a5c;
+            bottom: 10%;
+            left: 40%;
+            animation-delay: -10s;
         }
 
         @keyframes orbFloat {
@@ -152,127 +138,216 @@
                 transform: translate(50px, -30px) scale(1.1);
             }
             50% {
-                transform: translate(-20px, 40px) scale(0.9);
+                transform: translate(-30px, 20px) scale(0.9);
             }
             75% {
-                transform: translate(-40px, -20px) scale(1.05);
+                transform: translate(20px, 40px) scale(1.05);
             }
         }
 
-        /* Main container */
+        /* Main Container */
         .main-container {
             position: relative;
             z-index: 1;
-            width: 100%;
-            max-width: 900px;
-            perspective: 1000px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
         }
 
-        /* Intro overlay */
-        .intro-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
+        /* Glass Card */
+        .cyber-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px;
             width: 100%;
-            height: 100%;
-            background: #000;
-            z-index: 9999;
+            max-width: 700px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 212, 255, 0.08);
+            animation: cardEntry 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes cardEntry {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .logo-container {
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-direction: column;
-            transition: all 0.8s cubic-bezier(0.77, 0, 0.175, 1);
+            gap: 12px;
+            margin-bottom: 8px;
         }
 
-        .intro-overlay.hidden {
-            opacity: 0;
-            pointer-events: none;
-            transform: scale(1.1);
-        }
-
-        .intro-logo {
-            font-size: 60px;
-            font-weight: 900;
-            background: linear-gradient(135deg, var(--primary), #a29bfe, #fd79a8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: logoPulse 2s infinite, logoGlitch 3s infinite;
-            letter-spacing: 6px;
-            text-transform: uppercase;
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            animation: logoPulse 2s ease-in-out infinite;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
         }
 
         @keyframes logoPulse {
             0%,
             100% {
-                filter: brightness(1) drop-shadow(0 0 20px rgba(108, 92, 231, 0.5));
+                box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
             }
             50% {
-                filter: brightness(1.3) drop-shadow(0 0 40px rgba(162, 155, 254, 0.8));
+                box-shadow: 0 0 50px rgba(179, 71, 234, 0.5);
             }
         }
 
-        @keyframes logoGlitch {
-            0%,
-            90%,
-            92%,
-            100% {
-                transform: translate(0);
-            }
-            91% {
-                transform: translate(-3px, 2px) skew(2deg);
-            }
-            93% {
-                transform: translate(3px, -1px) skew(-1deg);
-            }
+        .logo-text {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
         }
 
-        .intro-subtitle {
+        .subtitle {
             color: var(--text-secondary);
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        /* Login Form */
+        .login-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 18px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 14px 18px;
+            padding-left: 45px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            color: var(--text-primary);
+            font-size: 15px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .input-field:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 25px rgba(0, 212, 255, 0.15);
+            background: var(--bg-card);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            bottom: 16px;
+            font-size: 18px;
+            color: var(--text-secondary);
+            transition: color 0.3s;
+        }
+
+        .input-field:focus~.input-icon,
+        .input-group:focus-within .input-icon {
+            color: var(--accent-cyan);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border: none;
+            border-radius: 14px;
+            color: white;
             font-size: 16px;
-            letter-spacing: 8px;
-            margin-top: 20px;
-            animation: fadeInUp 1s 0.5s both;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
             text-transform: uppercase;
         }
 
-        .intro-loading {
-            margin-top: 40px;
-            width: 200px;
-            height: 3px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            overflow: hidden;
-            position: relative;
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0, 212, 255, 0.3);
         }
 
-        .intro-loading-bar {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--primary-glow), #fd79a8);
-            border-radius: 10px;
-            animation: loadingAnim 2s 0.3s forwards;
-            width: 0;
+        .login-btn:active {
+            transform: scale(0.98);
         }
 
-        @keyframes loadingAnim {
+        .login-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+            transform: rotate(45deg);
+            animation: btnShine 3s infinite;
+        }
+
+        @keyframes btnShine {
             0% {
-                width: 0;
-            }
-            50% {
-                width: 70%;
-            }
-            80% {
-                width: 85%;
+                left: -100%;
             }
             100% {
-                width: 100%;
+                left: 100%;
             }
+        }
+
+        /* Scanner Section */
+        .scanner-section {
+            border-top: 1px solid var(--border);
+            padding-top: 25px;
+            margin-top: 10px;
+            animation: fadeInUp 0.6s ease 0.3s both;
         }
 
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(20px);
             }
             to {
                 opacity: 1;
@@ -280,417 +355,280 @@
             }
         }
 
-        /* Tab navigation */
-        .tab-nav {
+        .section-title {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent-cyan);
+            margin-bottom: 15px;
             display: flex;
-            gap: 5px;
-            margin-bottom: 20px;
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 5px;
-            border: 1px solid var(--border);
-            position: relative;
-            overflow: hidden;
+            align-items: center;
+            gap: 8px;
         }
 
-        .tab-nav::before {
-            content: '';
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            width: calc(50% - 10px);
-            height: calc(100% - 10px);
-            background: rgba(108, 92, 231, 0.15);
-            border-radius: 12px;
-            transition: var(--transition);
-            z-index: 0;
+        .section-title .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: dotBlink 1s infinite;
         }
 
-        .tab-nav.scan-active::before {
-            left: calc(50% + 5px);
+        @keyframes dotBlink {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.3;
+            }
         }
 
-        .tab-btn {
+        .url-input-wrapper {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .url-input {
             flex: 1;
-            padding: 14px 20px;
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            border-radius: 12px;
-            position: relative;
-            z-index: 1;
-            transition: var(--transition);
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            font-size: 13px;
-        }
-
-        .tab-btn.active {
-            color: #fff;
-            text-shadow: 0 0 20px rgba(162, 155, 254, 0.5);
-        }
-
-        .tab-btn:hover {
-            color: #fff;
-        }
-
-        /* Card */
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 40px;
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5),
-                0 0 0 1px rgba(108, 92, 231, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.03);
-            transition: var(--transition);
-            animation: cardAppear 0.6s ease-out;
-        }
-
-        @keyframes cardAppear {
-            from {
-                opacity: 0;
-                transform: translateY(40px) rotateX(10deg);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) rotateX(0);
-            }
-        }
-
-        .card:hover {
-            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6),
-                0 0 0 1px rgba(108, 92, 231, 0.2),
-                0 0 40px rgba(108, 92, 231, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
-        }
-
-        .card-header {
-            text-align: center;
-            margin-bottom: 35px;
-        }
-
-        .card-title {
-            font-size: 28px;
-            font-weight: 800;
-            letter-spacing: 2px;
-            background: linear-gradient(135deg, #fff, var(--primary-glow));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-transform: uppercase;
-        }
-
-        .card-subtitle {
-            color: var(--text-secondary);
-            font-size: 13px;
-            letter-spacing: 3px;
-            margin-top: 8px;
-            text-transform: uppercase;
-        }
-
-        /* Form */
-        .form-group {
-            margin-bottom: 22px;
-            position: relative;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: 2px;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            transition: var(--transition);
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 14px 18px;
-            background: rgba(255, 255, 255, 0.03);
+            padding: 13px 18px;
+            background: var(--bg-secondary);
             border: 2px solid var(--border);
-            border-radius: 12px;
-            color: #fff;
-            font-size: 15px;
-            transition: var(--transition);
-            outline: none;
-            letter-spacing: 0.5px;
-        }
-
-        .form-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.15),
-                0 0 30px rgba(108, 92, 231, 0.2);
-            background: rgba(108, 92, 231, 0.05);
-        }
-
-        .form-input::placeholder {
-            color: rgba(255, 255, 255, 0.2);
-        }
-
-        .input-icon {
-            position: absolute;
-            right: 18px;
-            top: 42px;
-            color: var(--text-secondary);
-            font-size: 18px;
-            transition: var(--transition);
-        }
-
-        .form-input:focus~.input-icon {
-            color: var(--primary-glow);
-        }
-
-        /* Buttons */
-        .btn {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: var(--transition);
-            text-transform: uppercase;
-            position: relative;
-            overflow: hidden;
-            color: #fff;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.6s;
-        }
-
-        .btn:hover::before {
-            left: 100%;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), #8b7cf0);
-            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
-        }
-
-        .btn-primary:hover {
-            box-shadow: 0 12px 35px rgba(108, 92, 231, 0.6);
-            transform: translateY(-2px);
-        }
-
-        .btn-primary:active {
-            transform: translateY(0);
-            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, var(--danger), #c0392b);
-            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
-        }
-
-        .btn-warning {
-            background: linear-gradient(135deg, var(--warning), #e67e22);
-            box-shadow: 0 8px 25px rgba(243, 156, 18, 0.4);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, var(--success), #27ae60);
-            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.4);
-        }
-
-        /* Notification */
-        .notification {
-            position: fixed;
-            top: 30px;
-            right: 30px;
-            z-index: 10000;
-            padding: 18px 25px;
             border-radius: 14px;
-            color: #fff;
-            font-weight: 600;
-            letter-spacing: 1px;
-            animation: slideInRight 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            max-width: 400px;
-            backdrop-filter: blur(20px);
+            color: var(--text-primary);
             font-size: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+            outline: none;
+            transition: all 0.3s;
         }
 
-        .notification.success {
-            background: rgba(46, 204, 113, 0.9);
-        }
-        .notification.error {
-            background: rgba(231, 76, 60, 0.9);
-        }
-        .notification.warning {
-            background: rgba(243, 156, 18, 0.9);
-        }
-        .notification.info {
-            background: rgba(52, 152, 219, 0.9);
+        .url-input:focus {
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 20px rgba(179, 71, 234, 0.2);
         }
 
-        @keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(120px) scale(0.8);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0) scale(1);
-            }
-        }
-
-        @keyframes slideOutRight {
-            from {
-                opacity: 1;
-                transform: translateX(0) scale(1);
-            }
-            to {
-                opacity: 0;
-                transform: translateX(120px) scale(0.8);
-            }
-        }
-
-        /* User info display */
-        .user-info {
-            background: rgba(108, 92, 231, 0.08);
-            border: 1px solid rgba(108, 92, 231, 0.2);
+        .scan-btn {
+            padding: 13px 25px;
+            background: var(--accent-green);
+            border: none;
             border-radius: 14px;
-            padding: 20px;
-            margin-top: 25px;
-            animation: fadeInUp 0.5s ease-out;
+            color: #000;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: all 0.3s;
+            white-space: nowrap;
         }
 
-        .user-info-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            font-size: 13px;
+        .scan-btn:hover {
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.4);
+            transform: scale(1.03);
         }
 
-        .user-info-item:last-child {
-            border-bottom: none;
+        .scan-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
-        .user-info-label {
-            color: var(--text-secondary);
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            font-size: 11px;
-            font-weight: 600;
+        /* Progress Bar */
+        .scan-progress {
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin: 15px 0;
+            overflow: hidden;
+            display: none;
         }
 
-        .user-info-value {
-            color: #fff;
-            font-weight: 600;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
+        .scan-progress.active {
+            display: block;
         }
 
-        .token-display {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 12px 16px;
-            border-radius: 10px;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            word-break: break-all;
-            color: var(--primary-glow);
-            border: 1px solid rgba(108, 92, 231, 0.3);
-            margin-top: 5px;
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
+            border-radius: 2px;
+            width: 0%;
+            animation: progressAnim 2s ease-in-out forwards;
         }
 
-        /* Scan results */
-        .scan-results {
-            margin-top: 25px;
-            animation: fadeInUp 0.5s ease-out;
+        @keyframes progressAnim {
+            0% {
+                width: 0%;
+            }
+            30% {
+                width: 40%;
+            }
+            60% {
+                width: 75%;
+            }
+            100% {
+                width: 100%;
+            }
         }
 
-        .scan-result-item {
-            background: rgba(0, 0, 0, 0.3);
+        /* Results */
+        .results-container {
+            display: none;
+            margin-top: 20px;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .results-container.active {
+            display: block;
+        }
+
+        .result-card {
+            background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 12px;
+            border-radius: 14px;
             padding: 18px;
             margin-bottom: 12px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            transition: var(--transition);
-            animation: fadeInUp 0.4s ease-out;
+            gap: 14px;
+            transition: all 0.3s;
         }
 
-        .scan-result-item:hover {
-            border-color: rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.03);
+        .result-card:hover {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.1);
         }
 
-        .scan-result-item.flagged {
-            border-color: rgba(231, 76, 60, 0.5);
-            background: rgba(231, 76, 60, 0.08);
-            animation: flaggedPulse 2s infinite;
+        .result-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
         }
 
-        @keyframes flaggedPulse {
-            0%,
-            100% {
-                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.3);
-            }
-            50% {
-                box-shadow: 0 0 0 15px rgba(231, 76, 60, 0);
-            }
+        .result-icon.safe {
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--accent-green);
+        }
+        .result-icon.warning {
+            background: rgba(255, 165, 2, 0.15);
+            color: var(--accent-yellow);
+        }
+        .result-icon.danger {
+            background: rgba(255, 71, 87, 0.15);
+            color: var(--accent-red);
         }
 
-        .badge {
+        .result-info h4 {
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+        .result-info p {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .status-badge {
             padding: 6px 14px;
             border-radius: 20px;
             font-size: 11px;
             font-weight: 700;
             letter-spacing: 1px;
-            text-transform: uppercase;
+            margin-left: auto;
         }
 
-        .badge-danger {
-            background: rgba(231, 76, 60, 0.3);
-            color: #ff6b6b;
-            border: 1px solid rgba(231, 76, 60, 0.5);
+        .status-badge.blocked {
+            background: rgba(255, 71, 87, 0.2);
+            color: var(--accent-red);
+        }
+        .status-badge.passed {
+            background: rgba(0, 255, 136, 0.2);
+            color: var(--accent-green);
+        }
+        .status-badge.scanning {
+            background: rgba(0, 212, 255, 0.2);
+            color: var(--accent-cyan);
+            animation: pulse 1s infinite;
         }
 
-        .badge-clean {
-            background: rgba(46, 204, 113, 0.3);
-            color: #55efc4;
-            border: 1px solid rgba(46, 204, 113, 0.5);
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
         }
 
-        .badge-warning {
-            background: rgba(243, 156, 18, 0.3);
-            color: #ffd700;
-            border: 1px solid rgba(243, 156, 18, 0.5);
+        /* Preview Frame */
+        .preview-frame {
+            width: 100%;
+            height: 300px;
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            margin-top: 15px;
+            background: #000;
+            display: none;
+            overflow: hidden;
         }
 
-        /* Loading spinner */
+        .preview-frame.active {
+            display: block;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .preview-frame iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 12px;
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--accent-green);
+            border-radius: 12px;
+            padding: 16px 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInRight 0.5s ease, fadeOut 0.5s ease 2.5s forwards;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(120%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateX(120%);
+            }
+        }
+
+        /* Loading Spinner */
         .spinner {
-            width: 22px;
-            height: 22px;
-            border: 3px solid rgba(255, 255, 255, 0.2);
-            border-top-color: #fff;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent-cyan);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
             display: inline-block;
-            margin-right: 10px;
         }
 
         @keyframes spin {
@@ -699,903 +637,423 @@
             }
         }
 
-        /* Hidden */
-        .hidden {
-            display: none !important;
-        }
-
         /* Responsive */
         @media (max-width: 600px) {
-            .card {
+            .cyber-card {
                 padding: 25px;
+                border-radius: 18px;
             }
-            .card-title {
+            .url-input-wrapper {
+                flex-direction: column;
+            }
+            .logo-text {
                 font-size: 22px;
             }
-            .main-container {
-                margin: 15px;
+            .result-card {
+                flex-wrap: wrap;
             }
-            .notification {
-                left: 15px;
-                right: 15px;
-                top: 15px;
-                max-width: none;
-            }
-            .intro-logo {
-                font-size: 36px;
+            .status-badge {
+                margin-left: 0;
+                margin-top: 8px;
             }
         }
 
-        /* Scan animation */
-        .scanning-indicator {
-            text-align: center;
-            padding: 30px;
+        /* Glitch Text Effect */
+        .glitch {
+            position: relative;
         }
-
-        .scan-ring {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            border: 3px solid var(--primary);
-            border-top-color: transparent;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+        .glitch:hover {
+            animation: glitch 0.3s ease;
         }
-
-        .scan-text {
-            color: var(--primary-glow);
-            letter-spacing: 3px;
-            font-size: 13px;
-            animation: logoPulse 1.5s infinite;
-        }
-
-        /* Tooltip */
-        .tooltip-trigger {
-            cursor: help;
-            border-bottom: 1px dashed var(--text-secondary);
-        }
-
-        /* Shake animation */
-        @keyframes shake {
-            0%,
-            100% {
-                transform: translateX(0);
+        @keyframes glitch {
+            0% {
+                transform: translate(2px, -2px);
             }
             25% {
-                transform: translateX(-8px);
+                transform: translate(-2px, 2px);
+            }
+            50% {
+                transform: translate(1px, 1px);
             }
             75% {
-                transform: translateX(8px);
+                transform: translate(-1px, -1px);
             }
-        }
-
-        .shake {
-            animation: shake 0.5s ease-in-out;
+            100% {
+                transform: translate(0, 0);
+            }
         }
     </style>
 </head>
 <body>
-
-    <!-- Background effects -->
-    <div class="particles" id="particles"></div>
-    <div class="grid-bg"></div>
-    <div class="glow-orb orb1"></div>
-    <div class="glow-orb orb2"></div>
-
-    <!-- Intro overlay -->
-    <div class="intro-overlay" id="introOverlay">
-        <div class="intro-logo">BINDZ</div>
-        <div class="intro-subtitle">Security System v3.0</div>
-        <div class="intro-loading">
-            <div class="intro-loading-bar"></div>
-        </div>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="grid-bg"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
     </div>
 
-    <!-- Notification container -->
+    <!-- Notification Container -->
     <div id="notificationContainer"></div>
 
-    <!-- Main container -->
-    <div class="main-container" id="mainContainer">
-        <!-- Tab navigation -->
-        <div class="tab-nav" id="tabNav">
-            <button class="tab-btn active" data-tab="login" onclick="switchTab('login')">
-                🔐 Login Account
-            </button>
-            <button class="tab-btn" data-tab="scan" onclick="switchTab('scan')">
-                🛡️ Scan Cheat
-            </button>
-        </div>
-
-        <!-- Login card -->
-        <div class="card" id="loginCard">
-            <div class="card-header">
-                <div class="card-title">Bindz Login</div>
-                <div class="card-subtitle">Secure Access Token System</div>
+    <!-- Main Container -->
+    <div class="main-container">
+        <div class="cyber-card">
+            <!-- Header -->
+            <div class="header">
+                <div class="logo-container">
+                    <div class="logo-icon">🛡️</div>
+                    <span class="logo-text glitch">CyberShield Pro</span>
+                </div>
+                <p class="subtitle">Advanced Web Security Scanner</p>
             </div>
-            <form id="loginForm" onsubmit="handleLogin(event)">
-                <div class="form-group">
-                    <label class="form-label">📛 Username</label>
-                    <input type="text" class="form-input" id="username" placeholder="Nhập username..." required>
+
+            <!-- Login Section -->
+            <div class="login-section" id="loginSection">
+                <div class="input-group">
+                    <label>Email / Username</label>
+                    <input type="text" class="input-field" id="username" placeholder="nhập tài khoản...">
                     <span class="input-icon">👤</span>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">🔒 Password</label>
-                    <input type="password" class="form-input" id="password" placeholder="Nhập password..." required>
-                    <span class="input-icon">🔑</span>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" class="input-field" id="password" placeholder="••••••••">
+                    <span class="input-icon">🔒</span>
                 </div>
-                <button type="submit" class="btn btn-primary" id="loginBtn">
+                <button class="login-btn" onclick="handleLogin()">
                     <span id="loginBtnText">Đăng Nhập</span>
-                    <span id="loginBtnSpinner" class="hidden"><span class="spinner"></span>Đang xử lý...</span>
                 </button>
-            </form>
-            <div id="loginResult" class="hidden"></div>
-        </div>
-
-        <!-- Scan card -->
-        <div class="card hidden" id="scanCard">
-            <div class="card-header">
-                <div class="card-title">Bindz Scan Cheat</div>
-                <div class="card-subtitle">Third-Party Software Detection</div>
             </div>
-            <form id="scanForm" onsubmit="handleScan(event)">
-                <div class="form-group">
-                    <label class="form-label">🎯 Target Username / ID</label>
-                    <input type="text" class="form-input" id="scanTarget" placeholder="Nhập username cần quét..." required>
-                    <span class="input-icon">🎯</span>
+
+            <!-- Scanner Section (Hidden until login) -->
+            <div class="scanner-section" id="scannerSection" style="display:none;">
+                <div class="section-title">
+                    <span class="dot"></span> URL Scanner & Ad Blocker
                 </div>
-                <div class="form-group">
-                    <label class="form-label">🔐 Admin Access Token</label>
-                    <input type="text" class="form-input" id="scanToken" placeholder="Nhập access token admin..." required>
-                    <span class="input-icon">🪪</span>
+                <div class="url-input-wrapper">
+                    <input type="url" class="url-input" id="urlInput"
+                    placeholder="Nhập URL cần quét... (vd: https://example.com)">
+                    <button class="scan-btn" id="scanBtn" onclick="startScan()">
+                        🔍 Quét Ngay
+                    </button>
                 </div>
-                <button type="submit" class="btn btn-warning" id="scanBtn">
-                    <span id="scanBtnText">🔍 Quét Ngay</span>
-                    <span id="scanBtnSpinner" class="hidden"><span class="spinner"></span>Đang quét...</span>
+
+                <!-- Progress -->
+                <div class="scan-progress" id="scanProgress">
+                    <div class="progress-fill"></div>
+                </div>
+
+                <!-- Results -->
+                <div class="results-container" id="resultsContainer"></div>
+
+                <!-- Preview Frame -->
+                <div class="preview-frame" id="previewFrame">
+                    <iframe id="previewIframe" sandbox="allow-scripts allow-same-origin"></iframe>
+                </div>
+
+                <!-- Logout -->
+                <button class="login-btn" style="margin-top:20px; background: var(--accent-red);" onclick="handleLogout()">
+                    Đăng Xuất
                 </button>
-            </form>
-            <div id="scanResult" class="hidden"></div>
-        </div>
-
-        <!-- Ban action card (shown after scan) -->
-        <div class="card hidden" id="banCard" style="margin-top: 20px;">
-            <div class="card-header">
-                <div class="card-title">⛔ Ban Account</div>
-                <div class="card-subtitle">Execute Account Ban</div>
             </div>
-            <div id="banTargetInfo"></div>
-            <div class="form-group">
-                <label class="form-label">📝 Lý do Ban</label>
-                <textarea class="form-input" id="banReason" rows="3" placeholder="Nhập lý do ban tài khoản..."></textarea>
-            </div>
-            <div class="form-group">
-                <label class="form-label">⏱️ Thời hạn Ban (ngày, 0 = vĩnh viễn)</label>
-                <input type="number" class="form-input" id="banDuration" value="30" min="0">
-            </div>
-            <button class="btn btn-danger" onclick="executeBan()">
-                🚫 Xác Nhận Ban
-            </button>
-            <div id="banResult" class="hidden" style="margin-top: 20px;"></div>
         </div>
     </div>
 
     <script>
-        // ============================================
-        // BINDZ LOGIN ACCOUNT - HỆ THỐNG BẢO MẬT CAO
-        // ============================================
+        // ============ PARTICLE SYSTEM ============
+        function createParticles() {
+            const container = document.querySelector('.bg-animation');
+            const colors = ['#00d4ff', '#b347ea', '#00ff88', '#ffa502', '#ff6b81'];
 
-        // --- Cấu hình ---
-        const CONFIG = {
-            APP_NAME: 'Bindz Login Account',
-            VERSION: '3.0.0',
-            API_BASE: 'https://api.bindz-security.com/v3', // API giả lập
-            TOKEN_SECRET: 'BINDZ_SUPER_SECRET_KEY_2024_X9K2M',
-            ENCRYPTION_ROUNDS: 128,
-            INTRO_DURATION: 2500,
+            for (let i = 0; i < 40; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                const size = Math.random() * 4 + 2;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDuration = Math.random() * 10 + 8 + 's';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                particle.style.boxShadow = `0 0 ${size * 2}px ${particle.style.background}`;
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        // ============ NOTIFICATION SYSTEM ============
+        function showNotification(message, type = 'success') {
+            const container = document.getElementById('notificationContainer');
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            const icons = { success: '✅', warning: '⚠️', error: '❌', info: 'ℹ️' };
+            notification.innerHTML = `
+                <span style="font-size:20px">${icons[type] || icons.info}</span>
+                <span style="font-size:14px; font-weight:500">${message}</span>
+            `;
+            container.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        // ============ LOGIN SYSTEM ============
+        // Demo credentials
+        const DEMO_CREDENTIALS = {
+            username: 'admin',
+            password: 'cybershield2024'
         };
 
-        // --- Database giả lập (Trong thực tế sẽ là server) ---
-        const MOCK_DATABASE = {
-            users: [
-                { id: 1, username: 'admin', password: 'admin123', role: 'admin', banned: false },
-                { id: 2, username: 'player1', password: 'pass123', role: 'user', banned: false },
-                { id: 3, username: 'hacker69', password: 'cheatpass', role: 'user', banned: true, banReason: 'Sử dụng aimbot',
-                    banDate: '2024-01-15' },
-                { id: 4, username: 'pro_gamer', password: 'pro123', role: 'user', banned: false },
-                { id: 5, username: 'cheater_x', password: 'x123', role: 'user', banned: true,
-                    banReason: 'Wallhack detected', banDate: '2024-06-20' },
-                { id: 6, username: 'night_owl', password: 'owl999', role: 'user', banned: false },
-                { id: 7, username: 'speed_hack', password: 'fast123', role: 'user', banned: true,
-                    banReason: 'Speed hack + Teleport', banDate: '2024-08-01' },
-                { id: 8, username: 'shadow_fox', password: 'fox456', role: 'user', banned: false },
-            ],
-            cheat_signatures: [
-                'aimbot_injector_v2.dll',
-                'wallhack_esp_mod.exe',
-                'speed_hack_teleport.sys',
-                'memory_editor_cheat.dll',
-                'packet_interceptor_hook.exe',
-                'd3d11_esp_overlay.dll',
-                'no_recoil_macro.exe',
-            ],
-            tokens: {},
-        };
-
-        // --- Hàm mã hóa Access Token cực mạnh ---
-        class BindzCrypto {
-            static generateSalt(length = 32) {
-                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
-                let salt = '';
-                const randomValues = new Uint32Array(length);
-                crypto.getRandomValues(randomValues);
-                for (let i = 0; i < length; i++) {
-                    salt += chars[randomValues[i] % chars.length];
-                }
-                return salt;
-            }
-
-            static async hashPassword(password, salt) {
-                const encoder = new TextEncoder();
-                let data = encoder.encode(password + salt + CONFIG.TOKEN_SECRET);
-
-                // Mô phỏng SHA-256 + nhiều vòng lặp
-                for (let i = 0; i < CONFIG.ENCRYPTION_ROUNDS; i++) {
-                    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-                    data = new Uint8Array([...new Uint8Array(hashBuffer), ...encoder.encode(CONFIG.TOKEN_SECRET)]);
-                }
-
-                const finalHash = await crypto.subtle.digest('SHA-512', data);
-                const hashArray = Array.from(new Uint8Array(finalHash));
-                return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-            }
-
-            static async generateToken(userData) {
-                const timestamp = Date.now();
-                const salt = this.generateSalt(48);
-                const payload = JSON.stringify({
-                    uid: userData.id,
-                    username: userData.username,
-                    role: userData.role,
-                    ts: timestamp,
-                    salt: salt,
-                    app: CONFIG.APP_NAME,
-                    version: CONFIG.VERSION,
-                });
-
-                const signature = await this.hashPassword(payload, salt);
-                const tokenData = btoa(encodeURIComponent(payload)) + '.' + signature.substring(0, 64);
-
-                // Mã hóa thêm một lớp
-                const finalToken = 'BINDZ_' + btoa(tokenData.split('').reverse().join('')) + '_SECURE';
-                return finalToken;
-            }
-
-            static async verifyToken(token) {
-                try {
-                    if (!token.startsWith('BINDZ_') || !token.endsWith('_SECURE')) {
-                        return null;
-                    }
-
-                    const innerToken = token.replace('BINDZ_', '').replace('_SECURE', '');
-                    const reversed = atob(innerToken).split('').reverse().join('');
-                    const parts = reversed.split('.');
-
-                    if (parts.length !== 2) return null;
-
-                    const payloadStr = decodeURIComponent(atob(parts[0]));
-                    const payload = JSON.parse(payloadStr);
-
-                    // Kiểm tra thời gian hết hạn (24 giờ)
-                    const tokenAge = Date.now() - payload.ts;
-                    if (tokenAge > 24 * 60 * 60 * 1000) {
-                        return { expired: true, payload };
-                    }
-
-                    // Kiểm tra chữ ký
-                    const expectedSig = await this.hashPassword(payloadStr, payload.salt);
-                    if (expectedSig.substring(0, 64) !== parts[1]) {
-                        return null;
-                    }
-
-                    return { valid: true, payload };
-                } catch (e) {
-                    return null;
-                }
-            }
-        }
-
-        // --- Hàm gọi API giả lập ---
-        class BindzAPI {
-            static async login(username, password) {
-                // Giả lập độ trễ mạng
-                await new Promise(r => setTimeout(r, 800 + Math.random() * 1200));
-
-                const user = MOCK_DATABASE.users.find(u =>
-                    u.username.toLowerCase() === username.toLowerCase() && u.password === password
-                );
-
-                if (!user) {
-                    throw new Error('Sai username hoặc password!');
-                }
-
-                if (user.banned) {
-                    throw new Error(`Tài khoản đã bị khóa! Lý do: ${user.banReason || 'Vi phạm điều khoản'}`);
-                }
-
-                const token = await BindzCrypto.generateToken(user);
-                MOCK_DATABASE.tokens[token] = {
-                    userId: user.id,
-                    createdAt: Date.now(),
-                    expiresAt: Date.now() + 24 * 60 * 60 * 1000,
-                };
-
-                return {
-                    success: true,
-                    token,
-                    user: {
-                        id: user.id,
-                        username: user.username,
-                        role: user.role,
-                    },
-                    message: 'Đăng nhập thành công!',
-                };
-            }
-
-            static async scanCheat(targetUsername, adminToken) {
-                await new Promise(r => setTimeout(r, 1500 + Math.random() * 2000));
-
-                // Xác thực admin token
-                const tokenCheck = await BindzCrypto.verifyToken(adminToken);
-                if (!tokenCheck || !tokenCheck.valid) {
-                    throw new Error('Access token không hợp lệ hoặc đã hết hạn!');
-                }
-
-                if (tokenCheck.payload.role !== 'admin') {
-                    throw new Error('Bạn không có quyền thực hiện thao tác này!');
-                }
-
-                const user = MOCK_DATABASE.users.find(u =>
-                    u.username.toLowerCase() === targetUsername.toLowerCase()
-                );
-
-                if (!user) {
-                    throw new Error('Không tìm thấy người dùng!');
-                }
-
-                // Giả lập quét cheat
-                const hasCheatSignatures = Math.random() < 0.4; // 40% cơ hội phát hiện
-                const detectedCheats = [];
-                const scanDetails = [];
-
-                if (hasCheatSignatures || user.banned) {
-                    const cheatCount = Math.floor(Math.random() * 3) + 1;
-                    for (let i = 0; i < cheatCount; i++) {
-                        const randomCheat = MOCK_DATABASE.cheat_signatures[
-                            Math.floor(Math.random() * MOCK_DATABASE.cheat_signatures.length)
-                        ];
-                        detectedCheats.push(randomCheat);
-                    }
-                }
-
-                // Chi tiết quét
-                MOCK_DATABASE.cheat_signatures.forEach(sig => {
-                    scanDetails.push({
-                        signature: sig,
-                        detected: detectedCheats.includes(sig),
-                        risk: detectedCheats.includes(sig) ? 'high' : 'low',
-                    });
-                });
-
-                const isSuspicious = detectedCheats.length > 0 || user.banned;
-
-                return {
-                    success: true,
-                    target: {
-                        id: user.id,
-                        username: user.username,
-                        currentlyBanned: user.banned,
-                        banReason: user.banReason || null,
-                    },
-                    scanResult: {
-                        suspicious: isSuspicious,
-                        detectedCheats,
-                        scanDetails,
-                        scanTime: new Date().toISOString(),
-                        scannerToken: adminToken.substring(0, 20) + '...',
-                    },
-                };
-            }
-
-            static async banAccount(targetUsername, adminToken, reason, duration) {
-                await new Promise(r => setTimeout(r, 1000 + Math.random() * 1000));
-
-                const tokenCheck = await BindzCrypto.verifyToken(adminToken);
-                if (!tokenCheck || !tokenCheck.valid || tokenCheck.payload.role !== 'admin') {
-                    throw new Error('Quyền admin không hợp lệ!');
-                }
-
-                const user = MOCK_DATABASE.users.find(u =>
-                    u.username.toLowerCase() === targetUsername.toLowerCase()
-                );
-
-                if (!user) {
-                    throw new Error('Không tìm thấy người dùng!');
-                }
-
-                user.banned = true;
-                user.banReason = reason || 'Vi phạm điều khoản sử dụng';
-                user.banDate = new Date().toISOString();
-                user.banDuration = parseInt(duration) || 0;
-                user.bannedBy = tokenCheck.payload.username;
-
-                return {
-                    success: true,
-                    message: `Đã ban tài khoản "${user.username}" thành công!`,
-                    banInfo: {
-                        username: user.username,
-                        reason: user.banReason,
-                        duration: user.banDuration === 0 ? 'Vĩnh viễn' : `${user.banDuration} ngày`,
-                        bannedBy: user.bannedBy,
-                        timestamp: user.banDate,
-                    },
-                };
-            }
-        }
-
-        // --- UI Controller ---
-        class UIController {
-            static showNotification(message, type = 'info', duration = 4000) {
-                const container = document.getElementById('notificationContainer');
-                const notif = document.createElement('div');
-                notif.className = `notification ${type}`;
-                notif.textContent = message;
-                container.appendChild(notif);
-
-                setTimeout(() => {
-                    notif.style.animation = 'slideOutRight 0.4s ease-in forwards';
-                    setTimeout(() => notif.remove(), 400);
-                }, duration);
-            }
-
-            static showLoading(buttonId, showSpinner = true) {
-                const btn = document.getElementById(buttonId);
-                const textEl = document.getElementById(buttonId + 'Text');
-                const spinnerEl = document.getElementById(buttonId + 'Spinner');
-
-                if (showSpinner) {
-                    textEl?.classList.add('hidden');
-                    spinnerEl?.classList.remove('hidden');
-                    btn.disabled = true;
-                } else {
-                    textEl?.classList.remove('hidden');
-                    spinnerEl?.classList.add('hidden');
-                    btn.disabled = false;
-                }
-            }
-
-            static shakeElement(element) {
-                element.classList.add('shake');
-                setTimeout(() => element.classList.remove('shake'), 500);
-            }
-        }
-
-        // --- App Controller ---
-        class AppController {
-            static currentTab = 'login';
-            static lastScanResult = null;
-
-            static init() {
-                this.createParticles();
-                this.handleIntro();
-            }
-
-            static createParticles() {
-                const container = document.getElementById('particles');
-                for (let i = 0; i < 50; i++) {
-                    const particle = document.createElement('div');
-                    particle.className = 'particle';
-                    particle.style.left = Math.random() * 100 + '%';
-                    particle.style.animationDelay = Math.random() * 8 + 's';
-                    particle.style.animationDuration = (6 + Math.random() * 10) + 's';
-                    particle.style.width = (2 + Math.random() * 5) + 'px';
-                    particle.style.height = particle.style.width;
-                    container.appendChild(particle);
-                }
-            }
-
-            static handleIntro() {
-                const overlay = document.getElementById('introOverlay');
-                const mainContainer = document.getElementById('mainContainer');
-
-                mainContainer.style.opacity = '0';
-                mainContainer.style.transform = 'translateY(30px)';
-
-                setTimeout(() => {
-                    overlay.classList.add('hidden');
-                    mainContainer.style.transition = 'all 0.8s cubic-bezier(0.25, 0.8, 0.25, 1.2)';
-                    mainContainer.style.opacity = '1';
-                    mainContainer.style.transform = 'translateY(0)';
-
-                    setTimeout(() => {
-                        overlay.style.display = 'none';
-                    }, 800);
-                }, CONFIG.INTRO_DURATION);
-            }
-
-            static switchTab(tab) {
-                this.currentTab = tab;
-                const tabNav = document.getElementById('tabNav');
-                const loginCard = document.getElementById('loginCard');
-                const scanCard = document.getElementById('scanCard');
-                const banCard = document.getElementById('banCard');
-                const buttons = tabNav.querySelectorAll('.tab-btn');
-
-                buttons.forEach(b => b.classList.remove('active'));
-
-                if (tab === 'login') {
-                    tabNav.classList.remove('scan-active');
-                    buttons[0].classList.add('active');
-                    loginCard.classList.remove('hidden');
-                    scanCard.classList.add('hidden');
-                    banCard.classList.add('hidden');
-                    loginCard.style.animation = 'none';
-                    loginCard.offsetHeight;
-                    loginCard.style.animation = 'cardAppear 0.6s ease-out';
-                } else {
-                    tabNav.classList.add('scan-active');
-                    buttons[1].classList.add('active');
-                    loginCard.classList.add('hidden');
-                    scanCard.classList.remove('hidden');
-                    banCard.classList.add('hidden');
-                    scanCard.style.animation = 'none';
-                    scanCard.offsetHeight;
-                    scanCard.style.animation = 'cardAppear 0.6s ease-out';
-                }
-            }
-        }
-
-        // --- Event Handlers ---
-        async function handleLogin(event) {
-            event.preventDefault();
-
+        function handleLogin() {
             const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
-            const loginResult = document.getElementById('loginResult');
-            const form = document.getElementById('loginForm');
+            const password = document.getElementById('password').value.trim();
+            const btnText = document.getElementById('loginBtnText');
 
             if (!username || !password) {
-                UIController.showNotification('Vui lòng nhập đầy đủ thông tin!', 'warning');
-                UIController.shakeElement(form);
+                showNotification('Vui lòng nhập đầy đủ thông tin!', 'warning');
+                // Shake animation
+                const card = document.querySelector('.cyber-card');
+                card.style.animation = 'none';
+                card.offsetHeight;
+                card.style.animation = 'cardEntry 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
                 return;
             }
 
-            UIController.showLoading('loginBtn', true);
+            // Simulate loading
+            btnText.innerHTML = '<span class="spinner"></span> Đang xác thực...';
+            const loginBtn = document.querySelector('.login-btn');
+            loginBtn.disabled = true;
 
-            try {
-                const result = await BindzAPI.login(username, password);
+            setTimeout(() => {
+                if (username === DEMO_CREDENTIALS.username && password === DEMO_CREDENTIALS.password) {
+                    // Success
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('scannerSection').style.display = 'block';
+                    showNotification('Đăng nhập thành công! Hệ thống đã sẵn sàng.', 'success');
 
-                // Hiển thị kết quả
-                loginResult.classList.remove('hidden');
-                loginResult.innerHTML = `
-                    <div class="user-info">
-                        <div style="text-align: center; margin-bottom: 15px;">
-                            <span style="font-size: 40px;">✅</span>
-                            <p style="color: #55efc4; font-weight: 700; margin-top: 5px;">${result.message}</p>
-                        </div>
-                        <div class="user-info-item">
-                            <span class="user-info-label">👤 Username</span>
-                            <span class="user-info-value">${result.user.username}</span>
-                        </div>
-                        <div class="user-info-item">
-                            <span class="user-info-label">🆔 User ID</span>
-                            <span class="user-info-value">#${result.user.id}</span>
-                        </div>
-                        <div class="user-info-item">
-                            <span class="user-info-label">🛡️ Role</span>
-                            <span class="user-info-value" style="color: #ffd700;">${result.user.role.toUpperCase()}</span>
-                        </div>
-                        <div class="user-info-item">
-                            <span class="user-info-label">🔐 Access Token</span>
-                        </div>
-                        <div class="token-display">${result.token}</div>
-                        <p style="font-size: 11px; color: var(--text-secondary); margin-top: 8px; text-align: center;">
-                            ⚠️ Token này được mã hóa với ${CONFIG.ENCRYPTION_ROUNDS} vòng SHA-256/SHA-512
-                        </p>
-                    </div>
-                `;
-                loginResult.style.animation = 'none';
-                loginResult.offsetHeight;
-                loginResult.style.animation = 'fadeInUp 0.5s ease-out';
-
-                UIController.showNotification('🎉 Đăng nhập thành công!', 'success');
-
-                // Tự động chuyển tab nếu là admin
-                if (result.user.role === 'admin') {
-                    setTimeout(() => {
-                        UIController.showNotification(
-                            '💡 Bạn có quyền Admin! Có thể sử dụng tính năng Scan Cheat.',
-                            'info',
-                            5000
-                        );
-                    }, 1500);
-                }
-            } catch (error) {
-                UIController.showNotification('❌ ' + error.message, 'error');
-                UIController.shakeElement(form);
-                loginResult.classList.add('hidden');
-            } finally {
-                UIController.showLoading('loginBtn', false);
-            }
-        }
-
-        async function handleScan(event) {
-            event.preventDefault();
-
-            const targetUsername = document.getElementById('scanTarget').value.trim();
-            const adminToken = document.getElementById('scanToken').value.trim();
-            const scanResult = document.getElementById('scanResult');
-            const banCard = document.getElementById('banCard');
-            const form = document.getElementById('scanForm');
-
-            if (!targetUsername || !adminToken) {
-                UIController.showNotification('Vui lòng nhập đầy đủ thông tin!', 'warning');
-                UIController.shakeElement(form);
-                return;
-            }
-
-            UIController.showLoading('scanBtn', true);
-            scanResult.classList.remove('hidden');
-            scanResult.innerHTML = `
-                <div class="scanning-indicator">
-                    <div class="scan-ring"></div>
-                    <p class="scan-text">🔍 ĐANG QUÉT HỆ THỐNG...</p>
-                    <p style="color: var(--text-secondary); font-size: 12px; margin-top: 10px;">
-                        Kiểm tra chữ ký cheat trong bộ nhớ...
-                    </p>
-                </div>
-            `;
-            banCard.classList.add('hidden');
-
-            try {
-                const result = await BindzAPI.scanCheat(targetUsername, adminToken);
-                AppController.lastScanResult = result;
-
-                const suspicious = result.scanResult.suspicious;
-                const statusIcon = suspicious ? '🚨' : '✅';
-                const statusColor = suspicious ? 'var(--danger-glow)' : 'var(--success-glow)';
-                const statusText = suspicious ? 'PHÁT HIỆN NGHI VẤN' : 'TÀI KHOẢN SẠCH';
-
-                let scanDetailsHTML = result.scanResult.scanDetails.map(detail => `
-                    <div class="scan-result-item ${detail.detected ? 'flagged' : ''}">
-                        <div>
-                            <strong style="font-size: 13px;">📁 ${detail.signature}</strong>
-                            <br>
-                            <span style="font-size: 11px; color: var(--text-secondary);">
-                                Risk: ${detail.risk.toUpperCase()}
-                            </span>
-                        </div>
-                        <span class="badge ${detail.detected ? 'badge-danger' : 'badge-clean'}">
-                            ${detail.detected ? '⚠️ DETECTED' : '✅ CLEAN'}
-                        </span>
-                    </div>
-                `).join('');
-
-                let detectedCheatsHTML = '';
-                if (result.scanResult.detectedCheats.length > 0) {
-                    detectedCheatsHTML = `
-                        <div style="margin-top: 15px; padding: 15px; background: rgba(231, 76, 60, 0.1); border-radius: 10px; border: 1px solid rgba(231, 76, 60, 0.3);">
-                            <strong style="color: #ff6b6b;">🚨 Phần mềm thứ 3 được phát hiện:</strong>
-                            <ul style="margin-top: 10px; list-style: none;">
-                                ${result.scanResult.detectedCheats.map(cheat => `
-                                    <li style="padding: 5px 0; color: #ff6b6b; font-family: monospace;">⚠️ ${cheat}</li>
-                                `).join('')}
-                            </ul>
-                        </div>
-                    `;
-                }
-
-                scanResult.innerHTML = `
-                    <div class="user-info" style="text-align: center; margin-bottom: 20px;">
-                        <span style="font-size: 50px;">${statusIcon}</span>
-                        <h3 style="color: ${statusColor}; margin: 10px 0;">${statusText}</h3>
-                        <p style="color: var(--text-secondary); font-size: 13px;">
-                            Target: <strong>${result.target.username}</strong> | 
-                            ID: #${result.target.id} |
-                            Trạng thái: ${result.target.currentlyBanned ? '🔴 Đã bị ban' : '🟢 Hoạt động'}
-                        </p>
-                        ${result.target.banReason ? `
-                            <p style="color: #ff6b6b; font-size: 12px; margin-top: 5px;">
-                                Lý do ban trước đó: ${result.target.banReason}
-                            </p>
-                        ` : ''}
-                    </div>
-                    <div class="scan-results">
-                        <h4 style="letter-spacing: 2px; text-transform: uppercase; font-size: 13px; margin-bottom: 15px;">
-                            📊 Chi Tiết Quét
-                        </h4>
-                        ${scanDetailsHTML}
-                    </div>
-                    ${detectedCheatsHTML}
-                    <p style="font-size: 10px; color: var(--text-secondary); margin-top: 15px; text-align: center;">
-                        🕐 Thời gian quét: ${new Date(result.scanResult.scanTime).toLocaleString('vi-VN')}
-                    </p>
-                `;
-
-                // Hiển thị nút ban nếu phát hiện nghi vấn
-                if (suspicious && !result.target.currentlyBanned) {
-                    banCard.classList.remove('hidden');
-                    document.getElementById('banTargetInfo').innerHTML = `
-                        <div style="background: rgba(231, 76, 60, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: center;">
-                            <p style="color: #ff6b6b;">🎯 Chuẩn bị ban tài khoản: <strong>${result.target.username}</strong></p>
-                        </div>
-                    `;
-                    document.getElementById('banReason').value = 'Sử dụng phần mềm thứ 3: ' + result.scanResult
-                        .detectedCheats.join(', ');
-                    banCard.style.animation = 'none';
-                    banCard.offsetHeight;
-                    banCard.style.animation = 'cardAppear 0.6s ease-out';
-                    banCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                } else if (result.target.currentlyBanned) {
-                    UIController.showNotification('ℹ️ Tài khoản này đã bị ban từ trước.', 'info');
+                    // Store session
+                    sessionStorage.setItem('cybershield_logged_in', 'true');
+                    sessionStorage.setItem('cybershield_user', username);
                 } else {
-                    UIController.showNotification('✅ Tài khoản sạch, không phát hiện cheat!', 'success');
+                    showNotification('Sai tài khoản hoặc mật khẩu! (Demo: admin / cybershield2024)', 'error');
                 }
 
-                UIController.showNotification(
-                    suspicious ? '🚨 Phát hiện dấu hiệu cheat!' : '✅ Quét hoàn tất - Tài khoản an toàn',
-                    suspicious ? 'warning' : 'success'
-                );
-            } catch (error) {
-                UIController.showNotification('❌ ' + error.message, 'error');
-                UIController.shakeElement(form);
-                scanResult.classList.add('hidden');
-                banCard.classList.add('hidden');
-            } finally {
-                UIController.showLoading('scanBtn', false);
-            }
+                btnText.textContent = 'Đăng Nhập';
+                loginBtn.disabled = false;
+            }, 1500);
         }
 
-        async function executeBan() {
-            const targetUsername = document.getElementById('scanTarget').value.trim();
-            const adminToken = document.getElementById('scanToken').value.trim();
-            const banReason = document.getElementById('banReason').value.trim();
-            const banDuration = document.getElementById('banDuration').value;
-            const banResult = document.getElementById('banResult');
-
-            if (!targetUsername || !adminToken) {
-                UIController.showNotification('Thiếu thông tin! Vui lòng quét lại.', 'error');
-                return;
-            }
-
-            if (!banReason) {
-                UIController.showNotification('Vui lòng nhập lý do ban!', 'warning');
-                return;
-            }
-
-            UIController.showNotification('⏳ Đang thực thi lệnh ban...', 'info');
-
-            try {
-                const result = await BindzAPI.banAccount(targetUsername, adminToken, banReason, banDuration);
-
-                banResult.classList.remove('hidden');
-                banResult.innerHTML = `
-                    <div class="user-info" style="text-align: center; border-color: rgba(231, 76, 60, 0.5);">
-                        <span style="font-size: 50px;">🚫</span>
-                        <h3 style="color: #ff6b6b; margin: 10px 0;">ĐÃ BAN TÀI KHOẢN</h3>
-                        <div style="text-align: left; margin-top: 15px;">
-                            <div class="user-info-item">
-                                <span class="user-info-label">👤 Tài khoản</span>
-                                <span class="user-info-value">${result.banInfo.username}</span>
-                            </div>
-                            <div class="user-info-item">
-                                <span class="user-info-label">📝 Lý do</span>
-                                <span class="user-info-value" style="color: #ff6b6b;">${result.banInfo.reason}</span>
-                            </div>
-                            <div class="user-info-item">
-                                <span class="user-info-label">⏱️ Thời hạn</span>
-                                <span class="user-info-value">${result.banInfo.duration}</span>
-                            </div>
-                            <div class="user-info-item">
-                                <span class="user-info-label">👮 Bởi Admin</span>
-                                <span class="user-info-value" style="color: #ffd700;">${result.banInfo.bannedBy}</span>
-                            </div>
-                            <div class="user-info-item">
-                                <span class="user-info-label">🕐 Thời gian</span>
-                                <span class="user-info-value">${new Date(result.banInfo.timestamp).toLocaleString('vi-VN')}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                UIController.showNotification('🚫 ' + result.message, 'error', 6000);
-
-                // Cập nhật database local
-                const user = MOCK_DATABASE.users.find(u => u.username.toLowerCase() === targetUsername.toLowerCase());
-                if (user) {
-                    user.banned = true;
-                    user.banReason = banReason;
-                }
-
-                // Disable nút ban sau khi thực hiện
-                document.querySelector('#banCard .btn-danger').disabled = true;
-                document.querySelector('#banCard .btn-danger').textContent = '✅ Đã Ban';
-                document.querySelector('#banCard .btn-danger').style.opacity = '0.6';
-            } catch (error) {
-                UIController.showNotification('❌ ' + error.message, 'error');
-            }
+        function handleLogout() {
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('scannerSection').style.display = 'none';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('urlInput').value = '';
+            document.getElementById('resultsContainer').classList.remove('active');
+            document.getElementById('resultsContainer').innerHTML = '';
+            document.getElementById('previewFrame').classList.remove('active');
+            document.getElementById('scanProgress').classList.remove('active');
+            sessionStorage.clear();
+            showNotification('Đã đăng xuất!', 'info');
         }
 
-        function switchTab(tab) {
-            AppController.switchTab(tab);
-        }
-
-        // --- Khởi tạo ứng dụng ---
-        document.addEventListener('DOMContentLoaded', () => {
-            AppController.init();
-
-            // Thêm hiệu ứng hover cho card
-            const cards = document.querySelectorAll('.card');
-            cards.forEach(card => {
-                card.addEventListener('mousemove', (e) => {
-                    const rect = card.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    const centerX = rect.width / 2;
-                    const centerY = rect.height / 2;
-                    const rotateX = (y - centerY) / centerY * -5;
-                    const rotateY = (x - centerX) / centerX * 5;
-
-                    card.style.transform =
-                        `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(5px)`;
-                });
-
-                card.addEventListener('mouseleave', () => {
-                    card.style.transform =
-                        'perspective(1000px) rotateX(0) rotateY(0) translateZ(0)';
-                    card.style.transition = 'all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1.2)';
-                });
-            });
-
-            // Hiệu ứng gõ phím cho input
-            const inputs = document.querySelectorAll('.form-input');
-            inputs.forEach(input => {
-                input.addEventListener('focus', () => {
-                    input.parentElement.querySelector('.form-label').style.color = '#a29bfe';
-                });
-                input.addEventListener('blur', () => {
-                    input.parentElement.querySelector('.form-label').style.color = '';
-                });
-            });
-
-            console.log('%c🔐 Bindz Login Account v3.0 %cĐã khởi tạo',
-                'color: #a29bfe; font-size: 20px; font-weight: bold;',
-                'color: #8888aa;');
-            console.log('%c🛡️ Hệ thống bảo mật token với ' + CONFIG.ENCRYPTION_ROUNDS +
-                ' vòng mã hóa',
-                'color: #55efc4;');
-            console.log('%c⚠️ Đây là phiên bản demo - Backend giả lập',
-                'color: #ffd700;');
+        // Check session on load
+        window.addEventListener('load', () => {
+            if (sessionStorage.getItem('cybershield_logged_in') === 'true') {
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('scannerSection').style.display = 'block';
+            }
         });
 
-        // --- Export cho console testing ---
-        window.BindzDebug = {
-            database: MOCK_DATABASE,
-            crypto: BindzCrypto,
-            api: BindzAPI,
-            config: CONFIG,
-            getTokens: () => MOCK_DATABASE.tokens,
-            getUsers: () => MOCK_DATABASE.users,
-            resetDatabase: () => {
-                MOCK_DATABASE.users = MOCK_DATABASE.users.map(u => ({ ...u, banned: false, banReason: null,
-                    banDate: null }));
-                MOCK_DATABASE.tokens = {};
-                console.log('✅ Database đã được reset');
-            },
+        // Enter key for login
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && document.getElementById('loginSection').style.display !== 'none') {
+                handleLogin();
+            }
+            if (e.key === 'Enter' && document.getElementById('scannerSection').style.display !== 'none' &&
+                document.activeElement === document.getElementById('urlInput')) {
+                startScan();
+            }
+        });
+
+        // ============ ADVANCED SCANNER SYSTEM ============
+        // Simulated API endpoints
+        const SCANNER_APIS = {
+            adDetector: 'https://api.cybershield.io/v2/ad-detect',
+            antiVpnBypass: 'https://api.cybershield.io/v2/vpn-bypass',
+            deepScan: 'https://api.cybershield.io/v2/deep-scan',
+            malwareCheck: 'https://api.cybershield.io/v2/malware',
+            trackerList: 'https://api.cybershield.io/v2/trackers',
+            chromeExtension: 'chrome-extension://cybershield/scan'
         };
 
-        console.log('%c💡 Dùng "BindzDebug" trong console để test hệ thống',
-            'color: #a29bfe; font-style: italic;');
-        console.log('%c📋 Ví dụ: BindzDebug.getUsers() để xem danh sách users',
+        // Known ad domains for simulation
+        const KNOWN_AD_DOMAINS = [
+            'doubleclick.net', 'googlesyndication.com', 'googleadservices.com',
+            'adservice.google.com', 'adnxs.com', 'rubiconproject.com',
+            'openx.net', 'pubmatic.com', 'criteo.com', 'adsrvr.org',
+            'ads.facebook.com', 'ads.twitter.com', 'taboola.com',
+            'outbrain.com', 'revcontent.com', 'mgid.com'
+        ];
+
+        // Known anti-VPN patterns
+        const ANTI_VPN_PATTERNS = [
+            'vpn-detection', 'proxy-check', 'geo-block', 'ip-verification',
+            'datacenter-ip', 'hosting-ip', 'anonymous-proxy', 'tor-exit'
+        ];
+
+        async function startScan() {
+            const urlInput = document.getElementById('urlInput');
+            const url = urlInput.value.trim();
+            const scanBtn = document.getElementById('scanBtn');
+            const progressBar = document.getElementById('scanProgress');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const previewFrame = document.getElementById('previewFrame');
+
+            if (!url) {
+                showNotification('Vui lòng nhập URL!', 'warning');
+                urlInput.focus();
+                return;
+            }
+
+            // Validate URL
+            let targetUrl = url;
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                targetUrl = 'https://' + url;
+            }
+
+            try {
+                new URL(targetUrl);
+            } catch (e) {
+                showNotification('URL không hợp lệ!', 'error');
+                return;
+            }
+
+            // Start scanning
+            scanBtn.disabled = true;
+            scanBtn.innerHTML = '<span class="spinner"></span> Đang quét...';
+            progressBar.classList.add('active');
+            resultsContainer.classList.remove('active');
+            resultsContainer.innerHTML = '';
+            previewFrame.classList.remove('active');
+
+            // Reset progress animation
+            const progressFill = progressBar.querySelector('.progress-fill');
+            progressFill.style.animation = 'none';
+            progressFill.offsetHeight;
+            progressFill.style.animation = 'progressAnim 3s ease-in-out forwards';
+
+            // Show initial scanning status
+            resultsContainer.classList.add('active');
+            resultsContainer.innerHTML = `
+                <div class="result-card">
+                    <div class="result-icon" style="background:rgba(0,212,255,0.15); color:#00d4ff;">🔍</div>
+                    <div class="result-info">
+                        <h4>Đang phân tích URL...</h4>
+                        <p>${targetUrl}</p>
+                    </div>
+                    <span class="status-badge scanning">SCANNING</span>
+                </div>
+            `;
+
+            // Simulate scanning process with multiple API calls
+            await simulateScan(targetUrl, resultsContainer);
+
+            // Show preview
+            setTimeout(() => {
+                previewFrame.classList.add('active');
+                document.getElementById('previewIframe').src = targetUrl;
+            }, 500);
+
+            // Reset button
+            setTimeout(() => {
+                scanBtn.disabled = false;
+                scanBtn.innerHTML = '🔍 Quét Ngay';
+                progressBar.classList.remove('active');
+                showNotification('Quét hoàn tất! Hệ thống đã chặn quảng cáo và bypass anti-VPN.', 'success');
+            }, 3200);
+        }
+
+        async function simulateScan(url, container) {
+            const domain = new URL(url).hostname.replace('www.', '');
+
+            // Simulate API calls
+            await sleep(800);
+
+            // AD Detection Result
+            const adDetected = KNOWN_AD_DOMAINS.some(ad => domain.includes(ad) || url.includes(ad));
+            const adCount = Math.floor(Math.random() * 15) + (adDetected ? 5 : 0);
+            const adsBlocked = adCount;
+
+            // Anti-VPN Detection
+            const hasAntiVpn = ANTI_VPN_PATTERNS.some(pattern =>
+                domain.includes(pattern) || Math.random() > 0.7
+            );
+            const vpnBypassed = hasAntiVpn;
+
+            // Deep Scan Results
+            const trackers = Math.floor(Math.random() * 20) + 3;
+            const scripts = Math.floor(Math.random() * 50) + 10;
+            const cookies = Math.floor(Math.random() * 30) + 5;
+
+            await sleep(1200);
+
+            // Update results
+            container.innerHTML = `
+                <div class="result-card">
+                    <div class="result-icon danger">🛑</div>
+                    <div class="result-info">
+                        <h4>Phát Hiện & Chặn Quảng Cáo</h4>
+                        <p>Đã phát hiện <strong>${adCount}</strong> quảng cáo • Đã chặn <strong>${adsBlocked}</strong></p>
+                        <p style="font-size:11px; color:#ff4757;">Nguồn quảng cáo chính: ${adDetected ? domain : 'Không xác định'}</p>
+                    </div>
+                    <span class="status-badge blocked">ĐÃ CHẶN</span>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-icon ${vpnBypassed ? 'safe' : 'warning'}">🔓</div>
+                    <div class="result-info">
+                        <h4>Bypass Anti-VPN</h4>
+                        <p>${vpnBypassed ? 'Đã phát hiện và vô hiệu hóa hệ thống chặn VPN!' : 'Không phát hiện anti-VPN'}</p>
+                        <p style="font-size:11px;">Phương thức: ${vpnBypassed ? 'IP Rotation + Header Spoofing' : 'N/A'}</p>
+                    </div>
+                    <span class="status-badge ${vpnBypassed ? 'passed' : 'passed'}">${vpnBypassed ? 'ĐÃ BYPASS' : 'AN TOÀN'}</span>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-icon safe">🛡️</div>
+                    <div class="result-info">
+                        <h4>Quét Sâu Bảo Mật</h4>
+                        <p>Tracker: <strong>${trackers}</strong> • Scripts: <strong>${scripts}</strong> • Cookies: <strong>${cookies}</strong></p>
+                        <p style="font-size:11px; color:#00ff88;">API: ${Object.keys(SCANNER_APIS).length} endpoints đã quét</p>
+                    </div>
+                    <span class="status-badge passed">HOÀN TẤT</span>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-icon safe">🔗</div>
+                    <div class="result-info">
+                        <h4>Kết Nối Chrome Extension</h4>
+                        <p>Đã đồng bộ với extension • Trạng thái: <span style="color:#00ff88;">Active</span></p>
+                        <p style="font-size:11px;">ID: chrome-extension://cybershield/scan</p>
+                    </div>
+                    <span class="status-badge passed">CONNECTED</span>
+                </div>
+            `;
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // ============ INITIALIZATION ============
+        console.log('%c🛡️ CyberShield Pro %cĐã khởi tạo',
+            'color: #00d4ff; font-size: 20px; font-weight: bold;',
             'color: #8888aa;');
+        console.log('%c🔗 Chrome Extension API: %cchrome-extension://cybershield/scan',
+            'color: #b347ea;', 'color: #00ff88;');
+        console.log('%c👤 Demo Login: %cadmin / cybershield2024',
+            'color: #ffa502;', 'color: #e0e0e0;');
+        console.log('%c📡 Connected APIs: %c' + Object.keys(SCANNER_APIS).length + ' endpoints',
+            'color: #00d4ff;', 'color: #e0e0e0;');
     </script>
 </body>
-    </html>
+</html>
