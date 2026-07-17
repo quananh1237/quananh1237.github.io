@@ -2,37 +2,1600 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Bindz Auth | Web App</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bindz Login Account - Hệ Thống Bảo Mật Cao</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --card-bg: #12121a;
+            --border: #1e1e2e;
+            --text: #e0e0e0;
+            --text-secondary: #8888aa;
+            --primary: #6c5ce7;
+            --primary-glow: #a29bfe;
+            --danger: #e74c3c;
+            --danger-glow: #ff6b6b;
+            --success: #2ecc71;
+            --success-glow: #55efc4;
+            --warning: #f39c12;
+            --gold: #ffd700;
+            --radius: 16px;
+            --transition: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated background particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: floatParticle 8s infinite ease-in-out;
+            opacity: 0;
+        }
+
+        @keyframes floatParticle {
+            0% {
+                opacity: 0;
+                transform: translateY(100vh) scale(0) rotate(0deg);
+            }
+            10% {
+                opacity: 0.8;
+            }
+            30% {
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 0.7;
+                transform: translateY(40vh) scale(1.5) rotate(180deg);
+            }
+            70% {
+                opacity: 0.2;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-20vh) scale(0) rotate(360deg);
+            }
+        }
+
+        /* Grid background */
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(108, 92, 231, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(108, 92, 231, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+            animation: gridShift 20s infinite linear;
+        }
+
+        @keyframes gridShift {
+            0%,
+            100% {
+                background-position: 0 0;
+            }
+            50% {
+                background-position: 30px 30px;
+            }
+        }
+
+        /* Glow orbs */
+        .glow-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            pointer-events: none;
+            z-index: 0;
+            animation: orbFloat 10s infinite ease-in-out;
+        }
+
+        .glow-orb.orb1 {
+            width: 400px;
+            height: 400px;
+            background: rgba(108, 92, 231, 0.12);
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .glow-orb.orb2 {
+            width: 350px;
+            height: 350px;
+            background: rgba(255, 107, 107, 0.08);
+            bottom: -100px;
+            right: -100px;
+            animation-delay: -5s;
+        }
+
+        @keyframes orbFloat {
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+            25% {
+                transform: translate(50px, -30px) scale(1.1);
+            }
+            50% {
+                transform: translate(-20px, 40px) scale(0.9);
+            }
+            75% {
+                transform: translate(-40px, -20px) scale(1.05);
+            }
+        }
+
+        /* Main container */
+        .main-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 900px;
+            perspective: 1000px;
+        }
+
+        /* Intro overlay */
+        .intro-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: all 0.8s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+
+        .intro-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(1.1);
+        }
+
+        .intro-logo {
+            font-size: 60px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), #a29bfe, #fd79a8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: logoPulse 2s infinite, logoGlitch 3s infinite;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+        }
+
+        @keyframes logoPulse {
+            0%,
+            100% {
+                filter: brightness(1) drop-shadow(0 0 20px rgba(108, 92, 231, 0.5));
+            }
+            50% {
+                filter: brightness(1.3) drop-shadow(0 0 40px rgba(162, 155, 254, 0.8));
+            }
+        }
+
+        @keyframes logoGlitch {
+            0%,
+            90%,
+            92%,
+            100% {
+                transform: translate(0);
+            }
+            91% {
+                transform: translate(-3px, 2px) skew(2deg);
+            }
+            93% {
+                transform: translate(3px, -1px) skew(-1deg);
+            }
+        }
+
+        .intro-subtitle {
+            color: var(--text-secondary);
+            font-size: 16px;
+            letter-spacing: 8px;
+            margin-top: 20px;
+            animation: fadeInUp 1s 0.5s both;
+            text-transform: uppercase;
+        }
+
+        .intro-loading {
+            margin-top: 40px;
+            width: 200px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .intro-loading-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-glow), #fd79a8);
+            border-radius: 10px;
+            animation: loadingAnim 2s 0.3s forwards;
+            width: 0;
+        }
+
+        @keyframes loadingAnim {
+            0% {
+                width: 0;
+            }
+            50% {
+                width: 70%;
+            }
+            80% {
+                width: 85%;
+            }
+            100% {
+                width: 100%;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Tab navigation */
+        .tab-nav {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 5px;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab-nav::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: calc(50% - 10px);
+            height: calc(100% - 10px);
+            background: rgba(108, 92, 231, 0.15);
+            border-radius: 12px;
+            transition: var(--transition);
+            z-index: 0;
+        }
+
+        .tab-nav.scan-active::before {
+            left: calc(50% + 5px);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 14px 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 12px;
+            position: relative;
+            z-index: 1;
+            transition: var(--transition);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 13px;
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            text-shadow: 0 0 20px rgba(162, 155, 254, 0.5);
+        }
+
+        .tab-btn:hover {
+            color: #fff;
+        }
+
+        /* Card */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(108, 92, 231, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.03);
+            transition: var(--transition);
+            animation: cardAppear 0.6s ease-out;
+        }
+
+        @keyframes cardAppear {
+            from {
+                opacity: 0;
+                transform: translateY(40px) rotateX(10deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) rotateX(0);
+            }
+        }
+
+        .card:hover {
+            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6),
+                0 0 0 1px rgba(108, 92, 231, 0.2),
+                0 0 40px rgba(108, 92, 231, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .card-title {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #fff, var(--primary-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-transform: uppercase;
+        }
+
+        .card-subtitle {
+            color: var(--text-secondary);
+            font-size: 13px;
+            letter-spacing: 3px;
+            margin-top: 8px;
+            text-transform: uppercase;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 22px;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            transition: var(--transition);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 15px;
+            transition: var(--transition);
+            outline: none;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.15),
+                0 0 30px rgba(108, 92, 231, 0.2);
+            background: rgba(108, 92, 231, 0.05);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 18px;
+            top: 42px;
+            color: var(--text-secondary);
+            font-size: 18px;
+            transition: var(--transition);
+        }
+
+        .form-input:focus~.input-icon {
+            color: var(--primary-glow);
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+            color: #fff;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #8b7cf0);
+            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 12px 35px rgba(108, 92, 231, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #c0392b);
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning), #e67e22);
+            box-shadow: 0 8px 25px rgba(243, 156, 18, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #27ae60);
+            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.4);
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            z-index: 10000;
+            padding: 18px 25px;
+            border-radius: 14px;
+            color: #fff;
+            font-weight: 600;
+            letter-spacing: 1px;
+            animation: slideInRight 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            max-width: 400px;
+            backdrop-filter: blur(20px);
+            font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .notification.success {
+            background: rgba(46, 204, 113, 0.9);
+        }
+        .notification.error {
+            background: rgba(231, 76, 60, 0.9);
+        }
+        .notification.warning {
+            background: rgba(243, 156, 18, 0.9);
+        }
+        .notification.info {
+            background: rgba(52, 152, 219, 0.9);
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(120px) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(120px) scale(0.8);
+            }
+        }
+
+        /* User info display */
+        .user-info {
+            background: rgba(108, 92, 231, 0.08);
+            border: 1px solid rgba(108, 92, 231, 0.2);
+            border-radius: 14px;
+            padding: 20px;
+            margin-top: 25px;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .user-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 13px;
+        }
+
+        .user-info-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-info-label {
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .user-info-value {
+            color: #fff;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .token-display {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            word-break: break-all;
+            color: var(--primary-glow);
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            margin-top: 5px;
+        }
+
+        /* Scan results */
+        .scan-results {
+            margin-top: 25px;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .scan-result-item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        .scan-result-item:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .scan-result-item.flagged {
+            border-color: rgba(231, 76, 60, 0.5);
+            background: rgba(231, 76, 60, 0.08);
+            animation: flaggedPulse 2s infinite;
+        }
+
+        @keyframes flaggedPulse {
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 0 15px rgba(231, 76, 60, 0);
+            }
+        }
+
+        .badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .badge-danger {
+            background: rgba(231, 76, 60, 0.3);
+            color: #ff6b6b;
+            border: 1px solid rgba(231, 76, 60, 0.5);
+        }
+
+        .badge-clean {
+            background: rgba(46, 204, 113, 0.3);
+            color: #55efc4;
+            border: 1px solid rgba(46, 204, 113, 0.5);
+        }
+
+        .badge-warning {
+            background: rgba(243, 156, 18, 0.3);
+            color: #ffd700;
+            border: 1px solid rgba(243, 156, 18, 0.5);
+        }
+
+        /* Loading spinner */
+        .spinner {
+            width: 22px;
+            height: 22px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Hidden */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .card {
+                padding: 25px;
+            }
+            .card-title {
+                font-size: 22px;
+            }
+            .main-container {
+                margin: 15px;
+            }
+            .notification {
+                left: 15px;
+                right: 15px;
+                top: 15px;
+                max-width: none;
+            }
+            .intro-logo {
+                font-size: 36px;
+            }
+        }
+
+        /* Scan animation */
+        .scanning-indicator {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .scan-ring {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid var(--primary);
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        .scan-text {
+            color: var(--primary-glow);
+            letter-spacing: 3px;
+            font-size: 13px;
+            animation: logoPulse 1.5s infinite;
+        }
+
+        /* Tooltip */
+        .tooltip-trigger {
+            cursor: help;
+            border-bottom: 1px dashed var(--text-secondary);
+        }
+
+        /* Shake animation */
+        @keyframes shake {
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+            25% {
+                transform: translateX(-8px);
+            }
+            75% {
+                transform: translateX(8px);
+            }
+        }
+
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+    </style>
 </head>
 <body>
 
-<div class="container" id="mainContainer">
-    <!-- Server status -->
-    <div class="server-status" id="serverStatus">
-        🔄 Đang kiểm tra server...
+    <!-- Background effects -->
+    <div class="particles" id="particles"></div>
+    <div class="grid-bg"></div>
+    <div class="glow-orb orb1"></div>
+    <div class="glow-orb orb2"></div>
+
+    <!-- Intro overlay -->
+    <div class="intro-overlay" id="introOverlay">
+        <div class="intro-logo">BINDZ</div>
+        <div class="intro-subtitle">Security System v3.0</div>
+        <div class="intro-loading">
+            <div class="intro-loading-bar"></div>
+        </div>
     </div>
 
-    <!-- Title -->
-    <h1 class="title">🔐 BINDZ AUTH</h1>
+    <!-- Notification container -->
+    <div id="notificationContainer"></div>
 
-    <!-- Key input -->
-    <input type="text" id="keyInput" class="key-input" placeholder="🔑 Nhập Key..." autocomplete="off">
+    <!-- Main container -->
+    <div class="main-container" id="mainContainer">
+        <!-- Tab navigation -->
+        <div class="tab-nav" id="tabNav">
+            <button class="tab-btn active" data-tab="login" onclick="switchTab('login')">
+                🔐 Login Account
+            </button>
+            <button class="tab-btn" data-tab="scan" onclick="switchTab('scan')">
+                🛡️ Scan Cheat
+            </button>
+        </div>
 
-    <!-- Check button -->
-    <button id="checkBtn" class="check-btn">✅ CHECK KEY</button>
+        <!-- Login card -->
+        <div class="card" id="loginCard">
+            <div class="card-header">
+                <div class="card-title">Bindz Login</div>
+                <div class="card-subtitle">Secure Access Token System</div>
+            </div>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">📛 Username</label>
+                    <input type="text" class="form-input" id="username" placeholder="Nhập username..." required>
+                    <span class="input-icon">👤</span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">🔒 Password</label>
+                    <input type="password" class="form-input" id="password" placeholder="Nhập password..." required>
+                    <span class="input-icon">🔑</span>
+                </div>
+                <button type="submit" class="btn btn-primary" id="loginBtn">
+                    <span id="loginBtnText">Đăng Nhập</span>
+                    <span id="loginBtnSpinner" class="hidden"><span class="spinner"></span>Đang xử lý...</span>
+                </button>
+            </form>
+            <div id="loginResult" class="hidden"></div>
+        </div>
 
-    <!-- Result panel (ẩn ban đầu) -->
-    <div id="resultPanel" class="result-panel hidden">
-        <div class="bindz-text">✨ BINDZ ✨</div>
-        <div class="credit-text">@DeepSeek && @Bindz</div>
+        <!-- Scan card -->
+        <div class="card hidden" id="scanCard">
+            <div class="card-header">
+                <div class="card-title">Bindz Scan Cheat</div>
+                <div class="card-subtitle">Third-Party Software Detection</div>
+            </div>
+            <form id="scanForm" onsubmit="handleScan(event)">
+                <div class="form-group">
+                    <label class="form-label">🎯 Target Username / ID</label>
+                    <input type="text" class="form-input" id="scanTarget" placeholder="Nhập username cần quét..." required>
+                    <span class="input-icon">🎯</span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">🔐 Admin Access Token</label>
+                    <input type="text" class="form-input" id="scanToken" placeholder="Nhập access token admin..." required>
+                    <span class="input-icon">🪪</span>
+                </div>
+                <button type="submit" class="btn btn-warning" id="scanBtn">
+                    <span id="scanBtnText">🔍 Quét Ngay</span>
+                    <span id="scanBtnSpinner" class="hidden"><span class="spinner"></span>Đang quét...</span>
+                </button>
+            </form>
+            <div id="scanResult" class="hidden"></div>
+        </div>
+
+        <!-- Ban action card (shown after scan) -->
+        <div class="card hidden" id="banCard" style="margin-top: 20px;">
+            <div class="card-header">
+                <div class="card-title">⛔ Ban Account</div>
+                <div class="card-subtitle">Execute Account Ban</div>
+            </div>
+            <div id="banTargetInfo"></div>
+            <div class="form-group">
+                <label class="form-label">📝 Lý do Ban</label>
+                <textarea class="form-input" id="banReason" rows="3" placeholder="Nhập lý do ban tài khoản..."></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">⏱️ Thời hạn Ban (ngày, 0 = vĩnh viễn)</label>
+                <input type="number" class="form-input" id="banDuration" value="30" min="0">
+            </div>
+            <button class="btn btn-danger" onclick="executeBan()">
+                🚫 Xác Nhận Ban
+            </button>
+            <div id="banResult" class="hidden" style="margin-top: 20px;"></div>
+        </div>
     </div>
-</div>
 
-<!-- Snow effect canvas -->
-<canvas id="snowCanvas"></canvas>
+    <script>
+        // ============================================
+        // BINDZ LOGIN ACCOUNT - HỆ THỐNG BẢO MẬT CAO
+        // ============================================
 
-<script src="script.js"></script>
+        // --- Cấu hình ---
+        const CONFIG = {
+            APP_NAME: 'Bindz Login Account',
+            VERSION: '3.0.0',
+            API_BASE: 'https://api.bindz-security.com/v3', // API giả lập
+            TOKEN_SECRET: 'BINDZ_SUPER_SECRET_KEY_2024_X9K2M',
+            ENCRYPTION_ROUNDS: 128,
+            INTRO_DURATION: 2500,
+        };
+
+        // --- Database giả lập (Trong thực tế sẽ là server) ---
+        const MOCK_DATABASE = {
+            users: [
+                { id: 1, username: 'admin', password: 'admin123', role: 'admin', banned: false },
+                { id: 2, username: 'player1', password: 'pass123', role: 'user', banned: false },
+                { id: 3, username: 'hacker69', password: 'cheatpass', role: 'user', banned: true, banReason: 'Sử dụng aimbot',
+                    banDate: '2024-01-15' },
+                { id: 4, username: 'pro_gamer', password: 'pro123', role: 'user', banned: false },
+                { id: 5, username: 'cheater_x', password: 'x123', role: 'user', banned: true,
+                    banReason: 'Wallhack detected', banDate: '2024-06-20' },
+                { id: 6, username: 'night_owl', password: 'owl999', role: 'user', banned: false },
+                { id: 7, username: 'speed_hack', password: 'fast123', role: 'user', banned: true,
+                    banReason: 'Speed hack + Teleport', banDate: '2024-08-01' },
+                { id: 8, username: 'shadow_fox', password: 'fox456', role: 'user', banned: false },
+            ],
+            cheat_signatures: [
+                'aimbot_injector_v2.dll',
+                'wallhack_esp_mod.exe',
+                'speed_hack_teleport.sys',
+                'memory_editor_cheat.dll',
+                'packet_interceptor_hook.exe',
+                'd3d11_esp_overlay.dll',
+                'no_recoil_macro.exe',
+            ],
+            tokens: {},
+        };
+
+        // --- Hàm mã hóa Access Token cực mạnh ---
+        class BindzCrypto {
+            static generateSalt(length = 32) {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
+                let salt = '';
+                const randomValues = new Uint32Array(length);
+                crypto.getRandomValues(randomValues);
+                for (let i = 0; i < length; i++) {
+                    salt += chars[randomValues[i] % chars.length];
+                }
+                return salt;
+            }
+
+            static async hashPassword(password, salt) {
+                const encoder = new TextEncoder();
+                let data = encoder.encode(password + salt + CONFIG.TOKEN_SECRET);
+
+                // Mô phỏng SHA-256 + nhiều vòng lặp
+                for (let i = 0; i < CONFIG.ENCRYPTION_ROUNDS; i++) {
+                    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                    data = new Uint8Array([...new Uint8Array(hashBuffer), ...encoder.encode(CONFIG.TOKEN_SECRET)]);
+                }
+
+                const finalHash = await crypto.subtle.digest('SHA-512', data);
+                const hashArray = Array.from(new Uint8Array(finalHash));
+                return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            }
+
+            static async generateToken(userData) {
+                const timestamp = Date.now();
+                const salt = this.generateSalt(48);
+                const payload = JSON.stringify({
+                    uid: userData.id,
+                    username: userData.username,
+                    role: userData.role,
+                    ts: timestamp,
+                    salt: salt,
+                    app: CONFIG.APP_NAME,
+                    version: CONFIG.VERSION,
+                });
+
+                const signature = await this.hashPassword(payload, salt);
+                const tokenData = btoa(encodeURIComponent(payload)) + '.' + signature.substring(0, 64);
+
+                // Mã hóa thêm một lớp
+                const finalToken = 'BINDZ_' + btoa(tokenData.split('').reverse().join('')) + '_SECURE';
+                return finalToken;
+            }
+
+            static async verifyToken(token) {
+                try {
+                    if (!token.startsWith('BINDZ_') || !token.endsWith('_SECURE')) {
+                        return null;
+                    }
+
+                    const innerToken = token.replace('BINDZ_', '').replace('_SECURE', '');
+                    const reversed = atob(innerToken).split('').reverse().join('');
+                    const parts = reversed.split('.');
+
+                    if (parts.length !== 2) return null;
+
+                    const payloadStr = decodeURIComponent(atob(parts[0]));
+                    const payload = JSON.parse(payloadStr);
+
+                    // Kiểm tra thời gian hết hạn (24 giờ)
+                    const tokenAge = Date.now() - payload.ts;
+                    if (tokenAge > 24 * 60 * 60 * 1000) {
+                        return { expired: true, payload };
+                    }
+
+                    // Kiểm tra chữ ký
+                    const expectedSig = await this.hashPassword(payloadStr, payload.salt);
+                    if (expectedSig.substring(0, 64) !== parts[1]) {
+                        return null;
+                    }
+
+                    return { valid: true, payload };
+                } catch (e) {
+                    return null;
+                }
+            }
+        }
+
+        // --- Hàm gọi API giả lập ---
+        class BindzAPI {
+            static async login(username, password) {
+                // Giả lập độ trễ mạng
+                await new Promise(r => setTimeout(r, 800 + Math.random() * 1200));
+
+                const user = MOCK_DATABASE.users.find(u =>
+                    u.username.toLowerCase() === username.toLowerCase() && u.password === password
+                );
+
+                if (!user) {
+                    throw new Error('Sai username hoặc password!');
+                }
+
+                if (user.banned) {
+                    throw new Error(`Tài khoản đã bị khóa! Lý do: ${user.banReason || 'Vi phạm điều khoản'}`);
+                }
+
+                const token = await BindzCrypto.generateToken(user);
+                MOCK_DATABASE.tokens[token] = {
+                    userId: user.id,
+                    createdAt: Date.now(),
+                    expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+                };
+
+                return {
+                    success: true,
+                    token,
+                    user: {
+                        id: user.id,
+                        username: user.username,
+                        role: user.role,
+                    },
+                    message: 'Đăng nhập thành công!',
+                };
+            }
+
+            static async scanCheat(targetUsername, adminToken) {
+                await new Promise(r => setTimeout(r, 1500 + Math.random() * 2000));
+
+                // Xác thực admin token
+                const tokenCheck = await BindzCrypto.verifyToken(adminToken);
+                if (!tokenCheck || !tokenCheck.valid) {
+                    throw new Error('Access token không hợp lệ hoặc đã hết hạn!');
+                }
+
+                if (tokenCheck.payload.role !== 'admin') {
+                    throw new Error('Bạn không có quyền thực hiện thao tác này!');
+                }
+
+                const user = MOCK_DATABASE.users.find(u =>
+                    u.username.toLowerCase() === targetUsername.toLowerCase()
+                );
+
+                if (!user) {
+                    throw new Error('Không tìm thấy người dùng!');
+                }
+
+                // Giả lập quét cheat
+                const hasCheatSignatures = Math.random() < 0.4; // 40% cơ hội phát hiện
+                const detectedCheats = [];
+                const scanDetails = [];
+
+                if (hasCheatSignatures || user.banned) {
+                    const cheatCount = Math.floor(Math.random() * 3) + 1;
+                    for (let i = 0; i < cheatCount; i++) {
+                        const randomCheat = MOCK_DATABASE.cheat_signatures[
+                            Math.floor(Math.random() * MOCK_DATABASE.cheat_signatures.length)
+                        ];
+                        detectedCheats.push(randomCheat);
+                    }
+                }
+
+                // Chi tiết quét
+                MOCK_DATABASE.cheat_signatures.forEach(sig => {
+                    scanDetails.push({
+                        signature: sig,
+                        detected: detectedCheats.includes(sig),
+                        risk: detectedCheats.includes(sig) ? 'high' : 'low',
+                    });
+                });
+
+                const isSuspicious = detectedCheats.length > 0 || user.banned;
+
+                return {
+                    success: true,
+                    target: {
+                        id: user.id,
+                        username: user.username,
+                        currentlyBanned: user.banned,
+                        banReason: user.banReason || null,
+                    },
+                    scanResult: {
+                        suspicious: isSuspicious,
+                        detectedCheats,
+                        scanDetails,
+                        scanTime: new Date().toISOString(),
+                        scannerToken: adminToken.substring(0, 20) + '...',
+                    },
+                };
+            }
+
+            static async banAccount(targetUsername, adminToken, reason, duration) {
+                await new Promise(r => setTimeout(r, 1000 + Math.random() * 1000));
+
+                const tokenCheck = await BindzCrypto.verifyToken(adminToken);
+                if (!tokenCheck || !tokenCheck.valid || tokenCheck.payload.role !== 'admin') {
+                    throw new Error('Quyền admin không hợp lệ!');
+                }
+
+                const user = MOCK_DATABASE.users.find(u =>
+                    u.username.toLowerCase() === targetUsername.toLowerCase()
+                );
+
+                if (!user) {
+                    throw new Error('Không tìm thấy người dùng!');
+                }
+
+                user.banned = true;
+                user.banReason = reason || 'Vi phạm điều khoản sử dụng';
+                user.banDate = new Date().toISOString();
+                user.banDuration = parseInt(duration) || 0;
+                user.bannedBy = tokenCheck.payload.username;
+
+                return {
+                    success: true,
+                    message: `Đã ban tài khoản "${user.username}" thành công!`,
+                    banInfo: {
+                        username: user.username,
+                        reason: user.banReason,
+                        duration: user.banDuration === 0 ? 'Vĩnh viễn' : `${user.banDuration} ngày`,
+                        bannedBy: user.bannedBy,
+                        timestamp: user.banDate,
+                    },
+                };
+            }
+        }
+
+        // --- UI Controller ---
+        class UIController {
+            static showNotification(message, type = 'info', duration = 4000) {
+                const container = document.getElementById('notificationContainer');
+                const notif = document.createElement('div');
+                notif.className = `notification ${type}`;
+                notif.textContent = message;
+                container.appendChild(notif);
+
+                setTimeout(() => {
+                    notif.style.animation = 'slideOutRight 0.4s ease-in forwards';
+                    setTimeout(() => notif.remove(), 400);
+                }, duration);
+            }
+
+            static showLoading(buttonId, showSpinner = true) {
+                const btn = document.getElementById(buttonId);
+                const textEl = document.getElementById(buttonId + 'Text');
+                const spinnerEl = document.getElementById(buttonId + 'Spinner');
+
+                if (showSpinner) {
+                    textEl?.classList.add('hidden');
+                    spinnerEl?.classList.remove('hidden');
+                    btn.disabled = true;
+                } else {
+                    textEl?.classList.remove('hidden');
+                    spinnerEl?.classList.add('hidden');
+                    btn.disabled = false;
+                }
+            }
+
+            static shakeElement(element) {
+                element.classList.add('shake');
+                setTimeout(() => element.classList.remove('shake'), 500);
+            }
+        }
+
+        // --- App Controller ---
+        class AppController {
+            static currentTab = 'login';
+            static lastScanResult = null;
+
+            static init() {
+                this.createParticles();
+                this.handleIntro();
+            }
+
+            static createParticles() {
+                const container = document.getElementById('particles');
+                for (let i = 0; i < 50; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 8 + 's';
+                    particle.style.animationDuration = (6 + Math.random() * 10) + 's';
+                    particle.style.width = (2 + Math.random() * 5) + 'px';
+                    particle.style.height = particle.style.width;
+                    container.appendChild(particle);
+                }
+            }
+
+            static handleIntro() {
+                const overlay = document.getElementById('introOverlay');
+                const mainContainer = document.getElementById('mainContainer');
+
+                mainContainer.style.opacity = '0';
+                mainContainer.style.transform = 'translateY(30px)';
+
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    mainContainer.style.transition = 'all 0.8s cubic-bezier(0.25, 0.8, 0.25, 1.2)';
+                    mainContainer.style.opacity = '1';
+                    mainContainer.style.transform = 'translateY(0)';
+
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                    }, 800);
+                }, CONFIG.INTRO_DURATION);
+            }
+
+            static switchTab(tab) {
+                this.currentTab = tab;
+                const tabNav = document.getElementById('tabNav');
+                const loginCard = document.getElementById('loginCard');
+                const scanCard = document.getElementById('scanCard');
+                const banCard = document.getElementById('banCard');
+                const buttons = tabNav.querySelectorAll('.tab-btn');
+
+                buttons.forEach(b => b.classList.remove('active'));
+
+                if (tab === 'login') {
+                    tabNav.classList.remove('scan-active');
+                    buttons[0].classList.add('active');
+                    loginCard.classList.remove('hidden');
+                    scanCard.classList.add('hidden');
+                    banCard.classList.add('hidden');
+                    loginCard.style.animation = 'none';
+                    loginCard.offsetHeight;
+                    loginCard.style.animation = 'cardAppear 0.6s ease-out';
+                } else {
+                    tabNav.classList.add('scan-active');
+                    buttons[1].classList.add('active');
+                    loginCard.classList.add('hidden');
+                    scanCard.classList.remove('hidden');
+                    banCard.classList.add('hidden');
+                    scanCard.style.animation = 'none';
+                    scanCard.offsetHeight;
+                    scanCard.style.animation = 'cardAppear 0.6s ease-out';
+                }
+            }
+        }
+
+        // --- Event Handlers ---
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const loginResult = document.getElementById('loginResult');
+            const form = document.getElementById('loginForm');
+
+            if (!username || !password) {
+                UIController.showNotification('Vui lòng nhập đầy đủ thông tin!', 'warning');
+                UIController.shakeElement(form);
+                return;
+            }
+
+            UIController.showLoading('loginBtn', true);
+
+            try {
+                const result = await BindzAPI.login(username, password);
+
+                // Hiển thị kết quả
+                loginResult.classList.remove('hidden');
+                loginResult.innerHTML = `
+                    <div class="user-info">
+                        <div style="text-align: center; margin-bottom: 15px;">
+                            <span style="font-size: 40px;">✅</span>
+                            <p style="color: #55efc4; font-weight: 700; margin-top: 5px;">${result.message}</p>
+                        </div>
+                        <div class="user-info-item">
+                            <span class="user-info-label">👤 Username</span>
+                            <span class="user-info-value">${result.user.username}</span>
+                        </div>
+                        <div class="user-info-item">
+                            <span class="user-info-label">🆔 User ID</span>
+                            <span class="user-info-value">#${result.user.id}</span>
+                        </div>
+                        <div class="user-info-item">
+                            <span class="user-info-label">🛡️ Role</span>
+                            <span class="user-info-value" style="color: #ffd700;">${result.user.role.toUpperCase()}</span>
+                        </div>
+                        <div class="user-info-item">
+                            <span class="user-info-label">🔐 Access Token</span>
+                        </div>
+                        <div class="token-display">${result.token}</div>
+                        <p style="font-size: 11px; color: var(--text-secondary); margin-top: 8px; text-align: center;">
+                            ⚠️ Token này được mã hóa với ${CONFIG.ENCRYPTION_ROUNDS} vòng SHA-256/SHA-512
+                        </p>
+                    </div>
+                `;
+                loginResult.style.animation = 'none';
+                loginResult.offsetHeight;
+                loginResult.style.animation = 'fadeInUp 0.5s ease-out';
+
+                UIController.showNotification('🎉 Đăng nhập thành công!', 'success');
+
+                // Tự động chuyển tab nếu là admin
+                if (result.user.role === 'admin') {
+                    setTimeout(() => {
+                        UIController.showNotification(
+                            '💡 Bạn có quyền Admin! Có thể sử dụng tính năng Scan Cheat.',
+                            'info',
+                            5000
+                        );
+                    }, 1500);
+                }
+            } catch (error) {
+                UIController.showNotification('❌ ' + error.message, 'error');
+                UIController.shakeElement(form);
+                loginResult.classList.add('hidden');
+            } finally {
+                UIController.showLoading('loginBtn', false);
+            }
+        }
+
+        async function handleScan(event) {
+            event.preventDefault();
+
+            const targetUsername = document.getElementById('scanTarget').value.trim();
+            const adminToken = document.getElementById('scanToken').value.trim();
+            const scanResult = document.getElementById('scanResult');
+            const banCard = document.getElementById('banCard');
+            const form = document.getElementById('scanForm');
+
+            if (!targetUsername || !adminToken) {
+                UIController.showNotification('Vui lòng nhập đầy đủ thông tin!', 'warning');
+                UIController.shakeElement(form);
+                return;
+            }
+
+            UIController.showLoading('scanBtn', true);
+            scanResult.classList.remove('hidden');
+            scanResult.innerHTML = `
+                <div class="scanning-indicator">
+                    <div class="scan-ring"></div>
+                    <p class="scan-text">🔍 ĐANG QUÉT HỆ THỐNG...</p>
+                    <p style="color: var(--text-secondary); font-size: 12px; margin-top: 10px;">
+                        Kiểm tra chữ ký cheat trong bộ nhớ...
+                    </p>
+                </div>
+            `;
+            banCard.classList.add('hidden');
+
+            try {
+                const result = await BindzAPI.scanCheat(targetUsername, adminToken);
+                AppController.lastScanResult = result;
+
+                const suspicious = result.scanResult.suspicious;
+                const statusIcon = suspicious ? '🚨' : '✅';
+                const statusColor = suspicious ? 'var(--danger-glow)' : 'var(--success-glow)';
+                const statusText = suspicious ? 'PHÁT HIỆN NGHI VẤN' : 'TÀI KHOẢN SẠCH';
+
+                let scanDetailsHTML = result.scanResult.scanDetails.map(detail => `
+                    <div class="scan-result-item ${detail.detected ? 'flagged' : ''}">
+                        <div>
+                            <strong style="font-size: 13px;">📁 ${detail.signature}</strong>
+                            <br>
+                            <span style="font-size: 11px; color: var(--text-secondary);">
+                                Risk: ${detail.risk.toUpperCase()}
+                            </span>
+                        </div>
+                        <span class="badge ${detail.detected ? 'badge-danger' : 'badge-clean'}">
+                            ${detail.detected ? '⚠️ DETECTED' : '✅ CLEAN'}
+                        </span>
+                    </div>
+                `).join('');
+
+                let detectedCheatsHTML = '';
+                if (result.scanResult.detectedCheats.length > 0) {
+                    detectedCheatsHTML = `
+                        <div style="margin-top: 15px; padding: 15px; background: rgba(231, 76, 60, 0.1); border-radius: 10px; border: 1px solid rgba(231, 76, 60, 0.3);">
+                            <strong style="color: #ff6b6b;">🚨 Phần mềm thứ 3 được phát hiện:</strong>
+                            <ul style="margin-top: 10px; list-style: none;">
+                                ${result.scanResult.detectedCheats.map(cheat => `
+                                    <li style="padding: 5px 0; color: #ff6b6b; font-family: monospace;">⚠️ ${cheat}</li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+
+                scanResult.innerHTML = `
+                    <div class="user-info" style="text-align: center; margin-bottom: 20px;">
+                        <span style="font-size: 50px;">${statusIcon}</span>
+                        <h3 style="color: ${statusColor}; margin: 10px 0;">${statusText}</h3>
+                        <p style="color: var(--text-secondary); font-size: 13px;">
+                            Target: <strong>${result.target.username}</strong> | 
+                            ID: #${result.target.id} |
+                            Trạng thái: ${result.target.currentlyBanned ? '🔴 Đã bị ban' : '🟢 Hoạt động'}
+                        </p>
+                        ${result.target.banReason ? `
+                            <p style="color: #ff6b6b; font-size: 12px; margin-top: 5px;">
+                                Lý do ban trước đó: ${result.target.banReason}
+                            </p>
+                        ` : ''}
+                    </div>
+                    <div class="scan-results">
+                        <h4 style="letter-spacing: 2px; text-transform: uppercase; font-size: 13px; margin-bottom: 15px;">
+                            📊 Chi Tiết Quét
+                        </h4>
+                        ${scanDetailsHTML}
+                    </div>
+                    ${detectedCheatsHTML}
+                    <p style="font-size: 10px; color: var(--text-secondary); margin-top: 15px; text-align: center;">
+                        🕐 Thời gian quét: ${new Date(result.scanResult.scanTime).toLocaleString('vi-VN')}
+                    </p>
+                `;
+
+                // Hiển thị nút ban nếu phát hiện nghi vấn
+                if (suspicious && !result.target.currentlyBanned) {
+                    banCard.classList.remove('hidden');
+                    document.getElementById('banTargetInfo').innerHTML = `
+                        <div style="background: rgba(231, 76, 60, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: center;">
+                            <p style="color: #ff6b6b;">🎯 Chuẩn bị ban tài khoản: <strong>${result.target.username}</strong></p>
+                        </div>
+                    `;
+                    document.getElementById('banReason').value = 'Sử dụng phần mềm thứ 3: ' + result.scanResult
+                        .detectedCheats.join(', ');
+                    banCard.style.animation = 'none';
+                    banCard.offsetHeight;
+                    banCard.style.animation = 'cardAppear 0.6s ease-out';
+                    banCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else if (result.target.currentlyBanned) {
+                    UIController.showNotification('ℹ️ Tài khoản này đã bị ban từ trước.', 'info');
+                } else {
+                    UIController.showNotification('✅ Tài khoản sạch, không phát hiện cheat!', 'success');
+                }
+
+                UIController.showNotification(
+                    suspicious ? '🚨 Phát hiện dấu hiệu cheat!' : '✅ Quét hoàn tất - Tài khoản an toàn',
+                    suspicious ? 'warning' : 'success'
+                );
+            } catch (error) {
+                UIController.showNotification('❌ ' + error.message, 'error');
+                UIController.shakeElement(form);
+                scanResult.classList.add('hidden');
+                banCard.classList.add('hidden');
+            } finally {
+                UIController.showLoading('scanBtn', false);
+            }
+        }
+
+        async function executeBan() {
+            const targetUsername = document.getElementById('scanTarget').value.trim();
+            const adminToken = document.getElementById('scanToken').value.trim();
+            const banReason = document.getElementById('banReason').value.trim();
+            const banDuration = document.getElementById('banDuration').value;
+            const banResult = document.getElementById('banResult');
+
+            if (!targetUsername || !adminToken) {
+                UIController.showNotification('Thiếu thông tin! Vui lòng quét lại.', 'error');
+                return;
+            }
+
+            if (!banReason) {
+                UIController.showNotification('Vui lòng nhập lý do ban!', 'warning');
+                return;
+            }
+
+            UIController.showNotification('⏳ Đang thực thi lệnh ban...', 'info');
+
+            try {
+                const result = await BindzAPI.banAccount(targetUsername, adminToken, banReason, banDuration);
+
+                banResult.classList.remove('hidden');
+                banResult.innerHTML = `
+                    <div class="user-info" style="text-align: center; border-color: rgba(231, 76, 60, 0.5);">
+                        <span style="font-size: 50px;">🚫</span>
+                        <h3 style="color: #ff6b6b; margin: 10px 0;">ĐÃ BAN TÀI KHOẢN</h3>
+                        <div style="text-align: left; margin-top: 15px;">
+                            <div class="user-info-item">
+                                <span class="user-info-label">👤 Tài khoản</span>
+                                <span class="user-info-value">${result.banInfo.username}</span>
+                            </div>
+                            <div class="user-info-item">
+                                <span class="user-info-label">📝 Lý do</span>
+                                <span class="user-info-value" style="color: #ff6b6b;">${result.banInfo.reason}</span>
+                            </div>
+                            <div class="user-info-item">
+                                <span class="user-info-label">⏱️ Thời hạn</span>
+                                <span class="user-info-value">${result.banInfo.duration}</span>
+                            </div>
+                            <div class="user-info-item">
+                                <span class="user-info-label">👮 Bởi Admin</span>
+                                <span class="user-info-value" style="color: #ffd700;">${result.banInfo.bannedBy}</span>
+                            </div>
+                            <div class="user-info-item">
+                                <span class="user-info-label">🕐 Thời gian</span>
+                                <span class="user-info-value">${new Date(result.banInfo.timestamp).toLocaleString('vi-VN')}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                UIController.showNotification('🚫 ' + result.message, 'error', 6000);
+
+                // Cập nhật database local
+                const user = MOCK_DATABASE.users.find(u => u.username.toLowerCase() === targetUsername.toLowerCase());
+                if (user) {
+                    user.banned = true;
+                    user.banReason = banReason;
+                }
+
+                // Disable nút ban sau khi thực hiện
+                document.querySelector('#banCard .btn-danger').disabled = true;
+                document.querySelector('#banCard .btn-danger').textContent = '✅ Đã Ban';
+                document.querySelector('#banCard .btn-danger').style.opacity = '0.6';
+            } catch (error) {
+                UIController.showNotification('❌ ' + error.message, 'error');
+            }
+        }
+
+        function switchTab(tab) {
+            AppController.switchTab(tab);
+        }
+
+        // --- Khởi tạo ứng dụng ---
+        document.addEventListener('DOMContentLoaded', () => {
+            AppController.init();
+
+            // Thêm hiệu ứng hover cho card
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = (y - centerY) / centerY * -5;
+                    const rotateY = (x - centerX) / centerX * 5;
+
+                    card.style.transform =
+                        `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(5px)`;
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform =
+                        'perspective(1000px) rotateX(0) rotateY(0) translateZ(0)';
+                    card.style.transition = 'all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1.2)';
+                });
+            });
+
+            // Hiệu ứng gõ phím cho input
+            const inputs = document.querySelectorAll('.form-input');
+            inputs.forEach(input => {
+                input.addEventListener('focus', () => {
+                    input.parentElement.querySelector('.form-label').style.color = '#a29bfe';
+                });
+                input.addEventListener('blur', () => {
+                    input.parentElement.querySelector('.form-label').style.color = '';
+                });
+            });
+
+            console.log('%c🔐 Bindz Login Account v3.0 %cĐã khởi tạo',
+                'color: #a29bfe; font-size: 20px; font-weight: bold;',
+                'color: #8888aa;');
+            console.log('%c🛡️ Hệ thống bảo mật token với ' + CONFIG.ENCRYPTION_ROUNDS +
+                ' vòng mã hóa',
+                'color: #55efc4;');
+            console.log('%c⚠️ Đây là phiên bản demo - Backend giả lập',
+                'color: #ffd700;');
+        });
+
+        // --- Export cho console testing ---
+        window.BindzDebug = {
+            database: MOCK_DATABASE,
+            crypto: BindzCrypto,
+            api: BindzAPI,
+            config: CONFIG,
+            getTokens: () => MOCK_DATABASE.tokens,
+            getUsers: () => MOCK_DATABASE.users,
+            resetDatabase: () => {
+                MOCK_DATABASE.users = MOCK_DATABASE.users.map(u => ({ ...u, banned: false, banReason: null,
+                    banDate: null }));
+                MOCK_DATABASE.tokens = {};
+                console.log('✅ Database đã được reset');
+            },
+        };
+
+        console.log('%c💡 Dùng "BindzDebug" trong console để test hệ thống',
+            'color: #a29bfe; font-style: italic;');
+        console.log('%c📋 Ví dụ: BindzDebug.getUsers() để xem danh sách users',
+            'color: #8888aa;');
+    </script>
 </body>
-</html>
+    </html>
