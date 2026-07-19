@@ -1,0 +1,39 @@
+{
+  "name": "modern-saas-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "14.0.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "typescript": "^5.2.0",
+    "tailwindcss": "^4.0.0",
+    "postcss": "^8.4.0",
+    "autoprefixer": "^10.4.0",
+    "framer-motion": "^10.12.8",
+    "three": "^0.164.0",
+    "@react-three/fiber": "^9.0.0",
+    "@react-three/drei": "^9.60.0",
+    "recharts": "^2.6.2",
+    "lucide-react": "^0.270.0",
+    "next-themes": "^0.2.0",
+    "@radix-ui/react-tooltip": "^1.1.1",
+    "react-hot-toast": "^2.5.0",
+    "date-fns": "^2.30.0",
+    "clsx": "^1.2.1",
+    "tailwind-merge": "^1.14.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.5.1",
+    "@types/react": "18.2.21",
+    "@types/react-dom": "18.2.7",
+    "eslint": "8.46.0",
+    "eslint-config-next": "14.0.0"
+  }
+}
