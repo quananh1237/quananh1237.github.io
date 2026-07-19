@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meccha Chameleon</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            background: #87ceeb;
+            font-family: Arial, sans-serif;
+        }
+
+        #canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Joystick */
+        .joystick-container {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            width: 120px;
+            height: 120px;
+            background: rgba(200, 200, 200, 0.3);
+            border-radius: 50%;
+            border: 3px solid rgba(100, 100, 100, 0.5);
+            touch-action: none;
+            user-select: none;
+        }
+
+        .joystick-thumb {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid rgba(100, 100, 100, 0.8);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Jump Button */
+        .jump-button {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255, 100, 100, 0.7);
+            border: 3px solid rgba(200, 50, 50, 0.9);
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            touch-action: none;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.1s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .jump-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Paint UI */
+        .paint-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(100, 200, 255, 0.8);
+            border: 3px solid rgba(50, 150, 200, 0.9);
+            font-size: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+        }
+
+        .paint-button:hover {
+            transform: scale(1.1);
+        }
+
+        .paint-button:active {
+            transform: scale(0.95);
+        }
+
+        /* Paint Panel */
+        .paint-panel {
+            position: absolute;
+            top: 100px;
+            right: 20px;
+            width: 300px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 101;
+            border: 3px solid rgba(100, 200, 255, 0.8);
+        }
+
+        .paint-panel.active {
+            display: block;
+        }
+
+        .paint-panel h2 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .color-option {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            border: 3px solid #ddd;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+            border-color: #333;
+        }
+
+        .color-option.selected {
+            border-color: #000;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .brush-size {
+            margin-bottom: 15px;
+        }
+
+        .brush-size label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .brush-size input {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+        }
+
+        .brush-preview {
+            width: 40px;
+            height: 40px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .brush-preview-dot {
+            background: #000;
+            border-radius: 50%;
+        }
+
+        .paint-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            z-index: 1000;
+        }
+
+        .paint-canvas.active {
+            display: block;
+        }
+
+        .paint-canvas-bg {
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            cursor: crosshair;
+        }
+
+        #drawingCanvas {
+            cursor: crosshair;
+        }
+
+        .clear-button {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 100, 100, 0.7);
+            border: 2px solid rgba(200, 50, 50, 0.9);
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .clear-button:hover {
+            background: rgba(255, 100, 100, 0.9);
+        }
+
+        .info-text {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 14px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            max-width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <div class="info-text">
+        <p>🎨 Paint Button: Top Right</p>
+        <p>🕹️ Joystick: Bottom Left</p>
+        <p>⏫ Jump: Bottom Right</p>
+    </div>
+
+    <div class="joystick-container" id="joystick">
+        <div class="joystick-thumb" id="joystickThumb"></div>
+    </div>
+
+    <button class="jump-button" id="jumpButton">⏫</button>
+
+    <button class="paint-button" id="paintButton">🎨</button>
+
+    <div class="paint-panel" id="paintPanel">
+        <h2>Draw on Character</h2>
+        
+        <div class="color-palette" id="colorPalette"></div>
+
+        <div class="brush-size">
+            <label for="brushSize">Brush Size</label>
+            <input type="range" id="brushSize" min="2" max="50" value="10">
+            <div class="brush-preview">
+                <div class="brush-preview-dot" id="brushPreview"></div>
+            </div>
+        </div>
+
+        <button class="clear-button" id="clearButton">Clear Drawing</button>
+    </div>
+
+    <div class="paint-canvas" id="paintCanvas">
+        <div class="paint-canvas-bg" id="paintCanvasBg">
+            <canvas id="drawingCanvas"></canvas>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
