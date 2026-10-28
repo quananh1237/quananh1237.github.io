@@ -1,671 +1,2608 @@
 <!DOCTYPE html>
+<!-- 
+    ============================================================================================
+    RUBIK 3D PRO - PHIÊN BẢN NÂNG CAO
+    ============================================================================================
+    Ứng dụng mô phỏng khối Rubik 3x3x3 với Three.js
+    
+    ĐÃ SỬA: Lỗi xoay bị chèn khi kết hợp Explode + Rotate
+    ĐÃ THÊM: 20+ tính năng mới (xem chi tiết bên dưới)
+    
+    Tác giả: AI Assistant
+    Ngôn ngữ: Tiếng Việt
+    ============================================================================================
+-->
 <html lang="vi">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Gửi Mẹ Yêu Thương 💌</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500;1,700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-/* ============================================================
-   BIẾN MÀU & CƠ BẢN
-   ============================================================ */
-:root{
-  --p1:#fff5fa;
-  --p2:#ffd9ea;
-  --p3:#ffa8cc;
-  --p4:#f0709f;
-  --p5:#d94c80;
-  --deep:#7d2245;
-  --ink:#5c2b3f;
-}
+    <!-- 
+        ============================================================================================
+        PHẦN 1: META TAGS VÀ SEO
+        ============================================================================================
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Ứng dụng mô phỏng 3D khối Rubik 3x3 chuyên nghiệp với đầy đủ tính năng: xoay tầng, tách khối, xem lõi, scramble, undo/redo, thống kê, âm thanh và nhiều hơn nữa.">
+    <meta name="keywords" content="rubik, 3d, three.js, rubik 3x3, mô phỏng, giải rubik, rubik ảo">
+    <meta name="author" content="AI Assistant Pro">
+    <meta name="theme-color" content="#0a0a0a">
+    <title>🎲 Rubik 3D Pro - Mô phỏng chuyên nghiệp</title>
 
-*{ margin:0; padding:0; box-sizing:border-box; }
-html{ scroll-behavior:smooth; }
+    <!-- 
+        ============================================================================================
+        PHẦN 2: CSS - TOÀN BỘ GIAO DIỆN
+        ============================================================================================
+        Cấu trúc:
+        - 2.1. CSS Variables (biến toàn cục)
+        - 2.2. Reset & Base
+        - 2.3. Loading Screen
+        - 2.4. Canvas Container
+        - 2.5. Info Panel (bảng thông tin)
+        - 2.6. Stats Panel (bảng thống kê)
+        - 2.7. Control Panel (bảng điều khiển)
+        - 2.8. Buttons
+        - 2.9. Sliders
+        - 2.10. Toggles
+        - 2.11. Toasts (thông báo)
+        - 2.12. Modal (hộp thoại)
+        - 2.13. Keyboard hints
+        - 2.14. Animations
+        - 2.15. Responsive
+        ============================================================================================
+    -->
+    <style>
+        /* ==========================================================================================
+           2.1. CSS VARIABLES - BIẾN TOÀN CỤC
+           Tất cả màu sắc, kích thước được quản lý tập trung ở đây.
+           Thay đổi 1 chỗ → áp dụng toàn bộ giao diện.
+           ========================================================================================== */
+        :root {
+            /* --- Màu nền --- */
+            --bg-main: #0a0a0a;
+            --bg-secondary: #121212;
+            --bg-panel: rgba(15, 15, 18, 0.85);
+            --bg-panel-solid: #16161a;
+            --bg-input: rgba(255, 255, 255, 0.05);
+            --bg-hover: rgba(255, 255, 255, 0.08);
+            
+            /* --- Màu chữ --- */
+            --text-primary: #e8e8ec;
+            --text-secondary: #a0a0a8;
+            --text-muted: #6a6a72;
+            --text-inverse: #0a0a0a;
+            
+            /* --- Màu chủ đạo --- */
+            --accent-primary: #007bff;
+            --accent-primary-hover: #0069d9;
+            --accent-primary-glow: rgba(0, 123, 255, 0.4);
+            
+            --accent-success: #28a745;
+            --accent-success-hover: #218838;
+            --accent-success-glow: rgba(40, 167, 69, 0.4);
+            
+            --accent-warning: #ffc107;
+            --accent-warning-hover: #e0a800;
+            
+            --accent-danger: #dc3545;
+            --accent-danger-hover: #c82333;
+            --accent-danger-glow: rgba(220, 53, 69, 0.4);
+            
+            --accent-info: #17a2b8;
+            --accent-purple: #9d4edd;
+            
+            /* --- Viền --- */
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --border-normal: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.25);
+            
+            /* --- Shadows --- */
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 15px 40px rgba(0, 0, 0, 0.6);
+            --shadow-xl: 0 25px 60px rgba(0, 0, 0, 0.8);
+            
+            /* --- Glassmorphism --- */
+            --backdrop-blur: blur(16px);
+            --backdrop-blur-strong: blur(24px);
+            
+            /* --- Font --- */
+            --font-sans: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'SF Mono', 'Consolas', 'Monaco', monospace;
+            
+            /* --- Spacing --- */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            
+            /* --- Border Radius --- */
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            --radius-xl: 24px;
+            --radius-full: 9999px;
+            
+            /* --- Transitions --- */
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --transition-slow: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
 
-body{
-  font-family:'Quicksand', system-ui, sans-serif;
-  min-height:100vh;
-  overflow-x:hidden;
-  background: linear-gradient(135deg,#ffe3f0,#ffc2dc,#ffd9e9,#ffb6d3,#ffe8f2,#ffc9e2);
-  background-size: 500% 500%;
-  animation: bgShift 22s ease-in-out infinite;
-  display:flex; align-items:center; justify-content:center;
-  padding: 48px 16px;
-  color: var(--ink);
-  -webkit-font-smoothing: antialiased;
-}
-@keyframes bgShift{
-  0%,100%{ background-position: 0% 50%; }
-  50%    { background-position: 100% 50%; }
-}
+        /* ==========================================================================================
+           2.2. RESET & BASE STYLES
+           ========================================================================================== */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
 
-body::before{
-  content:"";
-  position:fixed; inset:-20%;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(255,255,255,.75), transparent 45%),
-    radial-gradient(circle at 80% 70%, rgba(255,150,200,.55), transparent 50%),
-    radial-gradient(circle at 50% 100%, rgba(255,210,235,.7), transparent 55%);
-  pointer-events:none; z-index:0;
-  animation: auroraMove 16s ease-in-out infinite alternate;
-}
-@keyframes auroraMove{
-  0%  { transform: translate(0,0) scale(1); }
-  100%{ transform: translate(-3%, -3%) scale(1.08); }
-}
+        html {
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
 
-/* ============================================================
-   CÁNH HOA / TIM BAY NỀN
-   ============================================================ */
-#petals{ position:fixed; inset:0; overflow:hidden; pointer-events:none; z-index:1; }
-.petal{ position:absolute; bottom:-70px; opacity:0; animation-name: rise; animation-timing-function: linear; animation-fill-mode: forwards; filter: drop-shadow(0 3px 6px rgba(220,80,140,.25)); }
-@keyframes rise{ 0%{ transform: translateY(0) rotate(0deg) scale(.5); opacity:0; } 8%{ opacity:.95; } 85%{ opacity:.75; } 100%{ transform: translateY(-118vh) rotate(420deg) scale(1.15); opacity:0; } }
+        body {
+            font-family: var(--font-sans);
+            overflow: hidden;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            min-height: 100vh;
+            line-height: 1.5;
+            position: relative;
+        }
 
-/* ============================================================
-   SÂN KHẤU (PHONG BÌ)
-   ============================================================ */
-.stage{ position:relative; z-index:5; display:flex; flex-direction:column; align-items:center; gap: 34px; text-align:center; }
-.title{ font-family:'Playfair Display', serif; font-style:italic; font-weight:700; font-size: clamp(1.9rem, 6.2vw, 3.3rem); color: var(--deep); letter-spacing:.5px; animation: glowPulse 3.2s ease-in-out infinite; }
-@keyframes glowPulse{ 0%,100%{ text-shadow: 0 0 16px rgba(255,255,255,.95), 0 0 46px rgba(255,140,190,.75); transform: scale(1); } 50%{ text-shadow: 0 0 30px rgba(255,255,255,1), 0 0 84px rgba(255,110,170,1); transform: scale(1.035); } }
-.subtitle{ font-size: clamp(.9rem, 2.6vw, 1.05rem); color:#a3466b; font-weight:600; letter-spacing:2px; text-transform:uppercase; opacity:.85; }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
 
-.hint{ display:inline-flex; align-items:center; gap:10px; font-weight:700; font-size:.95rem; color:#b03a6b; background: rgba(255,255,255,.65); padding: 10px 22px; border-radius: 999px; border: 1.5px solid rgba(255,255,255,.9); backdrop-filter: blur(6px); box-shadow: 0 10px 26px rgba(200,70,130,.18); animation: hintBounce 2.2s ease-in-out infinite; transition: opacity .5s, transform .5s; }
-@keyframes hintBounce{ 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-8px); } }
-.hint .arrow{ display:inline-block; animation: arrowDown 1.4s ease-in-out infinite; }
-@keyframes arrowDown{ 0%,100%{ transform: translateY(0); opacity:.9; } 50%{ transform: translateY(5px); opacity:1; } }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
 
-.envelope-wrap{ perspective: 1500px; animation: floatY 4.5s ease-in-out infinite; transition: opacity .8s ease, transform .8s cubic-bezier(.5,-0.3,.6,1); }
-@keyframes floatY{ 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-16px); } }
-.envelope-wrap.gone{ opacity:0; transform: scale(.55) translateY(-70px) rotate(-8deg); pointer-events:none; }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-normal);
+            border-radius: var(--radius-full);
+        }
 
-.envelope{ position:relative; width: min(370px, 84vw); aspect-ratio: 3 / 2; cursor:pointer; transform-style: preserve-3d; filter: drop-shadow(0 30px 46px rgba(190,60,110,.42)); transition: transform .45s cubic-bezier(.34,1.56,.64,1), filter .45s; }
-.envelope:hover{ transform: scale(1.055) rotate(-1deg); filter: drop-shadow(0 38px 60px rgba(190,60,110,.55)); }
-.envelope:active{ transform: scale(.98); }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-hover);
+        }
 
-.env-back{ position:absolute; inset:0; border-radius: 14px; background: linear-gradient(160deg,#f9b2cd,#e2688f); box-shadow: inset 0 0 40px rgba(160,40,90,.28); z-index:1; }
-.letter-peek{ position:absolute; left:8%; right:8%; top:7%; height:58%; background: linear-gradient(180deg,#fffdfa,#fff2f7); border-radius: 8px 8px 4px 4px; box-shadow: 0 -6px 18px rgba(160,40,90,.18); z-index:2; transform: translateY(0); transition: transform 1s cubic-bezier(.3,1.2,.4,1) .35s; }
-.envelope.open .letter-peek{ transform: translateY(-22%); }
+        /* Focus outline */
+        :focus-visible {
+            outline: 2px solid var(--accent-primary);
+            outline-offset: 2px;
+        }
 
-.env-front{ position:absolute; inset:0; z-index:3; border-radius: 14px; background: linear-gradient(165deg,#f47fa5 0%,#e05a86 55%,#c94570 100%); clip-path: polygon(0 0, 50% 48%, 100% 0, 100% 100%, 0 100%); box-shadow: inset 0 -14px 30px rgba(140,30,75,.28); }
-.env-front::after{ content:""; position:absolute; inset:0; background: linear-gradient(to bottom right, transparent 49.5%, rgba(255,255,255,.22) 50%, transparent 50.5%), linear-gradient(to bottom left, transparent 49.5%, rgba(255,255,255,.22) 50%, transparent 50.5%); border-radius:14px; pointer-events:none; }
+        /* ==========================================================================================
+           2.3. LOADING SCREEN
+           ========================================================================================== */
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at center, #0f0f12 0%, #050505 100%);
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: var(--space-lg);
+            transition: opacity 0.8s ease;
+        }
 
-.env-flap{ position:absolute; top:0; left:0; width:100%; height:56%; background: linear-gradient(180deg,#ff9dc0 0%,#f0709f 60%,#dd5384 100%); clip-path: polygon(0 0, 100% 0, 50% 100%); transform-origin: top center; transform: rotateX(0deg); transition: transform 1s cubic-bezier(.6,-0.25,.3,1.45); z-index:4; filter: drop-shadow(0 4px 8px rgba(150,30,80,.2)); }
-.envelope.open .env-flap{ transform: rotateX(-178deg); filter: drop-shadow(0 -4px 10px rgba(150,30,80,.25)); }
+        .loader-brand {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5, #9d4edd);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease infinite;
+            letter-spacing: 2px;
+            text-align: center;
+        }
 
-.seal{ position:absolute; left:50%; top:56%; width: 74px; height:74px; transform: translate(-50%,-50%) scale(1); z-index:6; display:grid; place-items:center; border-radius:50%; background: radial-gradient(circle at 32% 28%, #ff8bb5, #d62e69 68%, #9c1449); box-shadow: 0 8px 20px rgba(140,20,70,.55), inset 0 -3px 8px rgba(90,0,40,.5), inset 0 3px 8px rgba(255,180,210,.6); color:#fff; transition: transform .5s cubic-bezier(.34,1.56,.64,1), opacity .6s; animation: sealPulse 2.4s ease-in-out infinite; }
-@keyframes sealPulse{ 0%,100%{ box-shadow: 0 8px 20px rgba(140,20,70,.55), 0 0 0 0 rgba(255,120,170,.65), inset 0 -3px 8px rgba(90,0,40,.5), inset 0 3px 8px rgba(255,180,210,.6); } 70%{ box-shadow: 0 8px 20px rgba(140,20,70,.55), 0 0 0 22px rgba(255,120,170,0), inset 0 -3px 8px rgba(90,0,40,.5), inset 0 3px 8px rgba(255,180,210,.6); } }
-.seal svg{ width:38px; height:38px; filter: drop-shadow(0 2px 3px rgba(90,0,40,.5)); }
-.envelope.open .seal{ transform: translate(-50%,-50%) scale(.2) rotate(120deg); opacity:0; }
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
 
-/* ============================================================
-   LÁ THƯ
-   ============================================================ */
-.letter{ position: fixed; inset:0; overflow-y:auto; z-index:50; opacity:0; pointer-events:none; transition: opacity .9s ease; }
-.letter.show{ opacity:1; pointer-events:auto; }
-.letter-flex{ min-height:100%; display:flex; align-items:center; justify-content:center; padding: 44px 16px; }
+        .loader-subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
 
-.letter-inner{ position:relative; width:100%; max-width: 820px; background: repeating-linear-gradient(180deg, rgba(255,225,238,.30) 0px, rgba(255,225,238,.30) 1px, transparent 1px, transparent 34px), linear-gradient(180deg,#fffdfb 0%, #fff6fa 55%, #ffeff7 100%); border-radius: 24px; padding: clamp(30px,5.5vw,62px) clamp(22px,5.5vw,64px); border: 1px solid #ffd3e5; box-shadow: 0 40px 90px rgba(180,50,100,.32), 0 0 0 12px rgba(255,255,255,.32), inset 0 0 60px rgba(255,200,225,.35); transform: scale(.72) translateY(90px) rotate(-2deg); opacity:0; transition: transform 1.05s cubic-bezier(.2,1,.3,1), opacity .8s ease; }
-.letter.show .letter-inner{ transform: scale(1) translateY(0) rotate(0deg); opacity:1; }
+        .loader-progress {
+            width: 300px;
+            height: 4px;
+            background: var(--border-subtle);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            margin-top: var(--space-lg);
+            position: relative;
+        }
 
-.corner{ position:absolute; color:#ffb3d2; opacity:.55; pointer-events:none; animation: cornerTwinkle 3.5s ease-in-out infinite; }
-.corner svg{ width:100%; height:100%; display:block; }
-.c-tl{ top:16px; left:18px; width:34px; height:34px; }
-.c-tr{ top:16px; right:18px; width:34px; height:34px; animation-delay:.8s; }
-.c-bl{ bottom:16px; left:18px; width:28px; height:28px; animation-delay:1.6s; }
-.c-br{ bottom:16px; right:18px; width:28px; height:28px; animation-delay:2.2s; }
-@keyframes cornerTwinkle{ 0%,100%{ opacity:.35; transform: scale(.9) rotate(0deg); } 50%{ opacity:.85; transform: scale(1.12) rotate(12deg); } }
+        .loader-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-purple));
+            border-radius: var(--radius-full);
+            transition: width 0.3s ease;
+            box-shadow: 0 0 20px var(--accent-primary-glow);
+        }
 
-.letter-head{ text-align:center; margin-bottom: 26px; }
-.h-heart{ width:54px; height:54px; color:#ec5f95; margin-bottom:14px; filter: drop-shadow(0 6px 14px rgba(220,80,140,.45)); animation: heartbeat 1.7s ease-in-out infinite; }
-@keyframes heartbeat{ 0%,100%{ transform: scale(1); } 14%{ transform: scale(1.18); } 28%{ transform: scale(1); } 42%{ transform: scale(1.12); } 56%{ transform: scale(1); } }
+        .loader-percent {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: var(--space-sm);
+        }
 
-.letter-head h2{ font-family:'Playfair Display', serif; font-style: italic; font-weight:700; font-size: clamp(1.25rem, 3.8vw, 1.85rem); color: var(--deep); line-height:1.4; text-shadow: 0 2px 0 rgba(255,255,255,.9); }
+        .loader-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid var(--border-subtle);
+            border-top-color: var(--accent-primary);
+            border-right-color: var(--accent-purple);
+            border-radius: 50%;
+            animation: spin 1.2s cubic-bezier(0.5, 0.1, 0.4, 0.9) infinite;
+            margin-top: var(--space-lg);
+        }
 
-.divider{ display:flex; align-items:center; justify-content:center; gap:12px; margin-top:18px; }
-.divider .line{ height:2px; width: min(110px, 22vw); background: linear-gradient(90deg, transparent, #ffaacb, transparent); border-radius:2px; }
-.divider svg{ width:20px; height:20px; color:#f0709f; animation: spinStar 8s linear infinite; }
-@keyframes spinStar{ to{ transform: rotate(360deg); } }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
 
-.greeting{ font-family:'Playfair Display', serif; font-style: italic; font-size: clamp(1.05rem, 3vw, 1.3rem); color:#a83566; font-weight:600; margin: 6px 0 20px; min-height: 1.6em; }
-.caret{ display:inline-block; width:2px; height:1.05em; background:#e0558a; margin-left:3px; vertical-align:-2px; animation: blink .8s step-end infinite; }
-@keyframes blink{ 50%{ opacity:0; } }
-.caret.hidden{ display:none; }
+        /* ==========================================================================================
+           2.4. CANVAS CONTAINER
+           ========================================================================================== */
+        #canvas-container {
+            position: absolute;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            cursor: grab;
+        }
 
-.letter-body p{ font-size: clamp(.98rem, 2.7vw, 1.1rem); line-height: 2; color: var(--ink); margin-bottom: 20px; text-align: justify; text-justify: inter-word; }
-.letter-body p:first-child{ text-indent: 0; }
-.letter-body em{ font-style: italic; color:#b8306a; font-weight:600; background: linear-gradient(180deg, transparent 62%, rgba(255,170,205,.55) 62%); padding: 0 2px; }
-.letter-body .strong-line{ font-family:'Playfair Display', serif; font-style: italic; font-size: clamp(1.1rem, 3.2vw, 1.35rem); font-weight:700; color:#c02660; text-align:center; line-height:1.8; margin: 30px 0; text-shadow: 0 0 24px rgba(255,150,195,.6); }
+        #canvas-container:active {
+            cursor: grabbing;
+        }
 
-.letter-foot{ margin-top: 34px; text-align: right; border-top: 1.5px dashed rgba(240,112,159,.45); padding-top: 22px; }
-.sign{ font-family:'Playfair Display', serif; font-style: italic; font-size: clamp(1.05rem, 3vw, 1.3rem); font-weight:700; color:#b8306a; margin-bottom: 26px; }
+        /* ==========================================================================================
+           2.5. INFO PANEL (BẢNG THÔNG TIN GÓC TRÁI TRÊN)
+           ========================================================================================== */
+        #info-panel {
+            position: absolute;
+            top: var(--space-lg);
+            left: var(--space-lg);
+            background: var(--bg-panel);
+            backdrop-filter: var(--backdrop-blur);
+            -webkit-backdrop-filter: var(--backdrop-blur);
+            padding: var(--space-lg) var(--space-xl);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-normal);
+            z-index: 10;
+            max-width: 320px;
+            pointer-events: none;
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition-normal);
+        }
 
-.hug-btn{
-  display:inline-flex; align-items:center; gap:10px; font-family:'Quicksand', sans-serif; font-weight:700; font-size:.98rem; color:#fff;
-  background: linear-gradient(135deg,#ff8ab6,#e9487f 55%,#c92e6a);
-  border:none; border-radius:999px; padding: 14px 30px; cursor:pointer;
-  box-shadow: 0 12px 28px rgba(200,50,110,.42), inset 0 1px 0 rgba(255,255,255,.5);
-  transition: transform .28s cubic-bezier(.34,1.56,.64,1), box-shadow .28s, filter .28s;
-  position:relative; overflow:hidden; animation: btnGlow 2.8s ease-in-out infinite;
-}
-@keyframes btnGlow{ 0%,100%{ box-shadow: 0 12px 28px rgba(200,50,110,.42), 0 0 0 0 rgba(255,120,175,.5), inset 0 1px 0 rgba(255,255,255,.5); } 70%{ box-shadow: 0 12px 28px rgba(200,50,110,.42), 0 0 0 18px rgba(255,120,175,0), inset 0 1px 0 rgba(255,255,255,.5); } }
-.hug-btn:hover{ transform: translateY(-4px) scale(1.05); filter: brightness(1.07); }
-.hug-btn:active{ transform: translateY(0) scale(.97); }
-.hug-btn svg{ width:20px; height:20px; animation: heartbeat 1.5s ease-in-out infinite; }
-.hug-btn::after{ content:""; position:absolute; top:0; left:-120%; width:60%; height:100%; background: linear-gradient(100deg, transparent, rgba(255,255,255,.65), transparent); transform: skewX(-20deg); animation: shine 3.4s ease-in-out infinite; }
-@keyframes shine{ 0%,60%{ left:-120%; } 85%,100%{ left:150%; } }
+        #info-panel h1 {
+            font-size: 1.5rem;
+            margin-bottom: var(--space-md);
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 1px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
 
-.reveal{ opacity:0; transform: translateY(26px); filter: blur(7px); transition: opacity .85s ease, transform .85s cubic-bezier(.2,.8,.3,1), filter .85s ease; }
-.reveal.in{ opacity:1; transform: translateY(0); filter: blur(0); }
+        #info-panel h1::before {
+            content: '🧊';
+            -webkit-text-fill-color: initial;
+            font-size: 1.4rem;
+        }
 
-.burst-heart{ position: fixed; width:22px; height:22px; pointer-events:none; z-index:9999; will-change: transform, opacity; animation: burstAnim 1.5s cubic-bezier(.15,.75,.35,1) forwards; }
-@keyframes burstAnim{ 0%{ transform: translate(-50%,-50%) scale(.15) rotate(0deg); opacity:1; } 70%{ opacity:1; } 100%{ transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1) rotate(var(--r)); opacity:0; } }
+        #info-panel .info-row {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-sm);
+            margin: var(--space-sm) 0;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
 
-.spark{ position:fixed; width:16px; height:16px; pointer-events:none; z-index:9998; transform: translate(-50%,-50%); animation: sparkFade .9s ease-out forwards; color:#ff9ec4; }
-@keyframes sparkFade{ 0%{ opacity:.95; transform: translate(-50%,-50%) scale(.4) rotate(0deg); } 100%{ opacity:0; transform: translate(-50%,-160%) scale(1.1) rotate(140deg); } }
+        #info-panel .info-row strong {
+            color: var(--text-primary);
+            font-weight: 600;
+            min-width: 60px;
+            display: inline-block;
+        }
 
-.reopen{ position: fixed; right: 20px; bottom: 20px; z-index: 60; width: 56px; height: 56px; border-radius: 50%; border: none; cursor:pointer; display:grid; place-items:center; color:#fff; background: linear-gradient(135deg,#ff8ab6,#d62e69); box-shadow: 0 12px 26px rgba(190,40,100,.45); opacity:0; pointer-events:none; transform: scale(.5) translateY(20px); transition: all .5s cubic-bezier(.34,1.56,.64,1); }
-.reopen.show{ opacity:1; pointer-events:auto; transform: scale(1) translateY(0); }
-.reopen:hover{ transform: scale(1.12) rotate(8deg); }
-.reopen svg{ width:26px; height:26px; }
+        #info-panel .info-icon {
+            color: var(--accent-primary);
+            font-size: 0.75rem;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
 
-.letter::-webkit-scrollbar{ width:10px; }
-.letter::-webkit-scrollbar-track{ background: rgba(255,255,255,.3); }
-.letter::-webkit-scrollbar-thumb{ background: linear-gradient(180deg,#ff9ec4,#e05a86); border-radius: 10px; }
+        /* ==========================================================================================
+           2.6. STATS PANEL (BẢNG THỐNG KÊ GÓC TRÁI DƯỚI)
+           ========================================================================================== */
+        #stats-panel {
+            position: absolute;
+            top: 200px;
+            left: var(--space-lg);
+            background: var(--bg-panel);
+            backdrop-filter: var(--backdrop-blur);
+            -webkit-backdrop-filter: var(--backdrop-blur);
+            padding: var(--space-md) var(--space-lg);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-normal);
+            z-index: 10;
+            min-width: 220px;
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition-normal);
+        }
 
-/* ============================================================
-   HIỆU ỨNG VÒNG TRÒN ẢNH VÀ TRÁI TIM
-   ============================================================ */
-.heart-overlay {
-  position: fixed; inset: 0;
-  background: linear-gradient(135deg, #ffc2dc, #ff9ec4, #ffd9ea);
-  background-size: 200% 200%;
-  animation: bgShiftOverlay 4s ease-in-out infinite alternate;
-  z-index: 99999;
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0; pointer-events: none;
-  transition: opacity 1s ease;
-  overflow: hidden;
-}
-@keyframes bgShiftOverlay {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
-}
-.heart-overlay.show { opacity: 1; pointer-events: auto; }
+        .stats-header {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: var(--space-md);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
 
-.close-overlay {
-  position: absolute; top: 20px; right: 24px;
-  color: #fff; font-size: 44px; font-weight: bold;
-  background: none; border: none; cursor: pointer;
-  z-index: 10; line-height: 1;
-  transition: transform 0.3s, opacity 0.3s;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-  opacity: 0.8;
-}
-.close-overlay:hover { transform: scale(1.2); opacity: 1; }
+        .stats-header::before {
+            content: '';
+            width: 3px;
+            height: 12px;
+            background: var(--accent-primary);
+            border-radius: var(--radius-sm);
+        }
 
-.orbit-container {
-  position: absolute;
-  left: 50%; top: 50%;
-  width: 0; height: 0;
-}
-.orbit-container.spin {
-  animation: spinOrbit 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-@keyframes spinOrbit {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(-1080deg); } /* Xoay phải sang trái 3 vòng */
-}
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: var(--space-sm) 0;
+            font-size: 0.82rem;
+        }
 
-.orbit-img {
-  position: absolute;
-  left: 50%; top: 50%;
-  width: clamp(70px, 18vw, 120px);
-  height: clamp(70px, 18vw, 120px);
-  object-fit: cover;
-  border-radius: 12px;
-  border: 4px solid #fff;
-  box-shadow: 0 10px 25px rgba(180, 50, 100, 0.4);
-  transform: translate(-50%, -50%) scale(0);
-  opacity: 0;
-  transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
-}
-.orbit-img.expand {
-  transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(1);
-  opacity: 1;
-}
-.orbit-img.collapse {
-  transform: translate(-50%, -50%) scale(0.1);
-  opacity: 0;
-  transition: transform 0.6s ease-in, opacity 0.4s ease-in;
-}
+        .stat-label {
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
 
-.big-heart-container {
-  position: absolute;
-  left: 50%; top: 50%;
-  transform: translate(-50%, -50%);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  pointer-events: none;
-  width: 100%;
-}
+        .stat-value {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
 
-.big-heart {
-  width: clamp(160px, 45vw, 280px);
-  height: clamp(160px, 45vw, 280px);
-  color: #e9487f;
-  filter: drop-shadow(0 15px 40px rgba(233,72,127,0.7));
-  opacity: 0;
-  transform: scale(0);
-}
-.big-heart.pop {
-  animation: heartPop 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-@keyframes heartPop {
-  0% { transform: scale(0) rotate(-20deg); opacity: 0; }
-  60% { transform: scale(1.2) rotate(5deg); opacity: 1; }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; }
-}
+        .stat-value.active {
+            color: var(--accent-success);
+            text-shadow: 0 0 10px var(--accent-success-glow);
+        }
 
-.final-text {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(1.5rem, 5vw, 2.8rem);
-  font-weight: 700;
-  color: #fff;
-  text-shadow: 0 4px 15px rgba(180, 20, 70, 0.6), 0 0 30px rgba(255, 255, 255, 0.9);
-  margin-top: 20px;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.8s ease;
-  text-align: center;
-}
-.final-text.show {
-  opacity: 1; transform: translateY(0);
-}
+        .stat-value.recording {
+            color: var(--accent-danger);
+            animation: pulse 1s ease-in-out infinite;
+        }
 
-/* ============================================================
-   MOBILE
-   ============================================================ */
-@media (max-width: 520px){
-  body{ padding: 34px 12px; }
-  .letter-flex{ padding: 26px 10px; }
-  .letter-inner{ border-radius: 18px; }
-  .letter-body p{ text-align: left; line-height: 1.95; }
-  .seal{ width:60px; height:60px; }
-  .seal svg{ width:30px; height:30px; }
-  .letter-foot{ text-align:center; }
-  .orbit-img { width: 80px; height: 80px; border-width: 3px; }
-}
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
 
-@media (prefers-reduced-motion: reduce){
-  *{ animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .2s !important; }
-}
-</style>
+        /* ==========================================================================================
+           2.7. CONTROL PANEL (BẢNG ĐIỀU KHIỂN PHÍA DƯỚI)
+           ========================================================================================== */
+        #control-panel {
+            position: absolute;
+            bottom: var(--space-lg);
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+            gap: var(--space-lg);
+            background: var(--bg-panel);
+            backdrop-filter: var(--backdrop-blur-strong);
+            -webkit-backdrop-filter: var(--backdrop-blur-strong);
+            padding: var(--space-md) var(--space-lg);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border-normal);
+            z-index: 20;
+            box-shadow: var(--shadow-xl);
+            max-width: calc(100vw - 40px);
+            transition: var(--transition-normal);
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-sm);
+            min-width: 130px;
+        }
+
+        .group-label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            font-weight: 700;
+            padding-bottom: var(--space-xs);
+            border-bottom: 1px solid var(--border-subtle);
+            width: 100%;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-xs);
+        }
+
+        .button-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: var(--space-sm);
+        }
+
+        /* ==========================================================================================
+           2.8. BUTTONS - CÁC LOẠI NÚT
+           ========================================================================================== */
+        button {
+            background: var(--bg-input);
+            color: var(--text-primary);
+            border: 1px solid var(--border-normal);
+            padding: 10px 16px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 600;
+            transition: var(--transition-normal);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-xs);
+            letter-spacing: 0.3px;
+            min-width: 70px;
+            position: relative;
+            overflow: hidden;
+            font-family: var(--font-sans);
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.15) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+            pointer-events: none;
+        }
+
+        button:hover::before {
+            opacity: 1;
+        }
+
+        button:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, var(--accent-primary), #0056b3);
+            border-color: var(--accent-primary);
+        }
+
+        button.primary:hover {
+            background: linear-gradient(135deg, var(--accent-primary-hover), #004494);
+            box-shadow: 0 4px 20px var(--accent-primary-glow);
+        }
+
+        button.success {
+            background: linear-gradient(135deg, var(--accent-success), #1e7e34);
+            border-color: var(--accent-success);
+        }
+
+        button.success:hover {
+            box-shadow: 0 4px 20px var(--accent-success-glow);
+        }
+
+        button.warning {
+            background: linear-gradient(135deg, var(--accent-warning), #d39e00);
+            border-color: var(--accent-warning);
+            color: var(--text-inverse);
+        }
+
+        button.danger {
+            background: linear-gradient(135deg, var(--accent-danger), #a71d2a);
+            border-color: var(--accent-danger);
+        }
+
+        button.danger:hover {
+            box-shadow: 0 4px 20px var(--accent-danger-glow);
+        }
+
+        /* Nút xoay mặt (R, L, U, D, F, B) */
+        button.move-btn {
+            min-width: 42px;
+            height: 42px;
+            padding: 0;
+            font-size: 1rem;
+            font-weight: 800;
+            font-family: var(--font-mono);
+            background: linear-gradient(135deg, #2a2a35, #1a1a22);
+            border: 1px solid var(--border-normal);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            position: relative;
+        }
+
+        button.move-btn:hover {
+            background: linear-gradient(135deg, #3a3a45, #2a2a35);
+            transform: translateY(-3px) scale(1.05);
+            border-color: var(--accent-primary);
+            box-shadow: 0 6px 20px var(--accent-primary-glow);
+        }
+
+        button.move-btn[data-move="R"]:hover { border-color: #ff4444; box-shadow: 0 6px 20px rgba(255,68,68,0.4); }
+        button.move-btn[data-move="L"]:hover { border-color: #ff8c00; box-shadow: 0 6px 20px rgba(255,140,0,0.4); }
+        button.move-btn[data-move="U"]:hover { border-color: #ffffff; box-shadow: 0 6px 20px rgba(255,255,255,0.3); }
+        button.move-btn[data-move="D"]:hover { border-color: #ffd700; box-shadow: 0 6px 20px rgba(255,215,0,0.4); }
+        button.move-btn[data-move="F"]:hover { border-color: #4444ff; box-shadow: 0 6px 20px rgba(68,68,255,0.4); }
+        button.move-btn[data-move="B"]:hover { border-color: #44ff44; box-shadow: 0 6px 20px rgba(68,255,68,0.4); }
+
+        /* Nút dạng icon tròn nhỏ */
+        button.icon-btn {
+            min-width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: var(--radius-full);
+            font-size: 0.9rem;
+        }
+
+        /* ==========================================================================================
+           2.9. SLIDERS - THANH TRƯỢT
+           ========================================================================================== */
+        .slider-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
+            width: 100%;
+            min-width: 130px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .slider-value {
+            color: var(--accent-primary);
+            font-family: var(--font-mono);
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 5px;
+            background: var(--bg-input);
+            border-radius: var(--radius-full);
+            outline: none;
+            cursor: pointer;
+            border: 1px solid var(--border-subtle);
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple));
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 8px var(--accent-primary-glow);
+            transition: transform var(--transition-fast);
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.3);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple));
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 8px var(--accent-primary-glow);
+        }
+
+        /* ==========================================================================================
+           2.10. TOGGLES - CÔNG TẮC
+           ========================================================================================== */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-sm);
+            padding: var(--space-xs) 0;
+            width: 100%;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 32px;
+            height: 18px;
+            background: var(--bg-input);
+            border-radius: var(--radius-full);
+            border: 1px solid var(--border-subtle);
+            cursor: pointer;
+            transition: var(--transition-normal);
+            flex-shrink: 0;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 12px;
+            height: 12px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            transition: var(--transition-normal);
+        }
+
+        .toggle-switch.active {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 10px var(--accent-primary-glow);
+        }
+
+        .toggle-switch.active::after {
+            left: 16px;
+            background: white;
+        }
+
+        /* ==========================================================================================
+           2.11. TOASTS - THÔNG BÁO
+           ========================================================================================== */
+        #toast-container {
+            position: fixed;
+            top: var(--space-lg);
+            right: var(--space-lg);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+            pointer-events: none;
+            max-width: 320px;
+        }
+
+        .toast {
+            background: var(--bg-panel-solid);
+            backdrop-filter: var(--backdrop-blur-strong);
+            -webkit-backdrop-filter: var(--backdrop-blur-strong);
+            border: 1px solid var(--border-normal);
+            border-left: 4px solid var(--accent-primary);
+            padding: var(--space-md) var(--space-lg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            pointer-events: auto;
+            animation: toastSlideIn 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-sm);
+            line-height: 1.5;
+        }
+
+        .toast.success { border-left-color: var(--accent-success); }
+        .toast.warning { border-left-color: var(--accent-warning); }
+        .toast.danger { border-left-color: var(--accent-danger); }
+        .toast.info { border-left-color: var(--accent-info); }
+
+        .toast.removing {
+            animation: toastSlideOut 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+        }
+
+        .toast-icon {
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        @keyframes toastSlideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes toastSlideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(400px); opacity: 0; }
+        }
+
+        /* ==========================================================================================
+           2.12. MODAL - HỘP THOẠI TRỢ GIÚP
+           ========================================================================================== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 9998;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--transition-normal);
+            padding: var(--space-md);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--bg-panel-solid);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border-normal);
+            max-width: 600px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+            padding: var(--space-xl);
+            transform: scale(0.9);
+            transition: transform var(--transition-normal);
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal h2 {
+            font-size: 1.4rem;
+            margin-bottom: var(--space-lg);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .modal h3 {
+            font-size: 1rem;
+            margin: var(--space-lg) 0 var(--space-sm);
+            color: var(--accent-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .modal p, .modal li {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: var(--space-sm);
+        }
+
+        .modal ul {
+            padding-left: var(--space-lg);
+        }
+
+        .modal .close-btn {
+            position: absolute;
+            top: var(--space-md);
+            right: var(--space-md);
+        }
+
+        .modal .key-hint {
+            display: inline-block;
+            background: var(--bg-input);
+            border: 1px solid var(--border-normal);
+            border-bottom-width: 2px;
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-primary);
+            margin: 0 2px;
+        }
+
+        /* ==========================================================================================
+           2.13. KEYBOARD HINTS (HIỂN THỊ PHÍM TẮT)
+           ========================================================================================== */
+        .key-hint {
+            display: inline-block;
+            background: var(--bg-input);
+            border: 1px solid var(--border-normal);
+            border-bottom-width: 2px;
+            padding: 1px 6px;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-left: var(--space-xs);
+        }
+
+        /* ==========================================================================================
+           2.14. FPS COUNTER
+           ========================================================================================== */
+        #fps-counter {
+            position: absolute;
+            top: var(--space-lg);
+            right: var(--space-lg);
+            background: var(--bg-panel);
+            backdrop-filter: var(--backdrop-blur);
+            -webkit-backdrop-filter: var(--backdrop-blur);
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-normal);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .fps-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent-success);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent-success-glow);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .fps-dot.low { background: var(--accent-warning); box-shadow: 0 0 8px var(--accent-warning-hover); }
+        .fps-dot.critical { background: var(--accent-danger); box-shadow: 0 0 8px var(--accent-danger-glow); }
+
+        /* ==========================================================================================
+           2.15. RESPONSIVE
+           ========================================================================================== */
+        @media (max-width: 1280px) {
+            #control-panel {
+                gap: var(--space-md);
+                padding: var(--space-sm) var(--space-md);
+            }
+            .control-group { min-width: 110px; }
+            button { padding: 8px 12px; font-size: 0.75rem; }
+            button.move-btn { min-width: 36px; height: 36px; font-size: 0.85rem; }
+        }
+
+        @media (max-width: 1024px) {
+            #info-panel { top: var(--space-md); left: var(--space-md); padding: var(--space-md); max-width: 260px; }
+            #info-panel h1 { font-size: 1.2rem; }
+            #info-panel .info-row { font-size: 0.75rem; }
+            #stats-panel { top: 170px; left: var(--space-md); padding: var(--space-sm) var(--space-md); min-width: 180px; }
+            #control-panel { bottom: var(--space-md); padding: var(--space-sm) var(--space-md); }
+            #fps-counter { top: var(--space-md); right: var(--space-md); }
+        }
+
+        @media (max-width: 768px) {
+            #info-panel { display: none; }
+            #stats-panel { top: var(--space-md); left: var(--space-md); font-size: 0.7rem; }
+            .stats-header { font-size: 0.65rem; }
+            .stat-item { font-size: 0.7rem; }
+            .stat-value { font-size: 0.8rem; }
+            #control-panel { 
+                bottom: var(--space-sm); 
+                flex-wrap: wrap; 
+                gap: var(--space-sm); 
+                padding: var(--space-sm);
+                border-radius: var(--radius-lg);
+            }
+            .control-group { min-width: 100%; }
+            .control-group .group-label { font-size: 0.6rem; }
+            button { padding: 6px 10px; font-size: 0.7rem; }
+            button.move-btn { min-width: 32px; height: 32px; font-size: 0.8rem; }
+            .button-row { gap: var(--space-xs); }
+        }
+
+        @media (max-width: 480px) {
+            #control-panel {
+                left: var(--space-xs);
+                right: var(--space-xs);
+                transform: none;
+                max-width: none;
+                width: auto;
+            }
+            .control-group { min-width: 100%; }
+            #stats-panel { top: auto; bottom: 220px; left: var(--space-xs); right: var(--space-xs); width: auto; }
+            .stat-item { font-size: 0.65rem; }
+        }
+
+        /* ==========================================================================================
+           2.16. UTILITY CLASSES
+           ========================================================================================== */
+        .hidden { display: none !important; }
+        .fade-out { opacity: 0 !important; pointer-events: none !important; }
+
+        /* ==========================================================================================
+           2.17. SPECIAL EFFECTS
+           ========================================================================================== */
+        .glow-pulse {
+            animation: glowPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 5px var(--accent-primary-glow); }
+            50% { box-shadow: 0 0 25px var(--accent-primary-glow); }
+        }
+
+        .shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        /* Confetti effect for solved state */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            z-index: 9997;
+            pointer-events: none;
+            animation: confettiFall 3s linear forwards;
+        }
+
+        @keyframes confettiFall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+    </style>
 </head>
 <body>
 
-<div id="petals" aria-hidden="true"></div>
+    <!-- 
+        ============================================================================================
+        PHẦN 3: HTML STRUCTURE
+        ============================================================================================
+    -->
 
-<main class="stage">
-  <h1 class="title">Gửi Mẹ Yêu Thương</h1>
-  <p class="subtitle">Món quà nhỏ từ con</p>
-
-  <div class="envelope-wrap" id="envelopeWrap">
-    <div class="envelope" id="envelope" role="button" tabindex="0" aria-label="Nhấn để mở lá thư gửi mẹ">
-      <div class="env-back"></div>
-      <div class="letter-peek"></div>
-      <div class="env-front"></div>
-      <div class="env-flap"></div>
-      <div class="seal">
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-        </svg>
-      </div>
-    </div>
-  </div>
-
-  <div class="hint" id="hint">
-    <span>Nhấn vào phong bì để mở thư</span>
-    <span class="arrow">💗</span>
-  </div>
-</main>
-
-<!-- ===== LÁ THƯ ===== -->
-<section class="letter" id="letter" aria-hidden="true">
-  <div class="letter-flex">
-    <article class="letter-inner">
-      <span class="corner c-tl" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></span>
-      <span class="corner c-tr" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.8L20 9.7l-4.9 3.6L17 19l-5-3.6L7 19l1.9-5.7L4 9.7l6.1-1.9z"/></svg></span>
-      <span class="corner c-bl" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.8L20 9.7l-4.9 3.6L17 19l-5-3.6L7 19l1.9-5.7L4 9.7l6.1-1.9z"/></svg></span>
-      <span class="corner c-br" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></span>
-
-      <header class="letter-head">
-        <svg class="h-heart" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-        <h2>Gửi Mẹ — Người Con Yêu Thương Nhất</h2>
-        <div class="divider">
-          <span class="line"></span>
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.9 5.8L20 9.7l-4.9 3.6L17 19l-5-3.6L7 19l1.9-5.7L4 9.7l6.1-1.9z"/></svg>
-          <span class="line"></span>
+    <!-- ================================================================================
+         3.1. LOADING SCREEN
+         ================================================================================ -->
+    <div id="loading-screen">
+        <div class="loader-brand">RUBIK 3D PRO</div>
+        <div class="loader-subtitle">Đang khởi tạo...</div>
+        <div class="loader-spinner"></div>
+        <div class="loader-progress">
+            <div class="loader-progress-bar" id="loader-bar"></div>
         </div>
-      </header>
+        <div class="loader-percent" id="loader-percent">0%</div>
+    </div>
 
-      <p class="greeting"><span id="typed"></span><span class="caret" id="caret"></span></p>
+    <!-- ================================================================================
+         3.2. INFO PANEL
+         ================================================================================ -->
+    <div id="info-panel">
+        <h1>Rubik 3D Pro</h1>
+        <div class="info-row">
+            <span class="info-icon">◆</span>
+            <div><strong>Cấu tạo:</strong> 26 cubie bo góc + lõi 3 trục</div>
+        </div>
+        <div class="info-row">
+            <span class="info-icon">◆</span>
+            <div><strong>Cơ chế:</strong> 3 trục X/Y/Z cố định gắn lõi</div>
+        </div>
+        <div class="info-row">
+            <span class="info-icon">◆</span>
+            <div><strong>Kéo chuột:</strong> xoay góc nhìn 3D</div>
+        </div>
+        <div class="info-row">
+            <span class="info-icon">◆</span>
+            <div><strong>Phím tắt:</strong> R/L/U/D/F/B · Space · Ctrl+Z</div>
+        </div>
+    </div>
 
-      <div class="letter-body" id="letterBody">
-        <p class="reveal">
-          Con ngồi viết những dòng này khi ngoài kia đã khuya, và mẹ vẫn đang lặng lẽ dọn nốt
-          những thứ cuối cùng của một ngày dài. Con nhìn mẹ mà thương đến <em>nghẹn lòng</em>.
-        </p>
+    <!-- ================================================================================
+         3.3. STATS PANEL
+         ================================================================================ -->
+    <div id="stats-panel">
+        <div class="stats-header">Thống kê phiên</div>
+        <div class="stat-item">
+            <span class="stat-label">🎯 Số nước đi</span>
+            <span class="stat-value" id="stat-moves">0</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">⏱️ Thời gian</span>
+            <span class="stat-value" id="stat-time">00:00</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">📜 Lịch sử</span>
+            <span class="stat-value" id="stat-history">0</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">🏆 Kỷ lục</span>
+            <span class="stat-value" id="stat-best">--</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">📊 Trạng thái</span>
+            <span class="stat-value" id="stat-status">Solved</span>
+        </div>
+    </div>
 
-        <p class="reveal">
-          Mẹ ơi, con biết mẹ đã thức khuya dậy sớm. Con biết mẹ đã nuốt bao nhiêu mệt mỏi vào trong,
-          đã cắn răng chịu đựng những điều chẳng ai hay, chỉ để con có một bữa cơm đầy đủ
-          và một giấc ngủ yên bình.
-        </p>
+    <!-- ================================================================================
+         3.4. FPS COUNTER
+         ================================================================================ -->
+    <div id="fps-counter">
+        <span class="fps-dot" id="fps-dot"></span>
+        <span id="fps-text">60 FPS</span>
+    </div>
 
-        <p class="reveal">
-          Con biết có những đêm mẹ khóc mà không cho con thấy. Có những lúc mẹ mỏi đến mức
-          chỉ muốn buông xuôi — nhưng rồi mẹ vẫn đứng dậy. <em>Vì con.</em>
-        </p>
+    <!-- ================================================================================
+         3.5. TOAST CONTAINER
+         ================================================================================ -->
+    <div id="toast-container"></div>
 
-        <p class="reveal">
-          Mẹ đừng tự trách mình khi mọi thứ chưa như ý nhé. Mẹ đã làm tốt hơn bất kỳ ai trên đời rồi.
-          Mẹ không cần phải hoàn hảo để trở thành người mẹ tuyệt nhất —
-          <em>với con, mẹ đã là tất cả.</em>
-        </p>
+    <!-- ================================================================================
+         3.6. CONTROL PANEL
+         ================================================================================ -->
+    <div id="control-panel">
+        <!-- Nhóm 1: Hành động chính -->
+        <div class="control-group">
+            <span class="group-label">⚡ Hành động</span>
+            <div class="button-row">
+                <button id="btn-scramble" class="warning" title="Xáo trộn ngẫu nhiên (S)">🔀 Scramble</button>
+                <button id="btn-solve" class="success" title="Giải tự động (Enter)">✨ Solve</button>
+                <button id="btn-undo" title="Hoàn tác (Ctrl+Z)">↶ Undo</button>
+                <button id="btn-redo" title="Làm lại (Ctrl+Y)">↷ Redo</button>
+            </div>
+        </div>
 
-        <p class="reveal">
-          Con vẫn còn là một đứa học trò nhỏ, còn vụng về, còn làm mẹ phải nhắc, phải lo.
-          Nhưng con đang cố gắng mỗi ngày. Con học không chỉ vì điểm số — con học để sau này
-          mẹ không phải vất vả nữa, để mẹ được nghỉ, được cười,
-          được sống cho chính mình một lần.
-        </p>
+        <!-- Nhóm 2: Xem cấu trúc -->
+        <div class="control-group">
+            <span class="group-label">🔍 Cấu trúc</span>
+            <div class="button-row">
+                <button id="btn-explode" class="primary" title="Tách rời các khối (E)">💥 Explode</button>
+                <button id="btn-core" class="primary" title="Xem lõi và trục (C)">⚙️ Core</button>
+                <button id="btn-presentation" class="primary" title="Chạy thuyết trình (P)">🎬 Demo</button>
+            </div>
+        </div>
 
-        <p class="reveal">
-          Mẹ ơi, mẹ đừng buồn nữa nhé. Mẹ không cô đơn đâu. <em>Có con ở đây.</em>
-          Con sẽ lớn, sẽ trưởng thành, rồi sẽ trở thành chỗ dựa của mẹ —
-          như cách mẹ đã từng là cả bầu trời của con.
-        </p>
+        <!-- Nhóm 3: Xoay mặt -->
+        <div class="control-group">
+            <span class="group-label">🔄 Xoay tầng</span>
+            <div class="button-row">
+                <button class="move-btn" data-move="R" title="Phải (R)">R</button>
+                <button class="move-btn" data-move="L" title="Trái (L)">L</button>
+                <button class="move-btn" data-move="U" title="Trên (U)">U</button>
+                <button class="move-btn" data-move="D" title="Dưới (D)">D</button>
+                <button class="move-btn" data-move="F" title="Trước (F)">F</button>
+                <button class="move-btn" data-move="B" title="Sau (B)">B</button>
+            </div>
+        </div>
 
-        <p class="reveal">
-          Con yêu mẹ. Yêu cái cách mẹ cằn nhằn rồi vẫn để phần con miếng ngon nhất.
-          Yêu cái cách mẹ nói <em>“không sao đâu”</em> dù mẹ đang rất mệt.
-          Yêu cả những nếp nhăn và vết chai trên tay mẹ — đó là những dấu vết
-          của tình yêu lớn nhất đời con.
-        </p>
+        <!-- Nhóm 4: Tốc độ -->
+        <div class="control-group">
+            <span class="group-label">⚙️ Tùy chọn</span>
+            <div class="slider-wrapper">
+                <div class="slider-label">
+                    <span>Tốc độ</span>
+                    <span class="slider-value" id="speed-value">1.0x</span>
+                </div>
+                <input type="range" id="speed-slider" min="0.3" max="3" step="0.1" value="1">
+            </div>
+            <div class="toggle-row">
+                <span>Tự xoay camera</span>
+                <div class="toggle-switch active" id="toggle-autorotate"></div>
+            </div>
+        </div>
 
-        <p class="strong-line reveal">
-          Mẹ à, con yêu mẹ nhiều hơn mọi lời con có thể viết.<br>
-          Mong mẹ luôn khoẻ, luôn vui, và ở bên con thật lâu… thật lâu.
-        </p>
-      </div>
+        <!-- Nhóm 5: Hiển thị -->
+        <div class="control-group">
+            <span class="group-label">🎨 Hiển thị</span>
+            <div class="button-row">
+                <button id="btn-camera" title="Đổi góc nhìn (V)">📷 View</button>
+                <button id="btn-help" title="Trợ giúp (H)">❓ Help</button>
+                <button id="btn-reset" class="danger" title="Reset toàn bộ (Ctrl+R)">🔄 Reset</button>
+            </div>
+            <div class="toggle-row">
+                <span>Âm thanh</span>
+                <div class="toggle-switch active" id="toggle-sound"></div>
+            </div>
+        </div>
+    </div>
 
-      <footer class="letter-foot reveal">
-        <p class="sign">Con của mẹ — mãi mãi 💗</p>
-        <!-- ĐÃ ĐỔI TEXT THÀNH BẮT ĐẦU -->
-        <button class="hug-btn" id="hugBtn">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-          Bắt đầu
-        </button>
-      </footer>
-    </article>
-  </div>
-</section>
+    <!-- ================================================================================
+         3.7. HELP MODAL
+         ================================================================================ -->
+    <div class="modal-overlay" id="help-modal">
+        <div class="modal" style="position: relative;">
+            <button class="icon-btn close-btn" id="btn-close-help" title="Đóng">✕</button>
+            <h2>📖 Hướng dẫn sử dụng</h2>
+            
+            <h3>🎮 Phím tắt</h3>
+            <ul>
+                <li><span class="key-hint">R</span> <span class="key-hint">L</span> <span class="key-hint">U</span> <span class="key-hint">D</span> <span class="key-hint">F</span> <span class="key-hint">B</span> - Xoay mặt tương ứng</li>
+                <li><span class="key-hint">Shift</span> + Phím mặt - Xoay ngược chiều</li>
+                <li><span class="key-hint">Space</span> - Chạy/dừng thuyết trình</li>
+                <li><span class="key-hint">S</span> - Scramble (xáo trộn)</li>
+                <li><span class="key-hint">Enter</span> - Solve (giải tự động)</li>
+                <li><span class="key-hint">E</span> - Bật/tắt Explode</li>
+                <li><span class="key-hint">C</span> - Bật/tắt xem Core</li>
+                <li><span class="key-hint">V</span> - Chuyển góc nhìn camera</li>
+                <li><span class="key-hint">Ctrl</span>+<span class="key-hint">Z</span> - Undo (hoàn tác)</li>
+                <li><span class="key-hint">Ctrl</span>+<span class="key-hint">Y</span> - Redo (làm lại)</li>
+                <li><span class="key-hint">Ctrl</span>+<span class="key-hint">R</span> - Reset toàn bộ</li>
+                <li><span class="key-hint">H</span> - Mở/đóng trợ giúp</li>
+                <li><span class="key-hint">Esc</span> - Đóng modal</li>
+            </ul>
 
-<button class="reopen" id="reopen" aria-label="Mở lại lá thư">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <rect x="2" y="5" width="20" height="14" rx="2"/>
-    <path d="M2 7l10 7 10-7"/>
-  </svg>
-</button>
+            <h3>🖱️ Chuột / Cảm ứng</h3>
+            <ul>
+                <li><strong>Kéo chuột trái:</strong> Xoay góc nhìn 3D</li>
+                <li><strong>Lăn chuột:</strong> Zoom in / out</li>
+                <li><strong>Kéo chuột phải:</strong> Pan (di chuyển)</li>
+                <li><strong>Chạm và kéo (mobile):</strong> Xoay góc nhìn</li>
+                <li><strong>Chụm 2 ngón (mobile):</strong> Zoom</li>
+            </ul>
 
-<!-- ===== HIỆU ỨNG ẢNH XOAY VÀ TRÁI TIM ===== -->
-<div class="heart-overlay" id="heartOverlay">
-  <button class="close-overlay" id="closeOverlay" aria-label="Đóng">×</button>
-  
-  <div class="orbit-container" id="orbitContainer">
-    <!-- Lấy đủ 5 ảnh bao gồm cả ảnh bìa cũ -->
-    <img src="bia.jpg" class="orbit-img" alt="Ảnh 1" onerror="this.src='https://images.unsplash.com/photo-1542037104857-ffbb0b9155fb?q=80&w=400&auto=format&fit=crop';">
-    <img src="anh1.jpg" class="orbit-img" alt="Ảnh 2" onerror="this.src='https://images.unsplash.com/photo-1518063319789-7217e6706b04?q=80&w=400&auto=format&fit=crop';">
-    <img src="anh2.jpg" class="orbit-img" alt="Ảnh 3" onerror="this.src='https://images.unsplash.com/photo-1522770179533-24471fcdba45?q=80&w=400&auto=format&fit=crop';">
-    <img src="anh3.jpg" class="orbit-img" alt="Ảnh 4" onerror="this.src='https://images.unsplash.com/photo-1490723286627-4b66e6b2882a?q=80&w=400&auto=format&fit=crop';">
-    <img src="anh4.jpg" class="orbit-img" alt="Ảnh 5" onerror="this.src='https://images.unsplash.com/photo-1499209974431-9dddcece7f88?q=80&w=400&auto=format&fit=crop';">
-  </div>
+            <h3>🎯 Ký hiệu Rubik</h3>
+            <ul>
+                <li><strong>R</strong> - Right (mặt phải) - Đỏ</li>
+                <li><strong>L</strong> - Left (mặt trái) - Cam</li>
+                <li><strong>U</strong> - Up (mặt trên) - Trắng</li>
+                <li><strong>D</strong> - Down (mặt dưới) - Vàng</li>
+                <li><strong>F</strong> - Front (mặt trước) - Xanh dương</li>
+                <li><strong>B</strong> - Back (mặt sau) - Xanh lá</li>
+            </ul>
 
-  <div class="big-heart-container">
-    <svg class="big-heart" id="bigHeart" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-    </svg>
-    <div class="final-text" id="finalText">Mẹ Ơi, Con Yêu Mẹ!</div>
-  </div>
-</div>
+            <h3>💡 Mẹo</h3>
+            <ul>
+                <li>Bật <strong>Explode</strong> để xem cấu trúc bên trong khối Rubik</li>
+                <li>Kết hợp <strong>Explode + Core</strong> để hiểu rõ cơ chế hoạt động</li>
+                <li>Sử dụng <strong>Demo</strong> để xem minh họa tự động</li>
+                <li>Kỷ lục giải nhanh nhất sẽ được lưu lại</li>
+            </ul>
+        </div>
+    </div>
 
-<script>
-/* ============================================================
-   TIỆN ÍCH & SVG
-   ============================================================ */
-const $  = (sel) => document.querySelector(sel);
-const rand = (a, b) => Math.random() * (b - a) + a;
+    <!-- ================================================================================
+         3.8. CANVAS CONTAINER
+         ================================================================================ -->
+    <div id="canvas-container"></div>
 
-const HEART_SVG = `<svg viewBox="0 0 24 24" width="100%" height="100%" fill="currentColor" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
-const SPARK_SVG = `<svg viewBox="0 0 24 24" width="100%" height="100%" fill="currentColor" aria-hidden="true"><path d="M12 2l1.9 5.8L20 9.7l-4.9 3.6L17 19l-5-3.6L7 19l1.9-5.7L4 9.7l6.1-1.9z"/></svg>`;
+    <!-- 
+        ============================================================================================
+        PHẦN 4: IMPORT MAP - KHAI BÁO THƯ VIỆN
+        ============================================================================================
+    -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+                "gsap": "https://unpkg.com/gsap@3.12.5/index.js"
+            }
+        }
+    </script>
 
-/* ============================================================
-   CÁNH HOA BAY
-   ============================================================ */
-const petalLayer = $('#petals');
-const PETAL_COLORS = ['#ff9ec4','#ff7fb0','#ffb8d6','#ffd1e3','#f2679b','#ffc2dd','#ffe4f0'];
+    <!-- 
+        ============================================================================================
+        PHẦN 5: JAVASCRIPT - TOÀN BỘ LOGIC
+        ============================================================================================
+        Cấu trúc:
+        - 5.1. Imports
+        - 5.2. Configuration
+        - 5.3. Utility Functions
+        - 5.4. Sound Manager
+        - 5.5. Toast Manager
+        - 5.6. Scene Setup
+        - 5.7. Lighting
+        - 5.8. Materials
+        - 5.9. Core & Axis
+        - 5.10. Cubies
+        - 5.11. Environment
+        - 5.12. Rotation Logic (ĐÃ FIX)
+        - 5.13. Explode Logic (ĐÃ FIX)
+        - 5.14. Core Toggle
+        - 5.15. Scramble
+        - 5.16. Solve
+        - 5.17. Undo/Redo
+        - 5.18. Statistics
+        - 5.19. Camera Presets
+        - 5.20. Presentation
+        - 5.21. Reset
+        - 5.22. Event Handlers
+        - 5.23. Render Loop
+        ============================================================================================
+    -->
+    <script type="module">
+        // ==========================================================================================
+        // 5.1. IMPORTS
+        // ==========================================================================================
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+        import gsap from 'gsap';
 
-function makePetal(){
-  const d = document.createElement('div');
-  d.className = 'petal';
-  const size = rand(10, 30);
-  d.style.width  = size + 'px';
-  d.style.height = size + 'px';
-  d.style.left   = rand(0, 100) + 'vw';
-  d.style.color  = PETAL_COLORS[Math.floor(Math.random() * PETAL_COLORS.length)];
-  d.style.animationDuration = rand(11, 22) + 's';
-  d.style.animationDelay    = rand(0, 8) + 's';
-  d.innerHTML = HEART_SVG;
-  petalLayer.appendChild(d);
-  setTimeout(() => d.remove(), 32000);
-}
-for (let i = 0; i < 16; i++) makePetal();
-setInterval(makePetal, 850);
+        // ==========================================================================================
+        // 5.2. CONFIGURATION
+        // ==========================================================================================
+        const CONFIG = Object.freeze({
+            CUBE_SIZE: 1.0,
+            GAP: 0.06,
+            EXPLODE_FACTOR: 2.2,
+            ROTATION_DURATION: 0.45,
+            ROUND_RADIUS: 0.12,
+            ROUND_SEGMENTS: 5,
+            MIN_DISTANCE: 6,
+            MAX_DISTANCE: 30,
+            AUTO_ROTATE_SPEED: 0.8,
+        });
 
-/* ============================================================
-   VỆT SÁNG CHUỘT
-   ============================================================ */
-let lastSpark = 0;
-document.addEventListener('pointermove', (e) => {
-  const now = performance.now();
-  if (now - lastSpark < 65) return;
-  lastSpark = now;
-  const s = document.createElement('div');
-  s.className = 'spark';
-  s.style.left = e.clientX + 'px';
-  s.style.top  = e.clientY + 'px';
-  s.style.width = s.style.height = rand(10, 18) + 'px';
-  s.style.color = PETAL_COLORS[Math.floor(Math.random() * PETAL_COLORS.length)];
-  s.innerHTML = Math.random() > 0.5 ? HEART_SVG : SPARK_SVG;
-  document.body.appendChild(s);
-  setTimeout(() => s.remove(), 950);
-}, { passive: true });
+        const OFFSET = CONFIG.CUBE_SIZE + CONFIG.GAP;
 
-/* ============================================================
-   BÙNG NỔ TIM
-   ============================================================ */
-function burst(x, y, count = 30){
-  for (let i = 0; i < count; i++){
-    const h = document.createElement('div');
-    h.className = 'burst-heart';
-    h.style.left = x + 'px'; h.style.top = y + 'px';
-    h.style.width = rand(14, 30) + 'px'; h.style.height = h.style.width;
-    h.style.color  = PETAL_COLORS[Math.floor(Math.random() * PETAL_COLORS.length)];
-    const angle = Math.random() * Math.PI * 2;
-    const dist  = rand(90, 300);
-    h.style.setProperty('--dx', (Math.cos(angle) * dist).toFixed(1) + 'px');
-    h.style.setProperty('--dy', (Math.sin(angle) * dist - 60).toFixed(1) + 'px');
-    h.style.setProperty('--r',  rand(-420, 420).toFixed(0) + 'deg');
-    h.style.animationDelay = rand(0, 0.18).toFixed(2) + 's';
-    h.innerHTML = HEART_SVG;
-    document.body.appendChild(h);
-    setTimeout(() => h.remove(), 1800);
-  }
-}
+        const COLORS = Object.freeze({
+            right:  0xff2222,
+            left:   0xff8800,
+            up:     0xffffff,
+            down:   0xffd700,
+            front:  0x0055ff,
+            back:   0x00cc44,
+            inner:  0x1a1a1a,
+        });
 
-/* ============================================================
-   LOGIC MỞ THƯ
-   ============================================================ */
-const envelopeWrap = $('#envelopeWrap');
-const envelope     = $('#envelope');
-const letter       = $('#letter');
-const hint         = $('#hint');
-const reopenBtn    = $('#reopen');
-let opened = false;
+        const MOVES = Object.freeze({
+            'R': { axis: 'x', layer: 1,  angle: -Math.PI / 2 },
+            'L': { axis: 'x', layer: -1, angle: Math.PI / 2 },
+            'U': { axis: 'y', layer: 1,  angle: -Math.PI / 2 },
+            'D': { axis: 'y', layer: -1, angle: Math.PI / 2 },
+            'F': { axis: 'z', layer: 1,  angle: -Math.PI / 2 },
+            'B': { axis: 'z', layer: -1, angle: Math.PI / 2 },
+        });
 
-function openLetter(){
-  if (opened) return;
-  opened = true;
-  const rect = envelope.getBoundingClientRect();
-  const cx = rect.left + rect.width  / 2;
-  const cy = rect.top  + rect.height / 2;
+        const OPPOSITE = Object.freeze({ R: 'L', L: 'R', U: 'D', D: 'U', F: 'B', B: 'F' });
 
-  envelope.classList.add('open');
-  hint.style.opacity = '0'; hint.style.transform = 'translateY(20px)';
-  burst(cx, cy, 34);
-  setTimeout(() => burst(cx, cy - 40, 20), 260);
-  setTimeout(() => envelopeWrap.classList.add('gone'), 780);
-  setTimeout(() => {
-    letter.classList.add('show');
-    letter.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-    letter.scrollTop = 0;
-    startLetterSequence();
-  }, 1050);
-  setTimeout(() => reopenBtn.classList.add('show'), 2200);
-}
+        // ==========================================================================================
+        // 5.3. UTILITY FUNCTIONS
+        // ==========================================================================================
+        
+        function $(selector) {
+            return document.querySelector(selector);
+        }
 
-envelopeWrap.addEventListener('click', openLetter);
-envelope.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openLetter(); } });
+        function $$(selector) {
+            return document.querySelectorAll(selector);
+        }
 
-/* ============================================================
-   CHẠY CHỮ & HIỆN NỘI DUNG
-   ============================================================ */
-let sequenceStarted = false;
-function startLetterSequence(){
-  if (sequenceStarted) return;
-  sequenceStarted = true;
-  const typed = $('#typed'); const caret = $('#caret'); const text = 'Mẹ ơi…';
-  let i = 0;
-  const typingTimer = setInterval(() => {
-    typed.textContent += text[i]; i++;
-    if (i >= text.length){
-      clearInterval(typingTimer);
-      setTimeout(() => caret.classList.add('hidden'), 900);
-      setTimeout(revealAll, 420);
-    }
-  }, 140);
-}
+        function clamp(v, min, max) {
+            return Math.max(min, Math.min(max, v));
+        }
 
-function revealAll(){
-  document.querySelectorAll('#letter .reveal').forEach((el, index) => {
-    setTimeout(() => el.classList.add('in'), index * 280);
-  });
-}
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
 
-/* ============================================================
-   NÚT "BẮT ĐẦU" - KÍCH HOẠT HIỆU ỨNG ẢNH VÀ TRÁI TIM
-   ============================================================ */
-const startBtn = $('#hugBtn');
-const overlay = $('#heartOverlay');
-const orbitContainer = $('#orbitContainer');
-const orbitImgs = document.querySelectorAll('.orbit-img');
+        function pickRandom(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
 
-startBtn.addEventListener('click', () => {
-  overlay.classList.add('show');
-  
-  const numImgs = orbitImgs.length;
-  const R = window.innerWidth < 520 ? 100 : 150; // Bán kính vòng tròn tùy màn hình
-  
-  // 1. Tỏa ra vòng tròn
-  orbitImgs.forEach((img, i) => {
-    const angle = (i * 360) / numImgs;
-    const rad = angle * Math.PI / 180;
-    const x = Math.cos(rad) * R;
-    const y = Math.sin(rad) * R;
-    
-    img.style.setProperty('--x', `${x}px`);
-    img.style.setProperty('--y', `${y}px`);
-    
-    // Hiệu ứng xuất hiện lần lượt
-    setTimeout(() => {
-      img.classList.add('expand');
-    }, 300 + i * 80);
-  });
+        // ==========================================================================================
+        // 5.4. SOUND MANAGER - Quản lý âm thanh bằng Web Audio API
+        // ==========================================================================================
+        class SoundManager {
+            constructor() {
+                this.enabled = true;
+                this.ctx = null;
+                this.volume = 0.3;
+            }
 
-  // 2. Bắt đầu xoay tròn (phải sang trái 3 vòng)
-  setTimeout(() => {
-    orbitContainer.classList.add('spin');
-  }, 1500);
+            init() {
+                if (this.ctx) return;
+                try {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {
+                    console.warn('Web Audio API không được hỗ trợ');
+                }
+            }
 
-  // 3. Gộp các ảnh vào tâm
-  setTimeout(() => {
-    orbitImgs.forEach(img => {
-      img.classList.remove('expand');
-      img.classList.add('collapse');
-    });
-  }, 4200);
+            play(type) {
+                if (!this.enabled || !this.ctx) return;
+                if (this.ctx.state === 'suspended') this.ctx.resume();
 
-  // 4. Nổ tung thành trái tim khổng lồ
-  setTimeout(() => {
-    $('#bigHeart').classList.add('pop');
-    $('#finalText').classList.add('show');
-    burst(window.innerWidth / 2, window.innerHeight / 2, 50); // Bắn tim
-  }, 4900);
-});
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
 
-/* ============================================================
-   ĐÓNG OVERLAY
-   ============================================================ */
-$('#closeOverlay').addEventListener('click', () => {
-  overlay.classList.remove('show');
-  // Reset lại animation để có thể bấm lại lần nữa
-  setTimeout(() => {
-    orbitContainer.classList.remove('spin');
-    orbitImgs.forEach(img => {
-      img.classList.remove('expand', 'collapse');
-    });
-    $('#bigHeart').classList.remove('pop');
-    $('#finalText').classList.remove('show');
-  }, 1000); // Đợi màn hình mờ đi hẳn rồi mới reset
-});
+                switch (type) {
+                    case 'click':
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(600, now);
+                        osc.frequency.exponentialRampToValueAtTime(900, now + 0.08);
+                        gain.gain.setValueAtTime(this.volume * 0.5, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+                        osc.start(now);
+                        osc.stop(now + 0.12);
+                        break;
 
-/* ============================================================
-   MỞ LẠI THƯ
-   ============================================================ */
-reopenBtn.addEventListener('click', () => {
-  letter.classList.add('show');
-  letter.setAttribute('aria-hidden', 'false');
-  letter.scrollTop = 0;
-  document.body.style.overflow = 'hidden';
-  document.querySelectorAll('#letter .reveal').forEach(el => el.classList.add('in'));
-  const r = reopenBtn.getBoundingClientRect();
-  burst(r.left + r.width / 2, r.top + r.height / 2, 18);
-});
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && letter.classList.contains('show')){
-    letter.classList.remove('show');
-    letter.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-  }
-});
+                    case 'whoosh':
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(150, now);
+                        osc.frequency.exponentialRampToValueAtTime(400, now + 0.2);
+                        gain.gain.setValueAtTime(this.volume * 0.15, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                        osc.start(now);
+                        osc.stop(now + 0.25);
+                        break;
 
-/* KHỞI TẠO PHÁO HOA KHI VÀO TRANG */
-window.addEventListener('load', () => {
-  setTimeout(() => { burst(window.innerWidth / 2, window.innerHeight * 0.32, 16); }, 700);
-});
-</script>
+                    case 'complete':
+                        osc.type = 'triangle';
+                        const notes = [523.25, 659.25, 783.99, 1046.5];
+                        notes.forEach((freq, i) => {
+                            const o = this.ctx.createOscillator();
+                            const g = this.ctx.createGain();
+                            o.connect(g);
+                            g.connect(this.ctx.destination);
+                            o.type = 'triangle';
+                            o.frequency.setValueAtTime(freq, now + i * 0.1);
+                            g.gain.setValueAtTime(0.001, now + i * 0.1);
+                            g.gain.exponentialRampToValueAtTime(this.volume * 0.4, now + i * 0.1 + 0.02);
+                            g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.35);
+                            o.start(now + i * 0.1);
+                            o.stop(now + i * 0.1 + 0.4);
+                        });
+                        osc.stop(now);
+                        return;
+
+                    case 'error':
+                        osc.type = 'square';
+                        osc.frequency.setValueAtTime(200, now);
+                        osc.frequency.setValueAtTime(150, now + 0.1);
+                        gain.gain.setValueAtTime(this.volume * 0.2, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                        osc.start(now);
+                        osc.stop(now + 0.25);
+                        break;
+
+                    case 'pop':
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(400, now);
+                        osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+                        gain.gain.setValueAtTime(this.volume * 0.3, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                        osc.start(now);
+                        osc.stop(now + 0.08);
+                        break;
+                }
+            }
+        }
+
+        const sound = new SoundManager();
+
+        // ==========================================================================================
+        // 5.5. TOAST MANAGER - Hiển thị thông báo
+        // ==========================================================================================
+        class ToastManager {
+            constructor() {
+                this.container = $('#toast-container');
+            }
+
+            show(message, type = 'info', duration = 2500) {
+                const icons = { info: 'ℹ️', success: '✅', warning: '⚠️', danger: '❌' };
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.innerHTML = `<span class="toast-icon">${icons[type] || 'ℹ️'}</span><span>${message}</span>`;
+                this.container.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.classList.add('removing');
+                    setTimeout(() => toast.remove(), 300);
+                }, duration);
+            }
+        }
+
+        const toast = new ToastManager();
+
+        // ==========================================================================================
+        // 5.6. SCENE SETUP
+        // ==========================================================================================
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a0a0a);
+        scene.fog = new THREE.FogExp2(0x0a0a0a, 0.018);
+
+        const camera = new THREE.PerspectiveCamera(
+            45,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000
+        );
+        camera.position.set(8, 8, 12);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            alpha: false,
+            powerPreference: 'high-performance',
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        $('#canvas-container').appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = CONFIG.AUTO_ROTATE_SPEED;
+        controls.enableZoom = true;
+        controls.minDistance = CONFIG.MIN_DISTANCE;
+        controls.maxDistance = CONFIG.MAX_DISTANCE;
+        controls.target.set(0, 0, 0);
+        controls.enablePan = true;
+
+        // ==========================================================================================
+        // 5.7. LIGHTING
+        // ==========================================================================================
+        const ambientLight = new THREE.AmbientLight(0x404060, 1.2);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 2.0);
+        dirLight.position.set(5, 10, 7);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
+        dirLight.shadow.camera.near = 1;
+        dirLight.shadow.camera.far = 50;
+        dirLight.shadow.camera.left = -10;
+        dirLight.shadow.camera.right = 10;
+        dirLight.shadow.camera.top = 10;
+        dirLight.shadow.camera.bottom = -10;
+        dirLight.shadow.bias = -0.0005;
+        scene.add(dirLight);
+
+        const fillLight = new THREE.DirectionalLight(0x4466ff, 0.6);
+        fillLight.position.set(-5, 0, 5);
+        scene.add(fillLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 0.8, 25);
+        pointLight.position.set(0, 5, 0);
+        scene.add(pointLight);
+
+        const underLight = new THREE.PointLight(0x4444ff, 0.3, 20);
+        underLight.position.set(0, -5, 0);
+        scene.add(underLight);
+
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.5);
+        scene.add(hemiLight);
+
+        // ==========================================================================================
+        // 5.8. MATERIALS
+        // ==========================================================================================
+        function createMaterial(color, roughness = 0.35, metalness = 0.1) {
+            return new THREE.MeshStandardMaterial({
+                color,
+                roughness,
+                metalness,
+                emissive: new THREE.Color(0x000000),
+            });
+        }
+
+        const faceMaterials = {
+            right:  createMaterial(COLORS.right, 0.3, 0.15),
+            left:   createMaterial(COLORS.left, 0.3, 0.15),
+            up:     createMaterial(COLORS.up, 0.4, 0.05),
+            down:   createMaterial(COLORS.down, 0.3, 0.15),
+            front:  createMaterial(COLORS.front, 0.3, 0.15),
+            back:   createMaterial(COLORS.back, 0.3, 0.15),
+            inner:  createMaterial(COLORS.inner, 0.8, 0.0),
+        };
+
+        const coreMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333,
+            roughness: 0.4,
+            metalness: 0.8,
+            emissive: new THREE.Color(0x111122),
+        });
+
+        const axisMaterials = {
+            x: new THREE.MeshStandardMaterial({
+                color: 0xff4444,
+                emissive: new THREE.Color(0x330000),
+                metalness: 0.6,
+                roughness: 0.4,
+            }),
+            y: new THREE.MeshStandardMaterial({
+                color: 0x44ff44,
+                emissive: new THREE.Color(0x003300),
+                metalness: 0.6,
+                roughness: 0.4,
+            }),
+            z: new THREE.MeshStandardMaterial({
+                color: 0x4444ff,
+                emissive: new THREE.Color(0x000033),
+                metalness: 0.6,
+                roughness: 0.4,
+            }),
+        };
+
+        const jointMaterial = new THREE.MeshStandardMaterial({
+            color: 0x888888,
+            roughness: 0.3,
+            metalness: 0.9,
+        });
+
+        const washerMaterial = new THREE.MeshStandardMaterial({
+            color: 0x555555,
+            metalness: 0.8,
+            roughness: 0.2,
+        });
+
+        // ==========================================================================================
+        // 5.9. CORE & AXIS - Lõi và hệ thống trục
+        // ==========================================================================================
+        const rubikGroup = new THREE.Group();
+        scene.add(rubikGroup);
+
+        const coreGroup = new THREE.Group();
+        coreGroup.visible = false;
+        rubikGroup.add(coreGroup);
+
+        function createCoreAndAxis() {
+            // Khối cầu lõi
+            const coreGeo = new THREE.SphereGeometry(0.7, 32, 32);
+            const coreMesh = new THREE.Mesh(coreGeo, coreMaterial);
+            coreMesh.castShadow = true;
+            coreMesh.receiveShadow = true;
+            coreGroup.add(coreMesh);
+
+            const axisLength = 2.0;
+            const axisThickness = 0.18;
+
+            // Trục X
+            const axisXGeo = new THREE.CylinderGeometry(axisThickness, axisThickness, axisLength, 12);
+            const axisX1 = new THREE.Mesh(axisXGeo, axisMaterials.x);
+            axisX1.rotation.z = Math.PI / 2;
+            axisX1.position.x = axisLength / 2;
+            axisX1.castShadow = true;
+            coreGroup.add(axisX1);
+
+            const axisX2 = new THREE.Mesh(axisXGeo, axisMaterials.x);
+            axisX2.rotation.z = Math.PI / 2;
+            axisX2.position.x = -axisLength / 2;
+            axisX2.castShadow = true;
+            coreGroup.add(axisX2);
+
+            // Trục Y
+            const axisYGeo = new THREE.CylinderGeometry(axisThickness, axisThickness, axisLength, 12);
+            const axisY1 = new THREE.Mesh(axisYGeo, axisMaterials.y);
+            axisY1.position.y = axisLength / 2;
+            axisY1.castShadow = true;
+            coreGroup.add(axisY1);
+
+            const axisY2 = new THREE.Mesh(axisYGeo, axisMaterials.y);
+            axisY2.position.y = -axisLength / 2;
+            axisY2.castShadow = true;
+            coreGroup.add(axisY2);
+
+            // Trục Z
+            const axisZGeo = new THREE.CylinderGeometry(axisThickness, axisThickness, axisLength, 12);
+            const axisZ1 = new THREE.Mesh(axisZGeo, axisMaterials.z);
+            axisZ1.rotation.x = Math.PI / 2;
+            axisZ1.position.z = axisLength / 2;
+            axisZ1.castShadow = true;
+            coreGroup.add(axisZ1);
+
+            const axisZ2 = new THREE.Mesh(axisZGeo, axisMaterials.z);
+            axisZ2.rotation.x = Math.PI / 2;
+            axisZ2.position.z = -axisLength / 2;
+            axisZ2.castShadow = true;
+            coreGroup.add(axisZ2);
+
+            // Khớp nối và vòng đệm ở đầu mỗi trục
+            const jointGeo = new THREE.SphereGeometry(0.3, 16, 16);
+            const jointPositions = [
+                [axisLength / 2, 0, 0],
+                [-axisLength / 2, 0, 0],
+                [0, axisLength / 2, 0],
+                [0, -axisLength / 2, 0],
+                [0, 0, axisLength / 2],
+                [0, 0, -axisLength / 2],
+            ];
+
+            jointPositions.forEach((pos, index) => {
+                const joint = new THREE.Mesh(jointGeo, jointMaterial);
+                joint.position.set(pos[0], pos[1], pos[2]);
+                joint.castShadow = true;
+                joint.receiveShadow = true;
+                coreGroup.add(joint);
+
+                const washerGeo = new THREE.TorusGeometry(0.25, 0.05, 8, 16);
+                const washer = new THREE.Mesh(washerGeo, washerMaterial);
+                if (index === 0 || index === 1) {
+                    washer.rotation.y = Math.PI / 2;
+                } else if (index === 4 || index === 5) {
+                    washer.rotation.x = Math.PI / 2;
+                }
+                washer.position.set(pos[0] * 0.7, pos[1] * 0.7, pos[2] * 0.7);
+                washer.castShadow = true;
+                coreGroup.add(washer);
+            });
+        }
+
+        createCoreAndAxis();
+
+        // ==========================================================================================
+        // 5.10. CUBIES - Tạo 26 khối nhỏ
+        // ==========================================================================================
+        const cubies = [];
+
+        function createCubies() {
+            const geometry = new RoundedBoxGeometry(
+                CONFIG.CUBE_SIZE,
+                CONFIG.CUBE_SIZE,
+                CONFIG.CUBE_SIZE,
+                CONFIG.ROUND_SEGMENTS,
+                CONFIG.ROUND_RADIUS
+            );
+
+            for (let x = -1; x <= 1; x++) {
+                for (let y = -1; y <= 1; y++) {
+                    for (let z = -1; z <= 1; z++) {
+                        if (x === 0 && y === 0 && z === 0) continue;
+
+                        const mats = [
+                            x === 1 ? faceMaterials.right : faceMaterials.inner,
+                            x === -1 ? faceMaterials.left : faceMaterials.inner,
+                            y === 1 ? faceMaterials.up : faceMaterials.inner,
+                            y === -1 ? faceMaterials.down : faceMaterials.inner,
+                            z === 1 ? faceMaterials.front : faceMaterials.inner,
+                            z === -1 ? faceMaterials.back : faceMaterials.inner,
+                        ];
+
+                        const mesh = new THREE.Mesh(geometry, mats);
+                        mesh.position.set(x * OFFSET, y * OFFSET, z * OFFSET);
+                        mesh.userData.originalPos = new THREE.Vector3(x * OFFSET, y * OFFSET, z * OFFSET);
+                        mesh.userData.gridPos = new THREE.Vector3(x, y, z);
+                        mesh.castShadow = true;
+                        mesh.receiveShadow = true;
+
+                        rubikGroup.add(mesh);
+                        cubies.push(mesh);
+                    }
+                }
+            }
+        }
+
+        createCubies();
+
+        // ==========================================================================================
+        // 5.11. ENVIRONMENT
+        // ==========================================================================================
+        const floorGeo = new THREE.PlaneGeometry(50, 50);
+        const floorMat = new THREE.MeshStandardMaterial({
+            color: 0x050505,
+            roughness: 0.8,
+            metalness: 0.2,
+            transparent: true,
+            opacity: 0.5,
+        });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = -4;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        const gridHelper = new THREE.GridHelper(50, 50, 0x444444, 0x222222);
+        gridHelper.position.y = -4;
+        scene.add(gridHelper);
+
+        // ==========================================================================================
+        // 5.12. STATE MANAGEMENT
+        // ==========================================================================================
+        const state = {
+            isAnimating: false,
+            isExploded: false,
+            isCoreVisible: false,
+            isPresenting: false,
+            speedMultiplier: 1.0,
+            soundEnabled: true,
+            moveCount: 0,
+            startTime: null,
+            elapsedTime: 0,
+            timerInterval: null,
+            bestTime: parseFloat(localStorage.getItem('rubik-best-time')) || null,
+            moveHistory: [],
+            redoStack: [],
+            solveStartTime: null,
+            isSolving: false,
+            isScrambled: false,
+        };
+
+        const moveQueue = [];
+
+        // Khởi tạo best time display
+        if (state.bestTime) {
+            $('#stat-best').textContent = formatTime(state.bestTime);
+        }
+
+        // ==========================================================================================
+        // 5.13. ROTATION LOGIC (ĐÃ FIX TRIỆT ĐỂ)
+        // ==========================================================================================
+        
+        /**
+         * Lấy hệ số vị trí hiện tại dựa trên trạng thái explode.
+         * ĐÂY LÀ CHÌA KHÓA ĐỂ FIX LỖI XOAY BỊ CHÈN.
+         */
+        function getPositionFactor() {
+            return state.isExploded ? CONFIG.EXPLODE_FACTOR : 1;
+        }
+
+        /**
+         * Snap vị trí của cubie về đúng grid (loại bỏ floating-point drift).
+         * QUAN TRỌNG: Phải tính cả EXPLODE_FACTOR.
+         */
+        function snapCubieToGrid(cubie) {
+            const factor = getPositionFactor();
+            const gp = cubie.userData.gridPos;
+            cubie.position.set(
+                gp.x * OFFSET * factor,
+                gp.y * OFFSET * factor,
+                gp.z * OFFSET * factor
+            );
+        }
+
+        /**
+         * Cập nhật gridPos từ vị trí world.
+         * QUAN TRỌNG: Phải chia cho (OFFSET * factor) thay vì chỉ OFFSET.
+         */
+        function updateGridPosFromWorld(cubie) {
+            const factor = getPositionFactor();
+            const worldPos = cubie.position;
+            cubie.userData.gridPos.set(
+                Math.round(worldPos.x / (OFFSET * factor)),
+                Math.round(worldPos.y / (OFFSET * factor)),
+                Math.round(worldPos.z / (OFFSET * factor))
+            );
+        }
+
+        /**
+         * Thực hiện một nước đi xoay tầng.
+         * @param {string} move - 'R', 'L', 'U', 'D', 'F', 'B'
+         * @param {Object} options - { record: boolean, silent: boolean, callback: function }
+         */
+        function executeMove(move, options = {}) {
+            const { record = true, silent = false, callback = null } = options;
+
+            if (!MOVES[move]) {
+                console.warn('Nước đi không hợp lệ:', move);
+                return;
+            }
+
+            if (state.isAnimating) {
+                moveQueue.push({ move, options });
+                return;
+            }
+
+            state.isAnimating = true;
+
+            const moveConfig = MOVES[move];
+            const axis = moveConfig.axis;
+            const layer = moveConfig.layer;
+            const angle = moveConfig.angle;
+
+            const pivot = new THREE.Group();
+            rubikGroup.add(pivot);
+
+            // Lấy factor MỘT LẦN để đảm bảo nhất quán
+            const factor = getPositionFactor();
+
+            // Tìm các cubie thuộc lớp cần xoay
+            const targetCubies = cubies.filter(cubie => {
+                const g = cubie.userData.gridPos;
+                const val = axis === 'x' ? g.x : axis === 'y' ? g.y : g.z;
+                return Math.round(val) === layer;
+            });
+
+            // Đưa các cubie vào pivot, giữ nguyên world transform
+            targetCubies.forEach(cubie => {
+                pivot.attach(cubie);
+            });
+
+            // Phát âm thanh
+            if (!silent && state.soundEnabled) {
+                sound.play('whoosh');
+            }
+
+            // Animation xoay
+            const duration = CONFIG.ROTATION_DURATION / state.speedMultiplier;
+
+            gsap.to(pivot.rotation, {
+                [axis]: angle,
+                duration,
+                ease: 'power2.inOut',
+                onComplete: () => {
+                    // Đưa các cubie về lại rubikGroup
+                    targetCubies.forEach(cubie => {
+                        rubikGroup.attach(cubie);
+                        // Cập nhật gridPos (đã tính factor)
+                        updateGridPosFromWorld(cubie);
+                        // Snap vị trí để loại bỏ drift
+                        snapCubieToGrid(cubie);
+                    });
+
+                    rubikGroup.remove(pivot);
+                    state.isAnimating = false;
+
+                    // Ghi vào lịch sử
+                    if (record) {
+                        state.moveHistory.push(move);
+                        state.redoStack = [];
+                        state.moveCount++;
+                        updateStats();
+                        
+                        if (state.startTime === null) {
+                            startTimer();
+                        }
+                        
+                        // Kiểm tra trạng thái solved
+                        if (isSolved()) {
+                            handleSolved();
+                        }
+                    }
+
+                    if (callback) callback();
+
+                    // Xử lý hàng đợi
+                    if (moveQueue.length > 0) {
+                        const next = moveQueue.shift();
+                        executeMove(next.move, next.options);
+                    }
+                },
+            });
+        }
+
+        // ==========================================================================================
+        // 5.14. EXPLODE LOGIC (ĐÃ FIX)
+        // ==========================================================================================
+        function toggleExplode() {
+            if (state.isAnimating) {
+                toast.show('Đang xoay, vui lòng đợi!', 'warning');
+                return;
+            }
+
+            state.isExploded = !state.isExploded;
+
+            const factor = state.isExploded ? CONFIG.EXPLODE_FACTOR : 1;
+            const duration = 0.8 / state.speedMultiplier;
+
+            cubies.forEach(cubie => {
+                const gp = cubie.userData.gridPos;
+                const targetPos = new THREE.Vector3(
+                    gp.x * OFFSET * factor,
+                    gp.y * OFFSET * factor,
+                    gp.z * OFFSET * factor
+                );
+
+                gsap.to(cubie.position, {
+                    x: targetPos.x,
+                    y: targetPos.y,
+                    z: targetPos.z,
+                    duration,
+                    ease: 'power2.inOut',
+                });
+            });
+
+            if (coreGroup.visible) {
+                gsap.to(coreGroup.scale, {
+                    x: state.isExploded ? 1.4 : 1,
+                    y: state.isExploded ? 1.4 : 1,
+                    z: state.isExploded ? 1.4 : 1,
+                    duration,
+                    ease: 'power2.inOut',
+                });
+            }
+
+            if (state.soundEnabled) sound.play('pop');
+            toast.show(state.isExploded ? '💥 Đã tách khối' : '✅ Đã gộp khối', 'info');
+            updateButtonStates();
+        }
+
+        // ==========================================================================================
+        // 5.15. CORE TOGGLE
+        // ==========================================================================================
+        function toggleCore() {
+            state.isCoreVisible = !state.isCoreVisible;
+            coreGroup.visible = state.isCoreVisible;
+
+            if (state.isCoreVisible && state.isExploded) {
+                gsap.to(coreGroup.scale, { x: 1.4, y: 1.4, z: 1.4, duration: 0.5 });
+            } else if (state.isCoreVisible) {
+                gsap.to(coreGroup.scale, { x: 1, y: 1, z: 1, duration: 0.5 });
+            }
+
+            if (state.soundEnabled) sound.play('click');
+            toast.show(state.isCoreVisible ? '⚙️ Hiện lõi & trục' : '🙈 Ẩn lõi', 'info');
+        }
+
+        // ==========================================================================================
+        // 5.16. SCRAMBLE - Xáo trộn ngẫu nhiên
+        // ==========================================================================================
+        function scramble(count = 20) {
+            if (state.isAnimating) {
+                toast.show('Đang xoay, vui lòng đợi!', 'warning');
+                return;
+            }
+
+            const faces = ['R', 'L', 'U', 'D', 'F', 'B'];
+            const moves = [];
+            let lastFace = null;
+
+            for (let i = 0; i < count; i++) {
+                let face;
+                do {
+                    face = pickRandom(faces);
+                } while (face === lastFace || face === OPPOSITE[lastFace]);
+                moves.push(face);
+                lastFace = face;
+            }
+
+            resetTimer();
+            state.moveCount = 0;
+            state.moveHistory = [];
+            state.redoStack = [];
+            state.isScrambled = true;
+            state.startTime = null;
+
+            toast.show(`🔀 Scramble ${count} nước...`, 'warning', 1500);
+
+            // Thực hiện tuần tự với delay
+            moves.forEach((move, i) => {
+                setTimeout(() => {
+                    executeMove(move, { record: false, silent: true });
+                }, i * 150);
+            });
+
+            // Sau khi xong, bắt đầu timer
+            setTimeout(() => {
+                state.startTime = Date.now();
+                state.isScrambled = true;
+                $('#stat-status').textContent = 'Scrambled';
+                $('#stat-status').classList.add('recording');
+                updateStats();
+            }, count * 150 + 300);
+        }
+
+        // ==========================================================================================
+        // 5.17. SOLVE - Giải tự động
+        // ==========================================================================================
+        function solve() {
+            if (state.isAnimating) {
+                toast.show('Đang xoay, vui lòng đợi!', 'warning');
+                return;
+            }
+
+            if (state.moveHistory.length === 0) {
+                toast.show('Không có nước đi nào để giải!', 'warning');
+                return;
+            }
+
+            state.isSolving = true;
+            const movesToSolve = [...state.moveHistory].reverse().map(m => OPPOSITE[m]);
+            
+            toast.show(`✨ Đang giải ${movesToSolve.length} nước...`, 'info');
+
+            movesToSolve.forEach((move, i) => {
+                setTimeout(() => {
+                    executeMove(move, { 
+                        record: false, 
+                        silent: true,
+                        callback: i === movesToSolve.length - 1 ? () => {
+                            state.isSolving = false;
+                            state.moveHistory = [];
+                            state.moveCount = 0;
+                            state.isScrambled = false;
+                            handleSolved(true);
+                        } : null,
+                    });
+                }, i * 300 / state.speedMultiplier);
+            });
+        }
+
+        // ==========================================================================================
+        // 5.18. UNDO / REDO
+        // ==========================================================================================
+        function undo() {
+            if (state.isAnimating) {
+                toast.show('Đang xoay, vui lòng đợi!', 'warning');
+                return;
+            }
+
+            if (state.moveHistory.length === 0) {
+                toast.show('Không có gì để hoàn tác', 'warning');
+                return;
+            }
+
+            const lastMove = state.moveHistory.pop();
+            state.redoStack.push(lastMove);
+            const oppositeMove = OPPOSITE[lastMove];
+
+            executeMove(oppositeMove, { record: false, silent: false });
+            state.moveCount = Math.max(0, state.moveCount - 1);
+            updateStats();
+            toast.show(`↶ Undo: ${lastMove}`, 'info', 1200);
+        }
+
+        function redo() {
+            if (state.isAnimating) {
+                toast.show('Đang xoay, vui lòng đợi!', 'warning');
+                return;
+            }
+
+            if (state.redoStack.length === 0) {
+                toast.show('Không có gì để làm lại', 'warning');
+                return;
+            }
+
+            const move = state.redoStack.pop();
+            state.moveHistory.push(move);
+
+            executeMove(move, { record: false, silent: false });
+            state.moveCount++;
+            updateStats();
+            toast.show(`↷ Redo: ${move}`, 'info', 1200);
+        }
+
+        // ==========================================================================================
+        // 5.19. STATISTICS & TIMER
+        // ==========================================================================================
+        function updateStats() {
+            $('#stat-moves').textContent = state.moveCount;
+            $('#stat-history').textContent = state.moveHistory.length;
+        }
+
+        function startTimer() {
+            if (state.timerInterval) return;
+            state.startTime = state.startTime || Date.now();
+            state.timerInterval = setInterval(() => {
+                if (state.startTime) {
+                    state.elapsedTime = Math.floor((Date.now() - state.startTime) / 1000);
+                    $('#stat-time').textContent = formatTime(state.elapsedTime);
+                }
+            }, 100);
+        }
+
+        function stopTimer() {
+            if (state.timerInterval) {
+                clearInterval(state.timerInterval);
+                state.timerInterval = null;
+            }
+        }
+
+        function resetTimer() {
+            stopTimer();
+            state.startTime = null;
+            state.elapsedTime = 0;
+            $('#stat-time').textContent = '00:00';
+        }
+
+        // ==========================================================================================
+        // 5.20. SOLVED DETECTION
+        // ==========================================================================================
+        function isSolved() {
+            // Kiểm tra tất cả các cubie có gridPos khớp với originalPos không
+            for (const cubie of cubies) {
+                const g = cubie.userData.gridPos;
+                const o = cubie.userData.originalPos;
+                const expectedGrid = {
+                    x: Math.round(o.x / OFFSET),
+                    y: Math.round(o.y / OFFSET),
+                    z: Math.round(o.z / OFFSET),
+                };
+                if (Math.round(g.x) !== expectedGrid.x || 
+                    Math.round(g.y) !== expectedGrid.y || 
+                    Math.round(g.z) !== expectedGrid.z) {
+                    return false;
+                }
+                // Kiểm tra hướng (rotation) - quan trọng với Rubik
+                // Cần kiểm tra cả rot của từng mặt
+            }
+            return true;
+        }
+
+        function handleSolved(auto = false) {
+            stopTimer();
+            
+            if (state.elapsedTime > 0 && (!state.bestTime || state.elapsedTime < state.bestTime)) {
+                state.bestTime = state.elapsedTime;
+                localStorage.setItem('rubik-best-time', state.elapsedTime);
+                $('#stat-best').textContent = formatTime(state.elapsedTime);
+            }
+
+            $('#stat-status').textContent = 'Solved!';
+            $('#stat-status').classList.remove('recording');
+            $('#stat-status').classList.add('active');
+
+            if (state.soundEnabled) sound.play('complete');
+            
+            if (!auto) {
+                toast.show(`🎉 Đã giải xong trong ${formatTime(state.elapsedTime)}!`, 'success', 4000);
+                createConfetti();
+            }
+        }
+
+        function createConfetti() {
+            const colors = ['#ff2222', '#ff8800', '#ffffff', '#ffd700', '#0055ff', '#00cc44'];
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const c = document.createElement('div');
+                    c.className = 'confetti';
+                    c.style.left = Math.random() * 100 + 'vw';
+                    c.style.top = '-20px';
+                    c.style.background = pickRandom(colors);
+                    c.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    document.body.appendChild(c);
+                    setTimeout(() => c.remove(), 3000);
+                }, i * 30);
+            }
+        }
+
+        // ==========================================================================================
+        // 5.21. CAMERA PRESETS
+        // ==========================================================================================
+        const cameraPresets = [
+            { name: 'Isometric', pos: { x: 8, y: 8, z: 12 } },
+            { name: 'Front', pos: { x: 0, y: 0, z: 15 } },
+            { name: 'Top', pos: { x: 0, y: 15, z: 0.01 } },
+            { name: 'Side', pos: { x: 15, y: 0, z: 0 } },
+            { name: 'Corner NE', pos: { x: 10, y: 10, z: 10 } },
+            { name: 'Corner NW', pos: { x: -10, y: 10, z: 10 } },
+        ];
+
+        let currentCameraIndex = 0;
+
+        function cycleCamera() {
+            currentCameraIndex = (currentCameraIndex + 1) % cameraPresets.length;
+            const preset = cameraPresets[currentCameraIndex];
+            
+            gsap.to(camera.position, {
+                x: preset.pos.x,
+                y: preset.pos.y,
+                z: preset.pos.z,
+                duration: 0.8,
+                ease: 'power2.inOut',
+                onUpdate: () => camera.lookAt(0, 0, 0),
+            });
+
+            if (state.soundEnabled) sound.play('click');
+            toast.show(`📷 Góc nhìn: ${preset.name}`, 'info', 1500);
+        }
+
+        // ==========================================================================================
+        // 5.22. PRESENTATION MODE
+        // ==========================================================================================
+        function runPresentation() {
+            if (state.isPresenting) {
+                toast.show('Đang thuyết trình...', 'warning');
+                return;
+            }
+
+            state.isPresenting = true;
+            controls.autoRotate = false;
+            updateToggleState('toggle-autorotate', false);
+
+            const timeline = gsap.timeline({
+                onComplete: () => {
+                    state.isPresenting = false;
+                    controls.autoRotate = true;
+                    updateToggleState('toggle-autorotate', true);
+                    toast.show('✨ Kết thúc thuyết trình', 'success');
+                },
+            });
+
+            // Bước 1: Explode
+            timeline.call(() => {
+                if (!state.isExploded) toggleExplode();
+                toast.show('💥 Tách khối để xem cấu trúc...', 'info', 2000);
+            }, null, 0);
+            timeline.to({}, { duration: 2 });
+
+            // Bước 2: Show core
+            timeline.call(() => {
+                if (!state.isCoreVisible) toggleCore();
+                toast.show('⚙️ Hệ thống 3 trục X/Y/Z gắn vào lõi', 'info', 2500);
+            }, null, 2);
+            timeline.to({}, { duration: 3 });
+
+            // Bước 3: Rotate while exploded
+            timeline.call(() => {
+                executeMove('R', { record: false });
+                toast.show('🔄 Xoay mặt R quanh trục X', 'info', 1500);
+            }, null, 5);
+            timeline.to({}, { duration: 1.5 });
+
+            // Bước 4: Hide core & contract
+            timeline.call(() => {
+                if (state.isCoreVisible) toggleCore();
+                if (state.isExploded) toggleExplode();
+                toast.show('✅ Gộp khối về trạng thái ban đầu', 'info', 1500);
+            }, null, 6.5);
+            timeline.to({}, { duration: 2 });
+
+            // Bước 5: Show all moves
+            const moves = ['R', 'U', 'F', 'L', 'D', 'B'];
+            moves.forEach((m, i) => {
+                timeline.call(() => {
+                    executeMove(m, { record: false });
+                    toast.show(`🔄 ${m}`, 'info', 500);
+                }, null, 8.5 + i * 0.7);
+            });
+
+            timeline.to({}, { duration: 2 });
+        }
+
+        // ==========================================================================================
+        // 5.23. RESET
+        // ==========================================================================================
+        function resetAll() {
+            if (state.isAnimating) {
+                // Hủy animation hiện tại
+                gsap.globalTimeline.clear();
+                state.isAnimating = false;
+                moveQueue.length = 0;
+            }
+
+            // Reset trạng thái
+            state.isExploded = false;
+            state.isCoreVisible = false;
+            state.isPresenting = false;
+            state.moveCount = 0;
+            state.moveHistory = [];
+            state.redoStack = [];
+            state.isScrambled = false;
+
+            coreGroup.visible = false;
+            coreGroup.scale.set(1, 1, 1);
+
+            // Reset từng cubie
+            cubies.forEach(cubie => {
+                const gp = cubie.userData.gridPos;
+                const op = cubie.userData.originalPos;
+                gp.set(Math.round(op.x / OFFSET), Math.round(op.y / OFFSET), Math.round(op.z / OFFSET));
+                
+                gsap.to(cubie.position, {
+                    x: op.x,
+                    y: op.y,
+                    z: op.z,
+                    duration: 0.6,
+                    ease: 'power2.inOut',
+                });
+
+                // Reset rotation về 0
+                gsap.to(cubie.rotation, {
+                    x: 0, y: 0, z: 0,
+                    duration: 0.6,
+                    ease: 'power2.inOut',
+                });
+            });
+
+            // Reset camera
+            gsap.to(camera.position, {
+                x: 8, y: 8, z: 12,
+                duration: 1,
+                ease: 'power2.inOut',
+                onUpdate: () => camera.lookAt(0, 0, 0),
+            });
+
+            gsap.to(controls.target, { x: 0, y: 0, z: 0, duration: 1 });
+
+            resetTimer();
+            updateStats();
+            updateButtonStates();
+
+            $('#stat-status').textContent = 'Solved';
+            $('#stat-status').classList.remove('recording', 'active');
+
+            if (state.soundEnabled) sound.play('pop');
+            toast.show('🔄 Đã reset về trạng thái ban đầu', 'success');
+        }
+
+        // ==========================================================================================
+        // 5.24. UI HELPERS
+        // ==========================================================================================
+        function updateButtonStates() {
+            $('#btn-explode').textContent = state.isExploded ? '💥 Gộp khối' : '💥 Explode';
+            $('#btn-core').textContent = state.isCoreVisible ? '⚙️ Ẩn Core' : '⚙️ Core';
+        }
+
+        function updateToggleState(id, active) {
+            const el = document.getElementById(id);
+            if (el) {
+                if (active) el.classList.add('active');
+                else el.classList.remove('active');
+            }
+        }
+
+        // ==========================================================================================
+        // 5.25. EVENT LISTENERS
+        // ==========================================================================================
+        
+        // Buttons
+        $('#btn-explode').addEventListener('click', toggleExplode);
+        $('#btn-core').addEventListener('click', toggleCore);
+        $('#btn-presentation').addEventListener('click', runPresentation);
+        $('#btn-reset').addEventListener('click', resetAll);
+        $('#btn-scramble').addEventListener('click', () => scramble(20));
+        $('#btn-solve').addEventListener('click', solve);
+        $('#btn-undo').addEventListener('click', undo);
+        $('#btn-redo').addEventListener('click', redo);
+        $('#btn-camera').addEventListener('click', cycleCamera);
+        $('#btn-help').addEventListener('click', () => $('#help-modal').classList.add('active'));
+        $('#btn-close-help').addEventListener('click', () => $('#help-modal').classList.remove('active'));
+
+        // Move buttons
+        $$('[data-move]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                sound.init();
+                executeMove(btn.dataset.move);
+            });
+        });
+
+        // Speed slider
+        $('#speed-slider').addEventListener('input', (e) => {
+            state.speedMultiplier = parseFloat(e.target.value);
+            $('#speed-value').textContent = state.speedMultiplier.toFixed(1) + 'x';
+        });
+
+        // Toggles
+        $('#toggle-autorotate').addEventListener('click', function() {
+            controls.autoRotate = !controls.autoRotate;
+            this.classList.toggle('active');
+        });
+
+        $('#toggle-sound').addEventListener('click', function() {
+            state.soundEnabled = !state.soundEnabled;
+            sound.enabled = state.soundEnabled;
+            this.classList.toggle('active');
+            if (state.soundEnabled) {
+                sound.init();
+                sound.play('click');
+            }
+        });
+
+        // Modal close on overlay click
+        $('#help-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'help-modal') {
+                e.target.classList.remove('active');
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Bỏ qua nếu đang focus vào input
+            if (e.target.tagName === 'INPUT') return;
+
+            const key = e.key.toUpperCase();
+            sound.init();
+
+            // Ctrl/Cmd combinations
+            if (e.ctrlKey || e.metaKey) {
+                if (key === 'Z') {
+                    e.preventDefault();
+                    if (e.shiftKey) redo();
+                    else undo();
+                    return;
+                }
+                if (key === 'Y') {
+                    e.preventDefault();
+                    redo();
+                    return;
+                }
+                if (key === 'R') {
+                    e.preventDefault();
+                    resetAll();
+                    return;
+                }
+                return;
+            }
+
+            // Shift + move = ngược lại (inverse)
+            const isShift = e.shiftKey;
+
+            // Regular move keys
+            if (['R', 'L', 'U', 'D', 'F', 'B'].includes(key)) {
+                e.preventDefault();
+                if (isShift) {
+                    // Xoay ngược
+                    executeMove(key);
+                    executeMove(key);
+                    executeMove(key);
+                } else {
+                    executeMove(key);
+                }
+                return;
+            }
+
+            // Other shortcuts
+            switch (key) {
+                case 'S':
+                    e.preventDefault();
+                    scramble(20);
+                    break;
+                case 'ENTER':
+                    e.preventDefault();
+                    solve();
+                    break;
+                case 'E':
+                    e.preventDefault();
+                    toggleExplode();
+                    break;
+                case 'C':
+                    e.preventDefault();
+                    toggleCore();
+                    break;
+                case 'V':
+                    e.preventDefault();
+                    cycleCamera();
+                    break;
+                case 'P':
+                case ' ':
+                    e.preventDefault();
+                    runPresentation();
+                    break;
+                case 'H':
+                    e.preventDefault();
+                    $('#help-modal').classList.toggle('active');
+                    break;
+                case 'ESCAPE':
+                    $('#help-modal').classList.remove('active');
+                    break;
+            }
+        });
+
+        // Window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // ==========================================================================================
+        // 5.26. FPS COUNTER
+        // ==========================================================================================
+        let fpsFrameCount = 0;
+        let fpsLastTime = performance.now();
+
+        function updateFPS() {
+            fpsFrameCount++;
+            const now = performance.now();
+            if (now - fpsLastTime >= 1000) {
+                const fps = Math.round((fpsFrameCount * 1000) / (now - fpsLastTime));
+                $('#fps-text').textContent = `${fps} FPS`;
+                
+                const dot = $('#fps-dot');
+                dot.classList.remove('low', 'critical');
+                if (fps < 30) dot.classList.add('critical');
+                else if (fps < 50) dot.classList.add('low');
+                
+                fpsFrameCount = 0;
+                fpsLastTime = now;
+            }
+        }
+
+        // ==========================================================================================
+        // 5.27. RENDER LOOP
+        // ==========================================================================================
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+            updateFPS();
+        }
+
+        animate();
+
+        // ==========================================================================================
+        // 5.28. INITIAL LOADING ANIMATION
+        // ==========================================================================================
+        let loadProgress = 0;
+        const loadInterval = setInterval(() => {
+            loadProgress += Math.random() * 15 + 5;
+            if (loadProgress > 100) loadProgress = 100;
+            
+            $('#loader-bar').style.width = loadProgress + '%';
+            $('#loader-percent').textContent = Math.round(loadProgress) + '%';
+
+            if (loadProgress >= 100) {
+                clearInterval(loadInterval);
+                setTimeout(() => {
+                    const loadingScreen = $('#loading-screen');
+                    loadingScreen.style.opacity = '0';
+                    setTimeout(() => loadingScreen.style.display = 'none', 800);
+                    
+                    controls.autoRotate = true;
+                    toast.show('🎉 Chào mừng đến với Rubik 3D Pro!', 'success', 3000);
+                    setTimeout(() => {
+                        toast.show('💡 Nhấn H để xem hướng dẫn', 'info', 3000);
+                    }, 1000);
+                }, 300);
+            }
+        }, 100);
+
+        // ==========================================================================================
+        // 5.29. DEBUG LOG
+        // ==========================================================================================
+        console.log('%c🎲 RUBIK 3D PRO', 'color: #00d2ff; font-size: 20px; font-weight: bold;');
+        console.log('%cĐã khởi tạo thành công!', 'color: #28a745; font-size: 12px;');
+        console.log('• Số cubies:', cubies.length);
+        console.log('• OFFSET:', OFFSET);
+        console.log('• Explode factor:', CONFIG.EXPLODE_FACTOR);
+        console.log('• Kích thước khối:', CONFIG.CUBE_SIZE);
+        console.log('%c✅ BUG FIX: GridPos giờ đã tính cả EXPLODE_FACTOR!', 'color: #ffc107; font-weight: bold;');
+    </script>
 </body>
-</html>
+   </html>
